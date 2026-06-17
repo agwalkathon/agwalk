@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AG Leaderboards — Arcgate Walkathon 2026</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F5F5F5; color: #1A1A1A; min-height: 100vh; display: flex; flex-direction: column; }
+    .site-header { background: #fff; border-bottom: 3px solid #E8622A; padding: 12px 28px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .site-header img { height: 40px; object-fit: contain; }
+    .site-header nav { display: flex; gap: 4px; flex-wrap: wrap; }
+    .site-header nav a { font-size: 13px; color: #555; text-decoration: none; padding: 6px 12px; border-radius: 6px; }
+    .site-header nav a:hover { background: #f0f0f0; }
+    .site-header nav a.active { background: #E8622A; color: white; }
+    .page-bar { background: #1A1A1A; color: white; padding: 18px 28px; display: flex; justify-content: space-between; align-items: center; }
+    .page-bar h1 { font-size: 20px; font-weight: 600; }
+    .page-bar .back { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 13px; }
+    .content { flex: 1; padding: 24px 28px; max-width: 1400px; width: 100%; margin: 0 auto; }
+
+    /* Board tabs */
+    .board-tabs { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+    .board-tab { padding: 12px 24px; border-radius: 10px; border: 2px solid #e8e8e8; font-size: 14px; font-weight: 600; cursor: pointer; background: white; color: #555; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+    .board-tab:hover { border-color: #E8622A; color: #E8622A; }
+    .board-tab.active { background: #E8622A; color: white; border-color: #E8622A; }
+    .board-tab .count { background: rgba(255,255,255,0.25); padding: 2px 8px; border-radius: 10px; font-size: 12px; }
+    .board-tab:not(.active) .count { background: #f0f0f0; color: #888; }
+
+    /* Info bar */
+    .info-bar { background: white; border-radius: 12px; padding: 14px 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+    .info-item { font-size: 13px; color: #666; display: flex; align-items: center; gap: 6px; }
+    .info-item strong { color: #1A1A1A; }
+    .refresh-btn { margin-left: auto; padding: 7px 16px; background: #f0f0f0; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; font-weight: 500; }
+    .refresh-btn:hover { background: #e0e0e0; }
+
+    /* Stats */
+    .stats-grid { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 22px; }
+    .stat-card { background: white; border-radius: 12px; padding: 16px 20px; flex: 1; min-width: 120px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); border-left: 4px solid #E8622A; }
+    .stat-card .val { font-size: 22px; font-weight: 700; color: #E8622A; }
+    .stat-card .lbl { font-size: 12px; color: #888; margin-top: 3px; }
+    .stat-card.gold-card { border-left-color: #FFD700; } .stat-card.gold-card .val { color: #B8860B; }
+    .stat-card.silver-card { border-left-color: #C0C0C0; } .stat-card.silver-card .val { color: #808080; }
+    .stat-card.bronze-card { border-left-color: #CD7F32; } .stat-card.bronze-card .val { color: #CD7F32; }
+
+    /* Table */
+    .card { background: white; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 800px; }
+    th { background: #fafafa; padding: 11px 14px; text-align: left; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #f0f0f0; white-space: nowrap; }
+    td { padding: 11px 14px; font-size: 13px; border-bottom: 1px solid #f8f8f8; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fdfcfb; }
+
+    /* Rank */
+    .rank { font-weight: 700; font-size: 16px; color: #ccc; min-width: 36px; display: inline-block; text-align: center; }
+    .rank.r1 { color: #FFD700; } .rank.r2 { color: #C0C0C0; } .rank.r3 { color: #CD7F32; }
+
+    /* Medal */
+    .medal { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .medal-gold   { background: #FFF9E6; color: #B8860B; border: 1px solid #FFD700; }
+    .medal-silver { background: #F5F5F5; color: #666; border: 1px solid #C0C0C0; }
+    .medal-bronze { background: #FFF0E6; color: #8B4513; border: 1px solid #CD7F32; }
+    .medal-none   { background: #f5f5f5; color: #bbb; border: 1px solid #e8e8e8; font-size: 11px; }
+
+    /* Points */
+    .pts { font-weight: 700; color: #E8622A; }
+    .pts-breakdown { font-size: 11px; color: #999; margin-top: 2px; }
+    .challenge-badge { background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+
+    /* Loading */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-wrap { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 60px; color: #bbb; }
+    .spinner { width: 28px; height: 28px; border: 3px solid #f0f0f0; border-top-color: #E8622A; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    .empty { text-align: center; padding: 60px; color: #bbb; font-size: 15px; }
+
+    .site-footer { background: #1A1A1A; color: #666; text-align: center; padding: 16px 28px; font-size: 12px; margin-top: auto; }
+    .site-footer a { color: #E8622A; text-decoration: none; margin: 0 8px; }
+  </style>
+</head>
+<body>
+<div class="site-header">
+  <img src="aw_logo.jpg" alt="Arcgate Walkathon 2026">
+  <nav>
+    <a href="admin.html">Dashboard</a>
+    <a href="activities.html">Activities</a>
+    <a href="ag-leaderboard.html" class="active">AG Leaderboards</a>
+    <a href="leaderboard.html">General</a>
+    <a href="flagged.html">Flagged</a>
+    <a href="participants.html">Participants</a>
+    <a href="ag-config.html">Config</a>
+    <a href="#" onclick="logout();return false;">Sign out</a>
+  </nav>
+</div>
+<div class="page-bar">
+  <h1>🏆 AG Leaderboards</h1>
+  <a href="admin.html" class="back">← Dashboard</a>
+</div>
+<div class="content">
+
+  <!-- Board selector -->
+  <div class="board-tabs">
+    <button class="board-tab active" id="tab-df" onclick="switchBoard('dayshift-female')">
+      👩 Dayshift — Female <span class="count" id="cnt-df">—</span>
+    </button>
+    <button class="board-tab" id="tab-dm" onclick="switchBoard('dayshift-male')">
+      👨 Dayshift — Male <span class="count" id="cnt-dm">—</span>
+    </button>
+    <button class="board-tab" id="tab-ns" onclick="switchBoard('nightshift-all')">
+      🌙 Nightshift — All <span class="count" id="cnt-ns">—</span>
+    </button>
+  </div>
+
+  <!-- Info bar -->
+  <div class="info-bar">
+    <div class="info-item">📅 <strong>June 1 – 30, 2026</strong></div>
+    <div class="info-item">🏃 <strong>Walk, Run, Hike, Ride</strong></div>
+    <div class="info-item">✅ <strong>Valid activities only</strong></div>
+    <div class="info-item" id="challenge-info">🎯 Loading challenges...</div>
+    <button class="refresh-btn" onclick="loadAll()">🔄 Refresh</button>
+    <a href="ag-config.html" style="font-size:13px;color:#E8622A;text-decoration:none;font-weight:500">⚙️ Configure →</a>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card"><div class="val" id="stat-total">—</div><div class="lbl">Participants</div></div>
+    <div class="stat-card gold-card"><div class="val" id="stat-gold">—</div><div class="lbl">🥇 Gold medals</div></div>
+    <div class="stat-card silver-card"><div class="val" id="stat-silver">—</div><div class="lbl">🥈 Silver medals</div></div>
+    <div class="stat-card bronze-card"><div class="val" id="stat-bronze">—</div><div class="lbl">🥉 Bronze medals</div></div>
+    <div class="stat-card"><div class="val" id="stat-km">—</div><div class="lbl">Total km</div></div>
+    <div class="stat-card"><div class="val" id="stat-pts">—</div><div class="lbl">Total points</div></div>
+  </div>
+
+  <!-- Leaderboard table -->
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Participant</th>
+            <th>Team</th>
+            <th>Distance (km)</th>
+            <th>Distance Points</th>
+            <th>Bonus Points</th>
+            <th>Challenge Bonus</th>
+            <th>Total Points</th>
+            <th>Medal</th>
+          </tr>
+        </thead>
+        <tbody id="lb-body">
+          <tr><td colspan="9"><div class="loading-wrap"><div class="spinner"></div>Loading leaderboard...</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="site-footer">
+  © 2026 Arcgate Walkathon &nbsp;·&nbsp;
+  <a href="privacy.html">Privacy Policy</a>
+  <a href="terms.html">Terms of Service</a>
+</div>
+
+<script>
+var SB_URL  = 'https://jhdgkncpkrttvemvwukc.supabase.co';
+var SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoZGdrbmNwa3J0dHZlbXZ3dWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NzgyNjMsImV4cCI6MjA5NzI1NDI2M30.d7mvXOYDq5G4aqs1Mbc6HFNgTBlQk4B6ah0eahE_yZE';
+var HDR = { apikey: SB_ANON, Authorization: 'Bearer '+SB_ANON };
+
+function authGuard() { var s=JSON.parse(sessionStorage.getItem('wk_admin')||'{}'); if(!s.loggedIn||s.expires<Date.now()) window.location.href='admin-login.html'; }
+function logout() { sessionStorage.removeItem('wk_admin'); window.location.href='admin-login.html'; }
+authGuard();
+
+var currentBoard = 'dayshift-female';
+var CONFIG = { medals: { bronze:{male:125,female:100}, silver:{male:200,female:150}, gold:{male:300,female:250} }, bonus: [{km:5,pts:1},{km:8,pts:2},{km:10,pts:3},{km:15,pts:4},{km:21,pts:7}], basePer_km: 1 };
+var CHALLENGES = [];
+var allData = {}; // cache {board: rows}
+
+function switchBoard(board) {
+  currentBoard = board;
+  ['dayshift-female','dayshift-male','nightshift-all'].forEach(function(b) {
+    var key = b==='dayshift-female'?'df':b==='dayshift-male'?'dm':'ns';
+    document.getElementById('tab-'+key).classList.toggle('active', b===board);
+  });
+  if (allData[board]) renderBoard(allData[board], board);
+  else loadBoard(board);
+}
+
+async function loadConfig() {
+  try {
+    var r = await fetch(SB_URL+'/rest/v1/leaderboard_config?select=config_key,config_value', {headers:HDR});
+    var rows = await r.json();
+    rows.forEach(function(row) {
+      if (row.config_key==='medals')       CONFIG.medals     = row.config_value;
+      if (row.config_key==='bonus_points') CONFIG.bonus      = row.config_value;
+      if (row.config_key==='base_points')  CONFIG.basePer_km = row.config_value.per_km || 1;
+    });
+  } catch(e) { console.warn('Config load failed, using defaults'); }
+}
+
+async function loadChallenges() {
+  try {
+    var r = await fetch(SB_URL+'/rest/v1/challenges?is_active=eq.true&select=*', {headers:HDR});
+    CHALLENGES = await r.json();
+    var names = CHALLENGES.map(function(c){ return c.name; }).join(', ');
+    document.getElementById('challenge-info').innerHTML = '🎯 Challenges: <strong>'+(names||'None')+'</strong>';
+  } catch(e) { CHALLENGES = []; }
+}
+
+async function loadRegistration() {
+  var r = await fetch(SB_URL+'/rest/v1/registration?select=strava_athlete_id,full_name,gender,shift,leaderboard_team', {headers:HDR});
+  return await r.json();
+}
+
+async function loadActivities() {
+  var url = SB_URL+'/rest/v1/activities?is_flagged=eq.false&is_deleted=eq.false'
+    +'&activity_date=gte.2026-06-01T00:00:00'
+    +'&activity_date=lte.2026-06-30T23:59:59'
+    +'&select=strava_athlete_id,distance_meters,sport_type,activity_date,avg_speed,elevation_gain,strava_activity_id';
+  var r = await fetch(url, {headers:HDR});
+  return await r.json();
+}
+
+// Calculate bonus points for daily total km (highest bracket only)
+function calcBonus(km) {
+  var pts = 0;
+  var sorted = CONFIG.bonus.slice().sort(function(a,b){ return b.km-a.km; });
+  for (var i=0; i<sorted.length; i++) {
+    if (km >= sorted[i].km) { pts = sorted[i].pts; break; }
+  }
+  return pts;
+}
+
+// Check if an activity qualifies for a challenge
+function checkChallenge(act, challenge) {
+  var actDate = act.activity_date.split('T')[0];
+  if (actDate < challenge.start_date || actDate > challenge.end_date) return false;
+  var sportTypes = challenge.sport_types || ['Walk','Run','Hike','Ride'];
+  if (!sportTypes.includes(act.sport_type)) return false;
+  var km = (act.distance_meters||0) / 1000;
+  if (challenge.distance_type === 'fixed') {
+    if (km < challenge.distance_min - 0.05 || km > challenge.distance_max + 0.05) return false;
+  } else if (challenge.distance_type === 'range') {
+    if (km < challenge.distance_min || km > challenge.distance_max) return false;
+  } else { // extended
+    if (km < challenge.distance_min) return false;
+  }
+  if (challenge.elevation_criteria > 0 && (act.elevation_gain||0) < challenge.elevation_criteria) return false;
+  if (challenge.start_time_criteria) {
+    var actTime = new Date(act.activity_date);
+    var actHour = actTime.getHours();
+    var actMin  = actTime.getMinutes();
+    var parts   = challenge.start_time_criteria.split(':');
+    var critH   = parseInt(parts[0]), critM = parseInt(parts[1]||0);
+    var actMins = actHour*60+actMin, critMins = critH*60+critM;
+    if (Math.abs(actMins - critMins) > 30) return false; // within 30 min window
+  }
+  return true;
+}
+
+function getMedal(points, gender) {
+  var g = (gender||'').toLowerCase();
+  var m = CONFIG.medals;
+  var goldPts   = g==='female' ? m.gold.female   : m.gold.male;
+  var silverPts = g==='female' ? m.silver.female : m.silver.male;
+  var bronzePts = g==='female' ? m.bronze.female : m.bronze.male;
+  if (points >= goldPts)   return {label:'🥇 Gold',   cls:'medal-gold'};
+  if (points >= silverPts) return {label:'🥈 Silver', cls:'medal-silver'};
+  if (points >= bronzePts) return {label:'🥉 Bronze', cls:'medal-bronze'};
+  return {label:'— No medal', cls:'medal-none'};
+}
+
+function filterReg(reg, board) {
+  return reg.filter(function(p) {
+    var g = (p.gender||'').toLowerCase();
+    var s = (p.shift||'').toLowerCase();
+    if (board==='dayshift-female') return g==='female' && s.includes('day');
+    if (board==='dayshift-male')   return (g==='male'||g==='m') && s.includes('day');
+    if (board==='nightshift-all')  return s.includes('night');
+    return true;
+  });
+}
+
+function calcPoints(acts, athleteId, gender) {
+  // Group by day
+  var byDay = {};
+  acts.filter(function(a){ return a.strava_athlete_id===athleteId; }).forEach(function(a) {
+    var d = a.activity_date.split('T')[0];
+    if (!byDay[d]) byDay[d] = [];
+    byDay[d].push(a);
+  });
+
+  var totalDistKm = 0, totalDistPts = 0, totalBonus = 0, totalChallenge = 0;
+  var challengeNames = [];
+  var earnedChallenges = new Set(); // one challenge bonus per challenge per participant
+
+  Object.keys(byDay).forEach(function(day) {
+    var dayActs = byDay[day];
+    var dayKm = dayActs.reduce(function(s,a){ return s+(a.distance_meters||0)/1000; }, 0);
+    totalDistKm += dayKm;
+    var distPts = Math.floor(dayKm * CONFIG.basePer_km);
+    totalDistPts += distPts;
+    totalBonus += calcBonus(dayKm);
+  });
+
+  // Challenge bonus — check each activity
+  acts.filter(function(a){ return a.strava_athlete_id===athleteId; }).forEach(function(a) {
+    CHALLENGES.forEach(function(c) {
+      var key = c.id;
+      if (earnedChallenges.has(key)) return;
+      var eligible = c.eligible==='all' || c.eligible===(gender||'').toLowerCase() ||
+        (c.eligible==='dayshift') || (c.eligible==='nightshift');
+      if (!eligible) return;
+      if (checkChallenge(a, c)) {
+        earnedChallenges.add(key);
+        totalChallenge += c.bonus_points;
+        challengeNames.push(c.name);
+      }
+    });
+  });
+
+  return {
+    distKm:      totalDistKm,
+    distPts:     totalDistPts,
+    bonusPts:    totalBonus,
+    challengePts:totalChallenge,
+    totalPts:    totalDistPts + totalBonus + totalChallenge,
+    challenges:  challengeNames
+  };
+}
+
+async function loadAll() {
+  allData = {};
+  await Promise.all([loadConfig(), loadChallenges()]);
+  var [reg, acts] = await Promise.all([loadRegistration(), loadActivities()]);
+
+  ['dayshift-female','dayshift-male','nightshift-all'].forEach(function(board) {
+    var filtered = filterReg(reg, board);
+    var rows = [];
+    filtered.forEach(function(p) {
+      var pts = calcPoints(acts, p.strava_athlete_id, p.gender);
+      if (pts.totalPts === 0 && pts.distKm === 0) return; // hide 0 activity
+      rows.push({ p: p, pts: pts });
+    });
+    rows.sort(function(a,b){ return b.pts.totalPts - a.pts.totalPts; });
+    allData[board] = rows;
+    var key = board==='dayshift-female'?'df':board==='dayshift-male'?'dm':'ns';
+    document.getElementById('cnt-'+key).textContent = rows.length;
+  });
+
+  renderBoard(allData[currentBoard], currentBoard);
+}
+
+function renderBoard(rows, board) {
+  if (!rows || !rows.length) {
+    document.getElementById('lb-body').innerHTML = '<tr><td colspan="9"><div class="empty">No participants with activities found</div></td></tr>';
+    updateStats([]);
+    return;
+  }
+  updateStats(rows, board);
+  document.getElementById('lb-body').innerHTML = rows.map(function(row, i) {
+    var p = row.p, pts = row.pts;
+    var medal = getMedal(pts.totalPts, p.gender);
+    var rankCls = i===0?'r1':i===1?'r2':i===2?'r3':'';
+    var medal_icon = i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
+    var chalHtml = pts.challengePts > 0
+      ? '<div>+'+pts.challengePts+'<br><span class="challenge-badge">'+pts.challenges.join(', ')+'</span></div>'
+      : '<span style="color:#ddd">—</span>';
+    return '<tr>'
+      +'<td><span class="rank '+rankCls+'">'+medal_icon+'</span></td>'
+      +'<td><strong>'+p.full_name+'</strong></td>'
+      +'<td style="font-size:12px;color:#888">'+( p.leaderboard_team||'—')+'</td>'
+      +'<td><strong>'+pts.distKm.toFixed(2)+'</strong></td>'
+      +'<td><span class="pts">'+pts.distPts+'</span></td>'
+      +'<td><span class="pts">'+pts.bonusPts+'</span></td>'
+      +'<td>'+chalHtml+'</td>'
+      +'<td><strong class="pts" style="font-size:15px">'+pts.totalPts+'</strong></td>'
+      +'<td><span class="medal '+medal.cls+'">'+medal.label+'</span></td>'
+      +'</tr>';
+  }).join('');
+}
+
+function updateStats(rows, board) {
+  var golds=0, silvers=0, bronzes=0, km=0, pts=0;
+  rows.forEach(function(row) {
+    var m = getMedal(row.pts.totalPts, row.p.gender);
+    if (m.cls==='medal-gold')   golds++;
+    if (m.cls==='medal-silver') silvers++;
+    if (m.cls==='medal-bronze') bronzes++;
+    km  += row.pts.distKm;
+    pts += row.pts.totalPts;
+  });
+  document.getElementById('stat-total').textContent  = rows.length;
+  document.getElementById('stat-gold').textContent   = golds;
+  document.getElementById('stat-silver').textContent = silvers;
+  document.getElementById('stat-bronze').textContent = bronzes;
+  document.getElementById('stat-km').textContent     = km.toFixed(1)+' km';
+  document.getElementById('stat-pts').textContent    = pts.toLocaleString();
+}
+
+loadAll();
+</script>
+</body>
+</html>
