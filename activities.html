@@ -264,10 +264,13 @@ function initScrollSync() {
 }
 
 var currentId = null;
-function openModal(id, actName, currentReason) {
+function openModal(id, el) {
   currentId = id;
-  document.getElementById('modal-sub').textContent = actName;
-  document.getElementById('modal-flag-reason').value = currentReason || '';
+  // Find the activity name from the same row
+  var cell = document.getElementById('status-cell-' + id);
+  var reason = cell ? (cell.getAttribute('data-reason') || '') : '';
+  document.getElementById('modal-sub').textContent = 'Activity #' + id;
+  document.getElementById('modal-flag-reason').value = reason;
   checkModalDist();
   document.getElementById('flag-modal').classList.add('show');
 }
@@ -296,13 +299,12 @@ async function confirmStatus() {
     var statusCell = document.getElementById('status-cell-'+currentId);
     if (statusCell) {
       var isFlagged = !!reason;
-      var actName = document.getElementById('actname-'+currentId)?.textContent || 'Activity';
-      var safeReason = reason.replace(/'/g, "\'");
-      var safeName   = actName.replace(/'/g, "\'");
       if (isFlagged) {
-        statusCell.innerHTML = '<span class="badge badge-invalid" style="cursor:pointer" onclick="openModal('+currentId+',''+safeName+'',''+safeReason+'')">🚩 '+reason+'</span>';
+        statusCell.innerHTML = '<span class="badge badge-invalid" style="cursor:pointer" onclick="openModal(' + currentId + ', this)">🚩 ' + reason + '</span>';
+        statusCell.setAttribute('data-reason', reason);
       } else {
-        statusCell.innerHTML = '<span class="badge badge-valid" style="cursor:pointer" onclick="openModal('+currentId+',''+safeName+'','')">✅ Valid</span>';
+        statusCell.innerHTML = '<span class="badge badge-valid" style="cursor:pointer" onclick="openModal(' + currentId + ', this)">✅ Valid</span>';
+        statusCell.setAttribute('data-reason', '');
       }
     }
     closeModal();
@@ -345,7 +347,7 @@ async function loadActivities() {
   if(sp) url+='&sport_type=eq.'+sp;
   if(st==='valid')   url+='&is_flagged=eq.false';
   if(st==='invalid') url+='&is_flagged=eq.true';
-  if(fr) url+='&flag_reason=like.*'+encodeURIComponent(fr)+'*';
+  if(fr) url+='&flag_reason=ilike.*'+fr.replace(/ /g,'%20')+'*';
 
   try {
     var results = await Promise.all([
@@ -413,7 +415,7 @@ async function loadActivities() {
         +'<td>'+(a.steps?a.steps.toLocaleString():'—')+'</td>'
         +'<td>'+(a.calories?a.calories.toFixed(0):'—')+'</td>'
         +'<td>'+(a.avg_heart_rate?a.avg_heart_rate.toFixed(0)+' bpm':'—')+'</td>'
-        +'<td id="status-cell-'+a.id+'">'+statusBadge+'</td>'
+        +'<td id="status-cell-'+a.id+'" data-reason="'+(a.flag_reason||'')+'">'+statusBadge+'</td>'
         +'</tr>';
     }).join('');
 
