@@ -287,9 +287,27 @@ async function confirmStatus() {
   } else {
     payload = { activity_id: currentId, action: 'flag', flag_reason: reason };
   }
-  await fetch(BACKEND_URL+'/flag', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
-  closeModal();
-  loadActivities();
+  try {
+    var resp = await fetch(BACKEND_URL+'/flag', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    var result = await resp.json();
+    if (!result.success) throw new Error(result.error || 'Failed');
+    // Update status cell in-place
+    var statusCell = document.getElementById('status-cell-'+currentId);
+    if (statusCell) {
+      var isFlagged = !!reason;
+      var actName = document.getElementById('actname-'+currentId)?.textContent || 'Activity';
+      var safeReason = reason.replace(/'/g, "\'");
+      var safeName   = actName.replace(/'/g, "\'");
+      if (isFlagged) {
+        statusCell.innerHTML = '<span class="badge badge-invalid" style="cursor:pointer" onclick="openModal('+currentId+',''+safeName+'',''+safeReason+'')">🚩 '+reason+'</span>';
+      } else {
+        statusCell.innerHTML = '<span class="badge badge-valid" style="cursor:pointer" onclick="openModal('+currentId+',''+safeName+'','')">✅ Valid</span>';
+      }
+    }
+    closeModal();
+  } catch(e) {
+    alert('Error saving: '+e.message);
+  }
 }
 document.getElementById('flag-modal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
 
@@ -394,7 +412,7 @@ async function loadActivities() {
         +'<td>'+(a.steps?a.steps.toLocaleString():'—')+'</td>'
         +'<td>'+(a.calories?a.calories.toFixed(0):'—')+'</td>'
         +'<td>'+(a.avg_heart_rate?a.avg_heart_rate.toFixed(0)+' bpm':'—')+'</td>'
-        +'<td>'+statusBadge+'</td>'
+        +'<td id="status-cell-'+a.id+'">'+statusBadge+'</td>'
         +'</tr>';
     }).join('');
 
