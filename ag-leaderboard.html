@@ -84,10 +84,8 @@
     <a href="admin.html">Dashboard</a>
     <a href="activities.html">Activities</a>
     <a href="ag-leaderboard.html" class="active">AG Leaderboards</a>
-    <a href="leaderboard.html">General</a>
-    <a href="flagged.html">Flagged</a>
-    <a href="participants.html">Participants</a>
     <a href="ag-config.html">Config</a>
+    <a href="participants.html">Participants</a>
     <a href="#" onclick="logout();return false;">Sign out</a>
   </nav>
 </div>
@@ -116,7 +114,7 @@
     <div class="info-item">🏃 <strong>Walk, Run, Hike, Ride</strong></div>
     <div class="info-item">✅ <strong>Valid activities only</strong></div>
     <div class="info-item" id="challenge-info">🎯 Loading challenges...</div>
-    <button class="refresh-btn" onclick="loadAll()">🔄 Refresh</button>
+    <button class="refresh-btn" onclick="allData={};loadAll()">🔄 Refresh</button>
     <a href="ag-config.html" style="font-size:13px;color:#E8622A;text-decoration:none;font-weight:500">⚙️ Configure →</a>
   </div>
 
@@ -301,7 +299,7 @@ function calcPoints(acts, athleteId, gender) {
     var dayActs = byDay[day];
     var dayKm = dayActs.reduce(function(s,a){ return s+(a.distance_meters||0)/1000; }, 0);
     totalDistKm += dayKm;
-    var distPts = Math.round(dayKm * CONFIG.basePer_km);
+    var distPts = Math.round(dayKm * CONFIG.basePer_km * 100) / 100;
     totalDistPts += distPts;
     totalBonus += calcBonus(dayKm);
   });
@@ -374,7 +372,7 @@ function renderBoard(rows, board) {
       +'<td><strong>'+p.full_name+'</strong></td>'
       +'<td style="font-size:12px;color:#888">'+( p.leaderboard_team||'—')+'</td>'
       +'<td><strong>'+pts.distKm.toFixed(2)+'</strong></td>'
-      +'<td><span class="pts">'+pts.distPts+'</span></td>'
+      +'<td><span class="pts">'+pts.distPts.toFixed ? pts.distPts.toFixed(2) : pts.distPts+'</span></td>'
       +'<td><span class="pts">'+pts.bonusPts+'</span></td>'
       +'<td>'+chalHtml+'</td>'
       +'<td><strong class="pts" style="font-size:15px">'+pts.totalPts+'</strong></td>'
