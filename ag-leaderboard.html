@@ -18,13 +18,6 @@
     .page-bar .back { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 13px; }
     .content { flex: 1; padding: 24px 28px; max-width: 1400px; width: 100%; margin: 0 auto; }
 
-    /* Board tabs */
-    .board-tabs { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
-    .board-tab { padding: 12px 24px; border-radius: 10px; border: 2px solid #e8e8e8; font-size: 14px; font-weight: 600; cursor: pointer; background: white; color: #555; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
-    .board-tab:hover { border-color: #E8622A; color: #E8622A; }
-    .board-tab.active { background: #E8622A; color: white; border-color: #E8622A; }
-    .board-tab .count { background: rgba(255,255,255,0.25); padding: 2px 8px; border-radius: 10px; font-size: 12px; }
-    .board-tab:not(.active) .count { background: #f0f0f0; color: #888; }
 
     /* Info bar */
     .info-bar { background: white; border-radius: 12px; padding: 14px 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
@@ -75,6 +68,25 @@
     .spinner { width: 28px; height: 28px; border: 3px solid #f0f0f0; border-top-color: #E8622A; border-radius: 50%; animation: spin 0.8s linear infinite; }
     .empty { text-align: center; padding: 60px; color: #bbb; font-size: 15px; }
 
+    /* Filter strip */
+    .filter-strip { background: white; border-radius: 14px; padding: 16px 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+    .filter-left { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; flex: 1; }
+    .filter-right { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; flex-shrink: 0; }
+    .filter-group { display: flex; flex-direction: column; gap: 5px; }
+    .filter-group label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+    .filter-group select, .filter-group input { padding: 8px 12px; border: 1px solid #e8e8e8; border-radius: 8px; font-size: 13px; background: #fafafa; min-width: 150px; }
+    .filter-group select:focus, .filter-group input:focus { outline: none; border-color: #E8622A; background: white; }
+    .filter-group #board-select { font-weight: 600; border-color: #E8622A; background: #fff5f0; color: #E8622A; }
+    .info-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip { background: #f5f5f5; padding: 4px 12px; border-radius: 20px; font-size: 12px; color: #666; }
+    .filter-actions { display: flex; gap: 8px; align-items: center; }
+    .btn-clear   { padding: 7px 14px; background: #f0f0f0; color: #555; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; }
+    .btn-clear:hover { background: #e0e0e0; }
+    .btn-refresh { padding: 7px 14px; background: #1A1A1A; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; }
+    .btn-refresh:hover { background: #333; }
+    .btn-config  { padding: 7px 14px; background: #E8622A; color: white; border-radius: 8px; font-size: 13px; font-weight: 500; text-decoration: none; }
+    .btn-config:hover { background: #d4561f; }
+    .result-info { font-size: 13px; color: #888; margin-bottom: 12px; }
     .site-footer { background: #1A1A1A; color: #666; text-align: center; padding: 16px 28px; font-size: 12px; margin-top: auto; }
     .site-footer a { color: #E8622A; text-decoration: none; margin: 0 8px; }
   </style>
@@ -97,46 +109,81 @@
 </div>
 <div class="content">
 
-  <!-- Board selector -->
-  <div class="board-tabs">
-    <button class="board-tab active" id="tab-dm" onclick="switchBoard('dayshift-male')">
-      👨 Dayshift — Male <span class="count" id="cnt-dm">—</span>
-    </button>
-    <button class="board-tab" id="tab-df" onclick="switchBoard('dayshift-female')">
-      👩 Dayshift — Female <span class="count" id="cnt-df">—</span>
-    </button>
-    <button class="board-tab" id="tab-ns" onclick="switchBoard('nightshift-all')">
-      🌙 Nightshift — All <span class="count" id="cnt-ns">—</span>
-    </button>
-  </div>
-  <div class="board-tabs" style="margin-top:-12px">
-    <button class="board-tab" id="tab-team-m" onclick="switchBoard('team-male')">
-      🏙️ Team — Male <span class="count" id="cnt-team-m">—</span>
-    </button>
-    <button class="board-tab" id="tab-team-f" onclick="switchBoard('team-female')">
-      🏙️ Team — Female <span class="count" id="cnt-team-f">—</span>
-    </button>
-  </div>
-
-  <!-- Info bar -->
-  <div class="info-bar">
-    <div class="info-item">📅 <strong>June 1 – 30, 2026</strong></div>
-    <div class="info-item">🏃 <strong>Walk, Run, Hike, Ride</strong></div>
-    <div class="info-item">✅ <strong>Valid activities only</strong></div>
-    <div class="info-item" id="challenge-info">🎯 Loading challenges...</div>
-    <button class="refresh-btn" onclick="allData={};loadAll()">🔄 Refresh</button>
-    <a href="ag-config.html" style="font-size:13px;color:#E8622A;text-decoration:none;font-weight:500">⚙️ Configure →</a>
-  </div>
-
-  <!-- Stats -->
+  <!-- Stats row at top -->
   <div class="stats-grid">
     <div class="stat-card"><div class="val" id="stat-total">—</div><div class="lbl">Participants</div></div>
-    <div class="stat-card gold-card"><div class="val" id="stat-gold">—</div><div class="lbl">🥇 Gold medals</div></div>
-    <div class="stat-card silver-card"><div class="val" id="stat-silver">—</div><div class="lbl">🥈 Silver medals</div></div>
-    <div class="stat-card bronze-card"><div class="val" id="stat-bronze">—</div><div class="lbl">🥉 Bronze medals</div></div>
+    <div class="stat-card gold-card"><div class="val" id="stat-gold">—</div><div class="lbl">🥇 Gold</div></div>
+    <div class="stat-card silver-card"><div class="val" id="stat-silver">—</div><div class="lbl">🥈 Silver</div></div>
+    <div class="stat-card bronze-card"><div class="val" id="stat-bronze">—</div><div class="lbl">🥉 Bronze</div></div>
     <div class="stat-card"><div class="val" id="stat-km">—</div><div class="lbl">Total km</div></div>
     <div class="stat-card"><div class="val" id="stat-pts">—</div><div class="lbl">Total points</div></div>
   </div>
+
+  <!-- Filter bar -->
+  <div class="filter-strip">
+    <div class="filter-left">
+      <div class="filter-group">
+        <label>Leaderboard</label>
+        <select id="board-select" onchange="switchBoard(this.value)">
+          <option value="dayshift-male">👨 Dayshift — Male</option>
+          <option value="dayshift-female">👩 Dayshift — Female</option>
+          <option value="nightshift-all">🌙 Nightshift — All</option>
+          <option value="team-male">🏙️ Team — Male</option>
+          <option value="team-female">🏙️ Team — Female</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Team</label>
+        <select id="team-filter" onchange="applyFilters()">
+          <option value="">All teams</option>
+          <option>Team Seattle</option>
+          <option>Team San Francisco</option>
+          <option>Team Los Angeles</option>
+          <option>Team Chicago</option>
+          <option>Team Austin</option>
+          <option>Team New York</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Activity type</label>
+        <select id="sport-filter" onchange="applyFilters()">
+          <option value="">All types</option>
+          <option value="Walk">Walk</option>
+          <option value="Run">Run</option>
+          <option value="Hike">Hike</option>
+          <option value="Ride">Ride</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Medal</label>
+        <select id="medal-filter" onchange="applyFilters()">
+          <option value="">All medals</option>
+          <option value="gold">🥇 Gold</option>
+          <option value="silver">🥈 Silver</option>
+          <option value="bronze">🥉 Bronze</option>
+          <option value="none">No medal</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Search</label>
+        <input type="text" id="name-search" placeholder="Participant name..." oninput="applyFilters()">
+      </div>
+    </div>
+    <div class="filter-right">
+      <div class="info-chips">
+        <span class="chip">📅 June 1–30</span>
+        <span class="chip" id="challenge-info">🎯 —</span>
+      </div>
+      <div class="filter-actions">
+        <button class="btn-clear" onclick="clearFilters()">Clear</button>
+        <button class="btn-refresh" onclick="allData={};loadAll()">🔄 Refresh</button>
+        <a href="ag-config.html" class="btn-config">⚙️ Config</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result info -->
+  <div class="result-info" id="result-info"></div>
 
   <!-- Leaderboard table -->
   <div class="card">
@@ -185,16 +232,66 @@ var allData = {}; // cache {board: rows}
 
 function switchBoard(board) {
   currentBoard = board;
-  var allBoards = {
-    'dayshift-male':'dm', 'dayshift-female':'df', 'nightshift-all':'ns',
-    'team-male':'team-m', 'team-female':'team-f'
-  };
-  Object.keys(allBoards).forEach(function(b) {
-    var el = document.getElementById('tab-'+allBoards[b]);
-    if (el) el.classList.toggle('active', b===board);
+  // Sync dropdown
+  var sel = document.getElementById('board-select');
+  if (sel && sel.value !== board) sel.value = board;
+  // Reset other filters when switching board
+  applyFilters();
+}
+
+function clearFilters() {
+  document.getElementById('team-filter').value  = '';
+  document.getElementById('sport-filter').value = '';
+  document.getElementById('medal-filter').value = '';
+  document.getElementById('name-search').value  = '';
+  applyFilters();
+}
+
+function applyFilters() {
+  var board  = document.getElementById('board-select').value;
+  var team   = document.getElementById('team-filter').value;
+  var sport  = document.getElementById('sport-filter').value;
+  var medal  = document.getElementById('medal-filter').value;
+  var search = document.getElementById('name-search').value.trim().toLowerCase();
+
+  currentBoard = board;
+
+  if (!allData[board]) { loadBoard(board); return; }
+
+  var rows = allData[board].slice();
+
+  // Filter by team
+  if (team) rows = rows.filter(function(r){ return r.p.leaderboard_team === team; });
+
+  // Filter by name search
+  if (search) rows = rows.filter(function(r){ return (r.p.full_name||'').toLowerCase().includes(search); });
+
+  // Filter by medal
+  if (medal) rows = rows.filter(function(r){
+    var m = getMedal(r.pts.totalPts, r.p.gender);
+    return m.level === medal;
   });
-  if (allData[board]) renderBoard(allData[board], board);
-  else loadBoard(board);
+
+  // Filter by sport — re-calc points using only matching sport activities
+  if (sport) {
+    // Recompute points for filtered sport only
+    rows = rows.map(function(r) {
+      var filteredActs = (allActivities || []).filter(function(a){
+        return a.strava_athlete_id == r.p.strava_athlete_id && a.sport_type === sport && !a.is_flagged;
+      });
+      if (filteredActs.length === 0) return null;
+      var pts = calcPoints(filteredActs, r.p.strava_athlete_id);
+      return { p: r.p, pts: pts };
+    }).filter(function(r){ return r && r.pts.totalPts > 0; });
+    rows.sort(function(a,b){ return b.pts.totalPts - a.pts.totalPts; });
+  }
+
+  var info = rows.length + ' participant' + (rows.length===1?'':'s');
+  if (team||sport||medal||search) info += ' (filtered)';
+  document.getElementById('result-info').textContent = info;
+
+  renderBoard(rows, board);
+  updateStats(rows, board);
 }
 
 async function loadConfig() {
@@ -384,10 +481,13 @@ function calcPoints(acts, athleteId, gender) {
   };
 }
 
+var allActivities = []; // global for sport filter
+
 async function loadAll() {
   allData = {};
   await Promise.all([loadConfig(), loadChallenges()]);
   var [reg, acts] = await Promise.all([loadRegistration(), loadActivities()]);
+  allActivities = acts; // store globally for sport filter
 
   var boardMap = {
     'dayshift-male':'dm', 'dayshift-female':'df', 'nightshift-all':'ns',
@@ -407,7 +507,7 @@ async function loadAll() {
     if (el) el.textContent = rows.length;
   });
 
-  renderBoard(allData[currentBoard], currentBoard);
+  applyFilters();
 }
 
 function renderBoard(rows, board) {
