@@ -70,6 +70,8 @@
     /* Loading */
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading-wrap { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 60px; color: #bbb; }
+    .top1 td { background: linear-gradient(90deg, rgba(255,215,0,0.08) 0%, rgba(255,255,255,0) 100%) !important; border-left: 3px solid #FFD700; }
+    .top2 td { background: linear-gradient(90deg, rgba(192,192,192,0.08) 0%, rgba(255,255,255,0) 100%) !important; border-left: 3px solid #C0C0C0; }
     .spinner { width: 28px; height: 28px; border: 3px solid #f0f0f0; border-top-color: #E8622A; border-radius: 50%; animation: spin 0.8s linear infinite; }
     .empty { text-align: center; padding: 60px; color: #bbb; font-size: 15px; }
 
@@ -105,6 +107,14 @@
     </button>
     <button class="board-tab" id="tab-ns" onclick="switchBoard('nightshift-all')">
       🌙 Nightshift — All <span class="count" id="cnt-ns">—</span>
+    </button>
+  </div>
+  <div class="board-tabs" style="margin-top:-12px">
+    <button class="board-tab" id="tab-team-m" onclick="switchBoard('team-male')">
+      🏙️ Team — Male <span class="count" id="cnt-team-m">—</span>
+    </button>
+    <button class="board-tab" id="tab-team-f" onclick="switchBoard('team-female')">
+      🏙️ Team — Female <span class="count" id="cnt-team-f">—</span>
     </button>
   </div>
 
@@ -175,9 +185,13 @@ var allData = {}; // cache {board: rows}
 
 function switchBoard(board) {
   currentBoard = board;
-  ['dayshift-male','dayshift-female','nightshift-all'].forEach(function(b) {
-    var key = b==='dayshift-male'?'dm':b==='dayshift-female'?'df':'ns';
-    document.getElementById('tab-'+key).classList.toggle('active', b===board);
+  var allBoards = {
+    'dayshift-male':'dm', 'dayshift-female':'df', 'nightshift-all':'ns',
+    'team-male':'team-m', 'team-female':'team-f'
+  };
+  Object.keys(allBoards).forEach(function(b) {
+    var el = document.getElementById('tab-'+allBoards[b]);
+    if (el) el.classList.toggle('active', b===board);
   });
   if (allData[board]) renderBoard(allData[board], board);
   else loadBoard(board);
@@ -278,6 +292,8 @@ function filterReg(reg, board) {
     if (board==='dayshift-female') return g==='female' && s.includes('day');
     if (board==='dayshift-male')   return (g==='male'||g==='m') && s.includes('day');
     if (board==='nightshift-all')  return s.includes('night');
+    if (board==='team-male')       return (g==='male'||g==='m');
+    if (board==='team-female')     return g==='female';
     return true;
   });
 }
@@ -348,18 +364,22 @@ async function loadAll() {
   await Promise.all([loadConfig(), loadChallenges()]);
   var [reg, acts] = await Promise.all([loadRegistration(), loadActivities()]);
 
-  ['dayshift-female','dayshift-male','nightshift-all'].forEach(function(board) {
+  var boardMap = {
+    'dayshift-male':'dm', 'dayshift-female':'df', 'nightshift-all':'ns',
+    'team-male':'team-m', 'team-female':'team-f'
+  };
+  Object.keys(boardMap).forEach(function(board) {
     var filtered = filterReg(reg, board);
     var rows = [];
     filtered.forEach(function(p) {
       var pts = calcPoints(acts, p.strava_athlete_id, p.gender);
-      if (pts.totalPts === 0 && pts.distKm === 0) return; // hide 0 activity
+      if (pts.totalPts === 0 && pts.distKm === 0) return;
       rows.push({ p: p, pts: pts });
     });
     rows.sort(function(a,b){ return b.pts.totalPts - a.pts.totalPts; });
     allData[board] = rows;
-    var key = board==='dayshift-female'?'df':board==='dayshift-male'?'dm':'ns';
-    document.getElementById('cnt-'+key).textContent = rows.length;
+    var el = document.getElementById('cnt-'+boardMap[board]);
+    if (el) el.textContent = rows.length;
   });
 
   renderBoard(allData[currentBoard], currentBoard);
@@ -372,7 +392,39 @@ function renderBoard(rows, board) {
     return;
   }
   updateStats(rows, board);
-  document.getElementById('lb-body').innerHTML = rows.map(function(row, i) {
+  // For team boards, group rows by team
+  var isTeamBoard = board === 'team-male' || board === 'team-female';
+  var renderedRows = [];
+  if (isTeamBoard) {
+    // Group by team, sort teams by total points sum
+    var teams = {};
+    rows.forEach(function(row) {
+      var t = row.p.leaderboard_team || 'No Team';
+      if (!teams[t]) teams[t] = [];
+      teams[t].push(row);
+    });
+    var teamNames = Object.keys(teams).sort(function(a,b) {
+      var sumA = teams[a].reduce(function(s,r){ return s+r.pts.totalPts; },0);
+      var sumB = teams[b].reduce(function(s,r){ return s+r.pts.totalPts; },0);
+      return sumB - sumA;
+    });
+    teamNames.forEach(function(teamName) {
+      // Team header row
+      renderedRows.push('<tr style="background:#f5f5f5"><td colspan="9" style="padding:10px 14px;font-weight:700;color:#1A1A1A;font-size:14px;border-top:2px solid #E8622A">🏙️ '+teamName+'</td></tr>');
+      teams[teamName].forEach(function(row, i) {
+        renderedRows.push(buildRow(row, i));
+      });
+    });
+  } else {
+    rows.forEach(function(row, i) {
+      renderedRows.push(buildRow(row, i));
+    });
+  }
+  document.getElementById('lb-body').innerHTML = renderedRows.join('');
+}
+
+function buildRow(row, i) {
+    var topCls = i===0 ? 'top1' : i===1 ? 'top2' : '';
     var p = row.p, pts = row.pts;
     var medal = getMedal(pts.totalPts, p.gender);
     var rankCls = i===0?'r1':i===1?'r2':i===2?'r3':'';
@@ -380,7 +432,7 @@ function renderBoard(rows, board) {
     var chalHtml = pts.challengePts > 0
       ? '<div>+'+pts.challengePts+'<br><span class="challenge-badge">'+pts.challenges.join(', ')+'</span></div>'
       : '<span style="color:#ddd">—</span>';
-    return '<tr>'
+    return '<tr class="'+topCls+'">' 
       +'<td><span class="rank '+rankCls+'">'+medal_icon+'</span></td>'
       +'<td><strong>'+p.full_name+'</strong></td>'
       +'<td style="font-size:12px;color:#888">'+( p.leaderboard_team||'—')+'</td>'
@@ -391,7 +443,6 @@ function renderBoard(rows, board) {
       +'<td><strong class="pts" style="font-size:15px">'+(parseFloat(pts.totalPts)||0).toFixed(2)+'</strong></td>'
       +'<td><span class="medal '+medal.cls+'">'+medal.label+'</span></td>'
       +'</tr>';
-  }).join('');
 }
 
 function updateStats(rows, board) {
