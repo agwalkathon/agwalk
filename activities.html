@@ -187,10 +187,9 @@
       <div class="table-wrap" id="table-wrap">
         <table id="main-table">
           <thead><tr>
-            <th>#</th><th>Athlete</th><th>Team</th><th>Activity</th><th>Type</th>
+            <th>#</th><th>Status</th><th>Athlete</th><th>Team</th><th>Activity</th><th>Type</th>
             <th>Date</th><th>Start time</th><th>Distance</th><th>Duration</th>
             <th>Pace / Speed</th><th>Elevation</th><th>Steps</th><th>Calories</th><th>Heart rate</th>
-            <th>Status</th>
           </tr></thead>
           <tbody id="activities-body"></tbody>
         </table>
@@ -291,24 +290,14 @@ async function confirmStatus() {
     payload = { activity_id: currentId, action: 'flag', flag_reason: reason };
   }
   try {
-    // Patch Supabase directly — more reliable than going through backend
-    var patchData = {};
-    if (payload.action === 'flag')            patchData = { is_flagged: true,  flag_reason: payload.flag_reason };
-    if (payload.action === 'unflag')          patchData = { is_flagged: false, flag_reason: null };
-    if (payload.action === 'update_distance') patchData = { distance_meters: payload.distance_meters, is_flagged: true, flag_reason: payload.flag_reason };
-
-    var resp = await fetch(SUPABASE_URL+'/rest/v1/activities?id=eq.'+currentId, {
-      method: 'PATCH',
-      headers: {
-        apikey: SUPABASE_ANON,
-        Authorization: 'Bearer '+SUPABASE_ANON,
-        'Content-Type': 'application/json',
-        Prefer: 'return=minimal'
-      },
-      body: JSON.stringify(patchData)
+    var resp = await fetch(BACKEND_URL+'/flag', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
     var result = { success: resp.ok };
-    if (!resp.ok) throw new Error('Supabase error '+resp.status+' — check RLS policies allow UPDATE on activities');
+    try { result = await resp.json(); } catch(e) {}
+    if (!resp.ok && !result.success) throw new Error('Flag error '+resp.status);
     // Update status cell in-place
     var statusCell = document.getElementById('status-cell-'+currentId);
     if (statusCell) {
@@ -416,6 +405,7 @@ async function loadActivities() {
         :'<span class="badge badge-valid" style="cursor:pointer" onclick="openModal('+a.id+',\''+( a.activity_name||'Activity').replace(/'/g,"\\'")+'\',\'\')">✅ Valid</span>';
       return '<tr>'
         +'<td>'+(i+1)+'</td>'
+        +'<td id="status-cell-'+a.id+'" data-reason="'+(a.flag_reason||'')+'">'+statusBadge+'</td>'
         +'<td><a href="https://www.strava.com/athletes/'+a.strava_athlete_id+'" target="_blank" class="ath">'+(r?.full_name||'Unknown')+'</a></td>'
         +'<td style="font-size:12px;color:#888">'+(r?.leaderboard_team||'—')+'</td>'
         +'<td><a href="'+actUrl+'" target="_blank" class="act-link">'+(a.activity_name||'—')+'</a></td>'
@@ -429,7 +419,6 @@ async function loadActivities() {
         +'<td>'+(a.steps?a.steps.toLocaleString():'—')+'</td>'
         +'<td>'+(a.calories?a.calories.toFixed(0):'—')+'</td>'
         +'<td>'+(a.avg_heart_rate?a.avg_heart_rate.toFixed(0)+' bpm':'—')+'</td>'
-        +'<td id="status-cell-'+a.id+'" data-reason="'+(a.flag_reason||'')+'">'+statusBadge+'</td>'
         +'</tr>';
     }).join('');
 
