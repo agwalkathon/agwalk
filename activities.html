@@ -16,14 +16,14 @@
     .page-bar { background: #1A1A1A; color: white; padding: 18px 28px; display: flex; justify-content: space-between; align-items: center; }
     .page-bar h1 { font-size: 20px; font-weight: 600; }
     .page-bar .back { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 13px; }
-    .content { flex: 1; padding: 24px 28px; max-width: 1400px; width: 100%; margin: 0 auto; }
+    .content { flex: 1; padding: 24px 28px; max-width: 1600px; width: 100%; margin: 0 auto; }
     .filter-bar { background: white; border-radius: 14px; padding: 20px 22px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 22px; }
-    .filter-bar h3 { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+    .filter-bar h3 { font-size: 14px; font-weight: 600; margin-bottom: 14px; color: #1A1A1A; }
     .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 14px; }
-    .filter-group label { display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .filter-group label { display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600; }
     .filter-group input, .filter-group select { width: 100%; padding: 8px 11px; border: 1px solid #e8e8e8; border-radius: 8px; font-size: 13px; background: #fafafa; }
     .filter-group input:focus, .filter-group select:focus { outline: none; border-color: #E8622A; background: white; }
-    .filter-actions { display: flex; gap: 8px; align-items: center; }
+    .filter-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .btn { padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; }
     .btn-primary { background: #E8622A; color: white; }
     .btn-ghost   { background: #f0f0f0; color: #555; }
@@ -33,10 +33,14 @@
     .stat-card .lbl { font-size: 12px; color: #888; margin-top: 4px; }
     .stat-card.green .val { color: #2e7d32; } .stat-card.green { border-left-color: #2e7d32; }
     .stat-card.dark  .val { color: #1A1A1A; } .stat-card.dark  { border-left-color: #1A1A1A; }
+    .stat-card.red   .val { color: #c62828; } .stat-card.red   { border-left-color: #c62828; }
     .card { background: white; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; }
-    .result-count { padding: 10px 16px; font-size: 13px; color: #888; border-bottom: 1px solid #f0f0f0; }
+    .result-count { padding: 10px 16px; font-size: 13px; color: #888; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+    /* Double scrollbar — top and bottom */
+    .scroll-top { overflow-x: auto; overflow-y: hidden; height: 12px; }
+    .scroll-top-inner { height: 1px; }
     .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; min-width: 900px; }
+    table { width: 100%; border-collapse: collapse; min-width: 1200px; }
     th { background: #fafafa; padding: 10px 14px; text-align: left; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #f0f0f0; white-space: nowrap; }
     td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid #f8f8f8; vertical-align: middle; white-space: nowrap; }
     tr:last-child td { border-bottom: none; }
@@ -46,15 +50,38 @@
     .badge-run  { background: #e3f2fd; color: #1565c0; }
     .badge-ride { background: #fff3e0; color: #e65100; }
     .badge-hike { background: #f3e5f5; color: #6a1b9a; }
+    .badge-valid   { background: #e8f5e9; color: #2e7d32; }
+    .badge-invalid { background: #ffebee; color: #c62828; }
     .ath { color: #E8622A; text-decoration: none; font-weight: 500; }
     .ath:hover { text-decoration: underline; }
+    .act-link { color: #1A1A1A; text-decoration: none; font-weight: 500; }
+    .act-link:hover { color: #E8622A; text-decoration: underline; }
     .empty { text-align: center; padding: 56px 24px; color: #bbb; }
     .empty .icon { font-size: 40px; margin-bottom: 12px; }
     .loading-row td { text-align: center; padding: 48px; color: #bbb; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .spinner { width: 28px; height: 28px; border: 3px solid #f0f0f0; border-top-color: #E8622A; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    /* Inline flag select */
+    .flag-select { font-size: 12px; padding: 4px 6px; border: 1px solid #e8e8e8; border-radius: 6px; background: white; cursor: pointer; max-width: 180px; }
+    .flag-select:focus { outline: none; border-color: #E8622A; }
     .site-footer { background: #1A1A1A; color: #666; text-align: center; padding: 16px 28px; font-size: 12px; margin-top: auto; }
     .site-footer a { color: #E8622A; text-decoration: none; margin: 0 8px; }
+
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: white; border-radius: 16px; padding: 32px; width: 100%; max-width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); margin: 20px; }
+    .modal h3 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+    .modal .sub { font-size: 13px; color: #888; margin-bottom: 20px; }
+    .modal label { display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600; }
+    .modal select, .modal input[type=number] { width: 100%; padding: 10px 12px; border: 1px solid #e8e8e8; border-radius: 8px; font-size: 14px; margin-bottom: 14px; background: #fafafa; }
+    .modal select:focus { outline: none; border-color: #E8622A; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .modal-actions button { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+    .btn-confirm { background: #E8622A; color: white; }
+    .btn-cancel  { background: #f0f0f0; color: #555; }
+    .dist-field { display: none; }
+    .dist-field.show { display: block; }
   </style>
 </head>
 <body>
@@ -87,7 +114,7 @@
           <option value="VirtualRun">Virtual Run</option>
         </select>
       </div>
-      <div class="filter-group"><label>Athlete name</label><input type="text" id="athlete-name" placeholder="e.g. Rahul"></div>
+      <div class="filter-group"><label>Athlete name</label><input type="text" id="athlete-name" placeholder="Search name..."></div>
       <div class="filter-group"><label>Team</label>
         <select id="team-filter">
           <option value="">All teams</option>
@@ -96,11 +123,37 @@
           <option>Team Austin</option><option>Team New York</option>
         </select>
       </div>
+      <div class="filter-group"><label>Status</label>
+        <select id="status-filter">
+          <option value="">All statuses</option>
+          <option value="valid">✅ Valid</option>
+          <option value="invalid">🚩 Invalid / Flagged</option>
+        </select>
+      </div>
+      <div class="filter-group"><label>Flag reason</label>
+        <select id="flag-reason-filter">
+          <option value="">All reasons</option>
+          <option value="Not Our Participant">Not Our Participant</option>
+          <option value="Less than 1 km">Less than 1 km</option>
+          <option value="Treadmill">Treadmill</option>
+          <option value="Workout">Workout</option>
+          <option value="Elapsed Time Issue">Elapsed Time Issue</option>
+          <option value="Pace Issue (Bike/Cycle)">Pace Issue (Bike/Cycle)</option>
+          <option value="Shared (no proof)">Shared (no proof)</option>
+          <option value="Indoor Run/Walk">Indoor Run/Walk</option>
+          <option value="More than 2 Activities">More than 2 Activities</option>
+          <option value="Suspicious Activity">Suspicious Activity</option>
+          <option value="Ride / Cycling">Ride / Cycling</option>
+          <option value="Distance Cropped - GPS Glitch">Distance Cropped - GPS Glitch</option>
+          <option value="Distance Issue">Distance Issue</option>
+          <option value="GPS Glitch">GPS Glitch</option>
+        </select>
+      </div>
     </div>
     <div class="filter-actions">
       <button class="btn btn-primary" onclick="loadActivities()">Search</button>
       <button class="btn btn-ghost"   onclick="clearFilters()">Clear</button>
-      <span id="searching-indicator" style="display:none;display:flex;align-items:center;gap:8px;font-size:13px;color:#888">
+      <span id="searching-indicator" style="display:none;align-items:center;gap:8px;font-size:13px;color:#888">
         <div class="spinner" style="width:18px;height:18px;border-width:2px"></div>
         Searching...
       </span>
@@ -111,9 +164,12 @@
     <div class="stat-card"><div class="val" id="total-activities">—</div><div class="lbl">Activities found</div></div>
     <div class="stat-card"><div class="val" id="total-distance">—</div><div class="lbl">Total km</div></div>
     <div class="stat-card dark"><div class="val" id="total-participants">—</div><div class="lbl">Participants</div></div>
-    <div class="stat-card green"><div class="val" id="total-steps">—</div><div class="lbl">Total steps</div></div>
-    <div class="stat-card"><div class="val" id="avg-distance">—</div><div class="lbl">Avg km / activity</div></div>
+    <div class="stat-card green"><div class="val" id="total-valid">—</div><div class="lbl">Valid</div></div>
+    <div class="stat-card red"><div class="val" id="total-flagged">—</div><div class="lbl">Flagged</div></div>
   </div>
+
+  <!-- Flag reason counts -->
+  <div id="flag-counts" style="display:none;margin-bottom:18px;display:flex;gap:8px;flex-wrap:wrap"></div>
 
   <div class="card">
     <div id="placeholder" class="empty">
@@ -121,13 +177,20 @@
       <p>Use the filters above and click <strong>Search</strong> to view activities</p>
     </div>
     <div id="results" style="display:none">
-      <div class="result-count" id="result-count"></div>
-      <div class="table-wrap">
-        <table>
+      <div class="result-count">
+        <span id="result-count"></span>
+      </div>
+      <!-- Top scrollbar -->
+      <div class="scroll-top" id="scroll-top">
+        <div class="scroll-top-inner" id="scroll-top-inner"></div>
+      </div>
+      <div class="table-wrap" id="table-wrap">
+        <table id="main-table">
           <thead><tr>
             <th>#</th><th>Athlete</th><th>Team</th><th>Activity</th><th>Type</th>
             <th>Date</th><th>Start time</th><th>Distance</th><th>Duration</th>
-            <th>Pace / Speed</th><th>Elevation</th><th>Steps</th><th>Calories</th><th>Heart rate</th><th>Status</th>
+            <th>Pace / Speed</th><th>Elevation</th><th>Steps</th><th>Calories</th><th>Heart rate</th>
+            <th>Status</th>
           </tr></thead>
           <tbody id="activities-body"></tbody>
         </table>
@@ -135,56 +198,135 @@
     </div>
   </div>
 </div>
+
+<!-- Flag Modal -->
+<div class="modal-overlay" id="flag-modal">
+  <div class="modal">
+    <h3 id="modal-title">Update Status</h3>
+    <p class="sub" id="modal-sub"></p>
+    <label>Flag reason</label>
+    <select id="modal-flag-reason" onchange="checkModalDist()">
+      <option value="">— Mark as Valid (clear flag) —</option>
+      <option>Not Our Participant</option>
+      <option>Less than 1 km</option>
+      <option>Treadmill</option>
+      <option>Workout</option>
+      <option>Elapsed Time Issue</option>
+      <option>Pace Issue (Bike/Cycle)</option>
+      <option>Shared (no proof)</option>
+      <option>Indoor Run/Walk</option>
+      <option>More than 2 Activities</option>
+      <option>Suspicious Activity</option>
+      <option>Ride / Cycling</option>
+      <option>Distance Cropped - GPS Glitch</option>
+      <option>Distance Issue</option>
+      <option>GPS Glitch</option>
+    </select>
+    <div class="dist-field" id="modal-dist-field">
+      <label>Corrected distance (meters)</label>
+      <input type="number" id="modal-corrected-dist" placeholder="e.g. 3500">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-confirm" onclick="confirmStatus()">Save</button>
+    </div>
+  </div>
+</div>
+
 <div class="site-footer">
   © 2026 Arcgate Walkathon &nbsp;·&nbsp;
   <a href="privacy.html">Privacy Policy</a>
   <a href="terms.html">Terms of Service</a>
 </div>
 <script>
-const SUPABASE_URL  = 'https://jhdgkncpkrttvemvwukc.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoZGdrbmNwa3J0dHZlbXZ3dWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NzgyNjMsImV4cCI6MjA5NzI1NDI2M30.d7mvXOYDq5G4aqs1Mbc6HFNgTBlQk4B6ah0eahE_yZE';
-const HDR = { apikey: SUPABASE_ANON, Authorization: 'Bearer '+SUPABASE_ANON };
+var SUPABASE_URL  = 'https://jhdgkncpkrttvemvwukc.supabase.co';
+var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoZGdrbmNwa3J0dHZlbXZ3dWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NzgyNjMsImV4cCI6MjA5NzI1NDI2M30.d7mvXOYDq5G4aqs1Mbc6HFNgTBlQk4B6ah0eahE_yZE';
+var BACKEND_URL   = 'https://walkathon-backend-hv9j.onrender.com';
+var HDR = { apikey: SUPABASE_ANON, Authorization: 'Bearer '+SUPABASE_ANON };
 function authGuard() { var s=JSON.parse(sessionStorage.getItem('wk_admin')||'{}'); if(!s.loggedIn||s.expires<Date.now()) window.location.href='admin-login.html'; }
 function logout() { sessionStorage.removeItem('wk_admin'); window.location.href='admin-login.html'; }
 function fmtDate(d) { return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
 function fmtTime(d) { return new Date(d).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}); }
-function fmtDur(s)  { var h=Math.floor(s/3600),m=Math.floor((s%3600)/60); return h>0?h+'h '+m+'m':m+'m'; }
-function fmtPS(ms,t){ if(!ms) return '—'; if(t==='Ride'||t==='VirtualRide') return (ms*3.6).toFixed(1)+' km/h'; var p=1000/ms,min=Math.floor(p/60),sec=Math.round(p%60); return min+':'+sec.toString().padStart(2,'0')+' /km'; }
-function bc(t) { if(t==='Walk') return 'badge-walk'; if(t==='Run'||t==='VirtualRun') return 'badge-run'; if(t==='Ride'||t==='VirtualRide') return 'badge-ride'; return 'badge-hike'; }
+function fmtDur(s) { var h=Math.floor(s/3600),m=Math.floor((s%3600)/60); return h>0?h+'h '+m+'m':m+'m'; }
+function fmtPS(ms,t){ if(!ms) return '—'; if(t==='Ride'||t==='VirtualRide'||t==='MountainBikeRide') return (ms*3.6).toFixed(1)+' km/h'; var p=1000/ms,min=Math.floor(p/60),sec=Math.round(p%60); return min+':'+sec.toString().padStart(2,'0')+' /km'; }
+function bc(t) { if(t==='Walk') return 'badge-walk'; if(t==='Run'||t==='VirtualRun') return 'badge-run'; if(t==='Ride'||t==='VirtualRide'||t==='MountainBikeRide') return 'badge-ride'; return 'badge-hike'; }
 authGuard();
 
-function showSpinner(show) {
-  var ind = document.getElementById('searching-indicator');
-  ind.style.display = show ? 'flex' : 'none';
+// Sync top scrollbar with bottom
+function initScrollSync() {
+  var tw = document.getElementById('table-wrap');
+  var st = document.getElementById('scroll-top');
+  var si = document.getElementById('scroll-top-inner');
+  if (!tw || !st) return;
+  si.style.width = tw.scrollWidth + 'px';
+  st.addEventListener('scroll', function() { tw.scrollLeft = st.scrollLeft; });
+  tw.addEventListener('scroll', function() { st.scrollLeft = tw.scrollLeft; });
 }
+
+var currentId = null;
+function openModal(id, actName, currentReason) {
+  currentId = id;
+  document.getElementById('modal-sub').textContent = actName;
+  document.getElementById('modal-flag-reason').value = currentReason || '';
+  checkModalDist();
+  document.getElementById('flag-modal').classList.add('show');
+}
+function closeModal() { document.getElementById('flag-modal').classList.remove('show'); currentId = null; }
+function checkModalDist() {
+  var v = document.getElementById('modal-flag-reason').value;
+  document.getElementById('modal-dist-field').classList.toggle('show', v === 'Distance Cropped - GPS Glitch');
+}
+async function confirmStatus() {
+  var reason = document.getElementById('modal-flag-reason').value;
+  var dist   = document.getElementById('modal-corrected-dist').value;
+  var payload;
+  if (!reason) {
+    payload = { activity_id: currentId, action: 'unflag', flag_reason: '' };
+  } else if (reason === 'Distance Cropped - GPS Glitch' && dist) {
+    payload = { activity_id: currentId, action: 'update_distance', flag_reason: reason, distance_meters: parseFloat(dist) };
+  } else {
+    payload = { activity_id: currentId, action: 'flag', flag_reason: reason };
+  }
+  await fetch(BACKEND_URL+'/flag', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+  closeModal();
+  loadActivities();
+}
+document.getElementById('flag-modal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
 
 function clearFilters() {
   ['date-from','date-to','athlete-name'].forEach(function(id){ document.getElementById(id).value=''; });
-  ['sport-filter','team-filter'].forEach(function(id){ document.getElementById(id).value=''; });
+  ['sport-filter','team-filter','status-filter','flag-reason-filter'].forEach(function(id){ document.getElementById(id).value=''; });
   document.getElementById('results').style.display='none';
   document.getElementById('placeholder').style.display='block';
   document.getElementById('stats-row').style.display='none';
+  document.getElementById('flag-counts').style.display='none';
 }
 
 async function loadActivities() {
   document.getElementById('placeholder').style.display='none';
   document.getElementById('results').style.display='block';
   document.getElementById('stats-row').style.display='none';
-  showSpinner(true);
+  document.getElementById('searching-indicator').style.display='flex';
   document.getElementById('activities-body').innerHTML=
-    '<tr><td colspan="14"><div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:48px">'
+    '<tr><td colspan="15"><div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:48px">'
     +'<div style="width:28px;height:28px;border:3px solid #f0f0f0;border-top-color:#E8622A;border-radius:50%;animation:spin 0.8s linear infinite"></div>'
-    +'<span style="color:#888;font-size:14px">Searching activities...</span>'
-    +'</div></td></tr>';
+    +'<span style="color:#888;font-size:14px">Searching activities...</span></div></td></tr>';
 
-  var df=document.getElementById('date-from').value, dt=document.getElementById('date-to').value;
-  var sp=document.getElementById('sport-filter').value, nm=document.getElementById('athlete-name').value.trim().toLowerCase();
+  var df=document.getElementById('date-from').value;
+  var dt=document.getElementById('date-to').value;
+  var sp=document.getElementById('sport-filter').value;
+  var nm=document.getElementById('athlete-name').value.trim().toLowerCase();
   var tm=document.getElementById('team-filter').value;
+  var st=document.getElementById('status-filter').value;
+  var fr=document.getElementById('flag-reason-filter').value;
 
-  var url=SUPABASE_URL+'/rest/v1/activities?is_flagged=eq.false&is_deleted=eq.false&order=activity_date.desc';
+  var url=SUPABASE_URL+'/rest/v1/activities?is_deleted=eq.false&order=activity_date.desc';
   if(df) url+='&activity_date=gte.'+df;
   if(dt) url+='&activity_date=lte.'+dt+'T23:59:59';
   if(sp) url+='&sport_type=eq.'+sp;
+  if(st==='valid')   url+='&is_flagged=eq.false';
+  if(st==='invalid') url+='&is_flagged=eq.true';
+  if(fr) url+='&flag_reason=like.*'+encodeURIComponent(fr)+'*';
 
   try {
     var results = await Promise.all([
@@ -197,45 +339,75 @@ async function loadActivities() {
     if(tm) acts=acts.filter(function(a){ return rm[a.strava_athlete_id]?.leaderboard_team===tm; });
 
     var km=acts.reduce(function(s,a){ return s+(a.distance_meters||0); },0)/1000;
-    var steps=acts.reduce(function(s,a){ return s+(a.steps||0); },0);
+    var validCnt=acts.filter(function(a){ return !a.is_flagged; }).length;
+    var flagCnt=acts.filter(function(a){ return a.is_flagged; }).length;
     var uniq=new Set(acts.map(function(a){ return a.strava_athlete_id; })).size;
 
     document.getElementById('total-activities').textContent=acts.length;
-    document.getElementById('total-distance').textContent=km.toFixed(1);
+    document.getElementById('total-distance').textContent=km.toFixed(1)+' km';
     document.getElementById('total-participants').textContent=uniq;
-    document.getElementById('total-steps').textContent=steps.toLocaleString();
-    document.getElementById('avg-distance').textContent=acts.length?(km/acts.length).toFixed(1):'0';
+    document.getElementById('total-valid').textContent=validCnt;
+    document.getElementById('total-flagged').textContent=flagCnt;
     document.getElementById('stats-row').style.display='flex';
+
+    // Flag reason counts
+    var reasonCounts = {};
+    acts.filter(function(a){ return a.is_flagged && a.flag_reason; }).forEach(function(a){
+      var reasons = a.flag_reason.split(', ');
+      reasons.forEach(function(r){ reasonCounts[r]=(reasonCounts[r]||0)+1; });
+    });
+    var fcEl = document.getElementById('flag-counts');
+    if(Object.keys(reasonCounts).length>0) {
+      fcEl.style.display='flex';
+      fcEl.innerHTML='<span style="font-size:12px;color:#888;align-self:center;margin-right:4px">Flag breakdown:</span>'
+        +Object.entries(reasonCounts).sort(function(a,b){return b[1]-a[1];}).map(function(e){
+          return '<span style="background:#ffebee;color:#c62828;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer" onclick="filterByReason(\''+e[0]+'\')">'+e[0]+' ('+e[1]+')</span>';
+        }).join('');
+    } else { fcEl.style.display='none'; }
+
     document.getElementById('result-count').textContent=acts.length+' activit'+(acts.length===1?'y':'ies')+' found';
 
     if(!acts.length){
-      document.getElementById('activities-body').innerHTML='<tr><td colspan="14" style="text-align:center;padding:48px;color:#bbb">No activities match your filters</td></tr>';
-    } else {
-      document.getElementById('activities-body').innerHTML=acts.map(function(a,i){
-        var r=rm[a.strava_athlete_id];
-        return '<tr>'
-          +'<td>'+(i+1)+'</td>'
-          +'<td><a href="https://www.strava.com/athletes/'+a.strava_athlete_id+'" target="_blank" class="ath">'+(r?.full_name||'Unknown')+'</a></td>'
-          +'<td style="font-size:12px;color:#888">'+(r?.leaderboard_team||'—')+'</td>'
-          +'<td>'+(a.activity_name||'—')+'</td>'
-          +'<td><span class="badge '+bc(a.sport_type)+'">'+(a.sport_type||'—')+'</span></td>'
-          +'<td>'+fmtDate(a.activity_date)+'</td>'
-          +'<td>'+fmtTime(a.activity_date)+'</td>'
-          +'<td>'+(a.distance_meters?(a.distance_meters/1000).toFixed(2)+' km':'—')+'</td>'
-          +'<td>'+(a.moving_time_seconds?fmtDur(a.moving_time_seconds):'—')+'</td>'
-          +'<td>'+fmtPS(a.avg_speed,a.sport_type)+'</td>'
-          +'<td>'+(a.elevation_gain?a.elevation_gain.toFixed(0)+' m':'—')+'</td>'
-          +'<td>'+(a.steps?a.steps.toLocaleString():'—')+'</td>'
-          +'<td>'+(a.calories?a.calories.toFixed(0):'—')+'</td>'
-          +'<td>'+(a.avg_heart_rate?a.avg_heart_rate.toFixed(0)+' bpm':'—')+'</td>'
-          +'<td>'+(a.is_flagged?'<span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:500;background:#ffebee;color:#c62828">🚩 '+( a.flag_reason||'Flagged')+' </span>':'<span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:500;background:#e8f5e9;color:#2e7d32">✅ Valid</span>')+'</td>'
-          +'</tr>';
-      }).join('');
+      document.getElementById('activities-body').innerHTML='<tr><td colspan="15" style="text-align:center;padding:48px;color:#bbb">No activities match your filters</td></tr>';
+      document.getElementById('searching-indicator').style.display='none';
+      return;
     }
+
+    document.getElementById('activities-body').innerHTML=acts.map(function(a,i){
+      var r=rm[a.strava_athlete_id];
+      var actUrl='https://www.strava.com/activities/'+a.strava_activity_id;
+      var statusBadge=a.is_flagged
+        ?'<span class="badge badge-invalid" style="cursor:pointer" onclick="openModal('+a.id+',\''+( a.activity_name||'Activity').replace(/'/g,"\\'")+'\',\''+( a.flag_reason||'').replace(/'/g,"\\'")+'\')">🚩 '+(a.flag_reason||'Flagged')+'</span>'
+        :'<span class="badge badge-valid" style="cursor:pointer" onclick="openModal('+a.id+',\''+( a.activity_name||'Activity').replace(/'/g,"\\'")+'\',\'\')">✅ Valid</span>';
+      return '<tr>'
+        +'<td>'+(i+1)+'</td>'
+        +'<td><a href="https://www.strava.com/athletes/'+a.strava_athlete_id+'" target="_blank" class="ath">'+(r?.full_name||'Unknown')+'</a></td>'
+        +'<td style="font-size:12px;color:#888">'+(r?.leaderboard_team||'—')+'</td>'
+        +'<td><a href="'+actUrl+'" target="_blank" class="act-link">'+(a.activity_name||'—')+'</a></td>'
+        +'<td><span class="badge '+bc(a.sport_type)+'">'+(a.sport_type||'—')+'</span></td>'
+        +'<td>'+fmtDate(a.activity_date)+'</td>'
+        +'<td>'+fmtTime(a.activity_date)+'</td>'
+        +'<td>'+(a.distance_meters?(a.distance_meters/1000).toFixed(2)+' km':'—')+'</td>'
+        +'<td>'+(a.moving_time_seconds?fmtDur(a.moving_time_seconds):'—')+'</td>'
+        +'<td>'+fmtPS(a.avg_speed,a.sport_type)+'</td>'
+        +'<td>'+(a.elevation_gain?a.elevation_gain.toFixed(0)+' m':'—')+'</td>'
+        +'<td>'+(a.steps?a.steps.toLocaleString():'—')+'</td>'
+        +'<td>'+(a.calories?a.calories.toFixed(0):'—')+'</td>'
+        +'<td>'+(a.avg_heart_rate?a.avg_heart_rate.toFixed(0)+' bpm':'—')+'</td>'
+        +'<td>'+statusBadge+'</td>'
+        +'</tr>';
+    }).join('');
+
+    setTimeout(initScrollSync, 100);
   } catch(e) {
-    document.getElementById('activities-body').innerHTML='<tr><td colspan="14" style="text-align:center;padding:48px;color:#c62828">Error loading data. Please try again.</td></tr>';
+    document.getElementById('activities-body').innerHTML='<tr><td colspan="15" style="text-align:center;padding:48px;color:#c62828">Error loading data. Please try again.</td></tr>';
   }
-  showSpinner(false);
+  document.getElementById('searching-indicator').style.display='none';
+}
+
+function filterByReason(reason) {
+  document.getElementById('flag-reason-filter').value = reason;
+  loadActivities();
 }
 
 document.getElementById('athlete-name').addEventListener('keydown',function(e){ if(e.key==='Enter') loadActivities(); });
