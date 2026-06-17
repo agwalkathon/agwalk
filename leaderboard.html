@@ -120,6 +120,27 @@
 const SUPABASE_URL  = 'https://jhdgkncpkrttvemvwukc.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoZGdrbmNwa3J0dHZlbXZ3dWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NzgyNjMsImV4cCI6MjA5NzI1NDI2M30.d7mvXOYDq5G4aqs1Mbc6HFNgTBlQk4B6ah0eahE_yZE';
 const HDR = { apikey: SUPABASE_ANON, Authorization: 'Bearer '+SUPABASE_ANON };
+
+// ── fetchAllRows: fetch ALL rows from Supabase with automatic pagination ──
+async function fetchAllRows(baseUrl, hdrs) {
+  var all = [];
+  var pageSize = 1000;
+  var from = 0;
+  while (true) {
+    var to = from + pageSize - 1;
+    var r = await fetch(baseUrl + (baseUrl.includes('?') ? '&' : '?') + 'limit=' + pageSize + '&offset=' + from, {
+      headers: Object.assign({}, hdrs, { 'Range-Unit': 'items', 'Range': from + '-' + to })
+    });
+    if (!r.ok) { console.error('fetchAllRows error', r.status, baseUrl); break; }
+    var page = await r.json();
+    if (!Array.isArray(page) || page.length === 0) break;
+    all = all.concat(page);
+    if (page.length < pageSize) break;
+    from += pageSize;
+  }
+  return all;
+}
+
 function authGuard() { const s=JSON.parse(sessionStorage.getItem('wk_admin')||'{}'); if(!s.loggedIn||s.expires<Date.now()) window.location.href='admin-login.html'; }
 function logout() { sessionStorage.removeItem('wk_admin'); window.location.href='admin-login.html'; }
 function bc(t) { if(t==='Walk') return 'badge-walk'; if(t==='Run'||t==='VirtualRun') return 'badge-run'; if(t==='Ride'||t==='VirtualRide') return 'badge-ride'; return 'badge-hike'; }
@@ -148,8 +169,8 @@ async function loadLeaderboard(){
   if(df) url+='&activity_date=gte.'+df;
   if(dt) url+='&activity_date=lte.'+dt+'T23:59:59';
   if(sp) url+='&sport_type=eq.'+sp;
-  const [aR,rR]=await Promise.all([fetch(url,{headers:HDR}),fetch(SUPABASE_URL+'/rest/v1/registration?select=strava_athlete_id,full_name,leaderboard_team',{headers:HDR})]);
-  let acts=await aR.json(); const regs=await rR.json();
+  const [acts,regsRaw]=await Promise.all([fetchAllRows(url,HDR),fetch(SUPABASE_URL+'/rest/v1/registration?select=strava_athlete_id,full_name,leaderboard_team',{headers:HDR}).then(r=>r.json())]);
+  const regs=regsRaw;
   const rm={}; regs.forEach(r=>rm[r.strava_athlete_id]=r);
   if(tm) acts=acts.filter(a=>rm[a.strava_athlete_id]?.leaderboard_team===tm);
   const am={};
