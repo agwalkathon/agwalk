@@ -117,7 +117,7 @@ function bc(t) { if(t==='Walk') return 'badge-walk'; if(t==='Run'||t==='VirtualR
 authGuard();
 async function load() {
   const today = new Date().toISOString().split('T')[0];
-  // Fetch activities count using HEAD request (no data, just count)
+  // Fetch stats efficiently
   const [countR, regR, connR, recentR] = await Promise.all([
     fetch(SUPABASE_URL+'/rest/v1/activities?select=id', {
       headers: {...HDR, 'Prefer':'count=exact', 'Range-Unit':'items', 'Range':'0-0'}
@@ -131,13 +131,29 @@ async function load() {
   // Get total count from Content-Range header
   const contentRange = countR.headers.get('content-range') || '';
   const totalCount = parseInt(contentRange.split('/')[1]) || acts.length;
+
+  // Fetch ALL distance_meters using pagination for accurate total km
+  let allDist = 0;
+  let distFrom = 0;
+  while (true) {
+    const distR = await fetch(
+      SUPABASE_URL+'/rest/v1/activities?select=distance_meters&is_deleted=eq.false',
+      { headers: {...HDR, 'Range-Unit':'items', 'Range': distFrom+'-'+(distFrom+999)} }
+    );
+    const distPage = await distR.json();
+    if (!Array.isArray(distPage) || distPage.length === 0) break;
+    distPage.forEach(a => { allDist += Number(a.distance_meters) || 0; });
+    if (distPage.length < 1000) break;
+    distFrom += 1000;
+  }
+  const totalKm = allDist / 1000;
   const nm={}; regs.forEach(r=>nm[r.strava_athlete_id]=r.full_name);
-  const km=acts.reduce((s,a)=>s+(Number(a.distance_meters)||0),0)/1000;
+  // km now calculated via pagination above
   const fl=acts.filter(a=>a.is_flagged&&!a.is_deleted).length;
   const td=acts.filter(a=>a.activity_date?.startsWith(today)).length;
   document.getElementById('s-participants').textContent=regs.length;
   document.getElementById('s-activities').textContent=totalCount;
-  document.getElementById('s-km').textContent=km.toFixed(1)+' km';
+  document.getElementById('s-km').textContent=totalKm.toFixed(1)+' km';
   document.getElementById('s-flagged').textContent=fl;
   document.getElementById('s-today').textContent=td;
   document.getElementById('s-connected').textContent=conn.length;
