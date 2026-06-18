@@ -597,55 +597,88 @@ function renderBoard(rows, board) {
   document.getElementById('lb-body').innerHTML = renderedRows.join('');
 }
 
-function toggleExpand(rowId, athleteId, gender) {
-  var expRow = document.getElementById('exp-'+rowId);
-  if (!expRow) return;
-  if (expRow.style.display === 'table-row') {
-    expRow.style.display = 'none';
+function toggleExpand(athleteId, gender, trEl) {
+  // Show loader on the row
+  var expId = 'exp-' + athleteId;
+  var existing = document.getElementById(expId);
+
+  if (existing) {
+    // Toggle visibility
+    if (existing.style.display === 'table-row') {
+      existing.style.display = 'none';
+    } else {
+      existing.style.display = 'table-row';
+    }
     return;
   }
-  expRow.style.display = 'table-row';
-  if (expRow.getAttribute('data-loaded')) return;
-  expRow.setAttribute('data-loaded','1');
 
-  // Build daily breakdown from allActivities
+  // Create expand row with loader
+  var expRow = document.createElement('tr');
+  expRow.id = expId;
+  expRow.className = 'expand-row';
+  expRow.style.display = 'table-row';
+  expRow.innerHTML = '<td colspan="9"><div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:20px;color:#888;font-size:13px"><div style="width:18px;height:18px;border:2px solid #f0f0f0;border-top-color:#E8622A;border-radius:50%;animation:spin 0.8s linear infinite"></div>Loading daily breakdown...</div></td>';
+
+  // Insert after the clicked row
+  trEl.parentNode.insertBefore(expRow, trEl.nextSibling);
+
+  // Build daily data
   var myActs = (allActivities||[]).filter(function(a){
-    return a.strava_athlete_id==athleteId && !a.is_flagged &&
-      (a.activity_date||'').startsWith('2026-06');
+    return String(a.strava_athlete_id) === String(athleteId) && !a.is_flagged;
   });
+
   var byDay = {};
   myActs.forEach(function(a){
-    var d=(a.activity_date||'').split('T')[0];
-    if(!byDay[d]) byDay[d]=[];
+    var d = (a.activity_date||'').split('T')[0];
+    if (!d || !d.startsWith('2026-06')) return;
+    if (!byDay[d]) byDay[d] = [];
     byDay[d].push(a);
   });
-  var days = Object.keys(byDay).sort();
-  if(!days.length){ expRow.querySelector('td').innerHTML='<div style="padding:16px;color:#bbb;text-align:center">No daily data available</div>'; return; }
 
-  var g = gender||'';
-  var rows = days.map(function(day){
-    var dayKm=0;
-    byDay[day].forEach(function(a){ dayKm+=(parseFloat(a.distance_meters)||0)/1000; });
-    dayKm=parseFloat(dayKm.toFixed(2));
-    var base=parseFloat(CONFIG.basePer_km)||1;
-    var dp=parseFloat((dayKm*base).toFixed(2));
-    var bp=calcBonus(dayKm);
-    // Check challenge bonus for this day
-    var cp=0, cnames=[];
+  var days = Object.keys(byDay).sort();
+  if (!days.length) {
+    expRow.innerHTML = '<td colspan="9"><div style="padding:16px;color:#bbb;text-align:center;font-size:13px">No daily data available</div></td>';
+    return;
+  }
+
+  var g = (gender||'').toLowerCase();
+  var dayRows = days.map(function(day) {
+    var dayKm = 0;
+    byDay[day].forEach(function(a){ dayKm += (parseFloat(a.distance_meters)||0)/1000; });
+    dayKm = parseFloat(dayKm.toFixed(2));
+    var base = parseFloat(CONFIG.basePer_km)||1;
+    var dp = parseFloat((dayKm*base).toFixed(2));
+    var bp = calcBonus(dayKm);
+    var cp = 0;
     byDay[day].forEach(function(a){
       CHALLENGES.forEach(function(c){
-        if(checkChallenge(a,c)){ cp+=c.bonus_points; cnames.push(c.name); }
+        if (checkChallenge(a,c)) cp += c.bonus_points;
       });
+      cp += parseFloat(a.manual_bonus)||0;
     });
-    var tp=dp+bp+cp;
-    return '<tr><td>'+day+'</td><td>'+dayKm.toFixed(2)+' km</td><td>+'+dp.toFixed(2)+'</td><td>+'+bp+'</td><td>'+(cp>0?'+'+cp:'—')+'</td><td><strong>+'+tp.toFixed(2)+'</strong></td></tr>';
+    var tp = parseFloat((dp+bp+cp).toFixed(2));
+    return '<tr style="background:#fafafa">'
+      +'<td style="padding:8px 14px;font-size:12px;color:#888">'+day+'</td>'
+      +'<td style="padding:8px 14px;font-size:12px">'+dayKm.toFixed(2)+' km</td>'
+      +'<td style="padding:8px 14px;font-size:12px;color:#E8622A;font-weight:600">+'+dp.toFixed(2)+'</td>'
+      +'<td style="padding:8px 14px;font-size:12px;color:#E8622A;font-weight:600">+'+bp+'</td>'
+      +'<td style="padding:8px 14px;font-size:12px;color:#1565c0;font-weight:600">'+(cp>0?'+'+cp:'—')+'</td>'
+      +'<td style="padding:8px 14px;font-size:13px;font-weight:700">+'+tp.toFixed(2)+'</td>'
+      +'</tr>';
   }).join('');
 
-  expRow.querySelector('td').innerHTML =
-    '<table class="day-table">'
-    +'<thead><tr><th>Date</th><th>Distance (km)</th><th>Distance Points</th><th>Bonus Points</th><th>Challenge Bonus</th><th>Total Points</th></tr></thead>'
-    +'<tbody>'+rows+'</tbody>'
-    +'</table>';
+  expRow.innerHTML = '<td colspan="9" style="padding:0">'
+    +'<table style="width:100%;border-collapse:collapse">'
+    +'<thead><tr style="background:#f0f0f0">'
+    +'<th style="padding:8px 14px;font-size:11px;color:#888;text-align:left;letter-spacing:0.5px">DATE</th>'
+    +'<th style="padding:8px 14px;font-size:11px;color:#888;text-align:left;letter-spacing:0.5px">DISTANCE (KM)</th>'
+    +'<th style="padding:8px 14px;font-size:11px;color:#888;text-align:left;letter-spacing:0.5px">DISTANCE POINTS</th>'
+    +'<th style="padding:8px 14px;font-size:11px;color:#888;text-align:left;letter-spacing:0.5px">BONUS POINTS</th>'
+    +'<th style="padding:8px 14px;font-size:11px;color:#888;text-align:left;letter-spacing:0.5px">CHALLENGE BONUS</th>'
+    +'<th style="padding:8px 14px;font-size:11px;color:#888;text-align:left;letter-spacing:0.5px">TOTAL POINTS</th>'
+    +'</tr></thead>'
+    +'<tbody>'+dayRows+'</tbody>'
+    +'</table></td>';
 }
 
 function buildRow(row, i) {
@@ -657,8 +690,7 @@ function buildRow(row, i) {
     var chalHtml = pts.challengePts > 0
       ? '<div>+'+pts.challengePts+'<br><span class="challenge-badge">'+pts.challenges.join(', ')+'</span></div>'
       : '<span style="color:#ddd">—</span>';
-    var rowId='r'+i+'_'+row.p.strava_athlete_id;
-    return '<tr class="lb-row '+topCls+'" onclick="toggleExpand(\''+rowId+'\',\''+row.p.strava_athlete_id+'\',\''+((row.p.gender||'').toLowerCase())+'\'">' 
+    return '<tr class="lb-row '+topCls+'" onclick="toggleExpand(\''+row.p.strava_athlete_id+'\',\''+((row.p.gender||'').toLowerCase())+'\'\',this)" style="cursor:pointer"> '
       +'<td><span class="rank '+rankCls+'">'+medal_icon+'</span></td>'
       +'<td><strong>'+p.full_name+'</strong></td>'
       +'<td style="font-size:12px;color:#888">'+( p.leaderboard_team||'—')+'</td>'
@@ -669,7 +701,7 @@ function buildRow(row, i) {
       +'<td><strong class="pts" style="font-size:15px">'+(parseFloat(pts.totalPts)||0).toFixed(2)+'</strong></td>'
       +'<td><span class="medal '+medal.cls+'">'+medal.label+'</span></td>'
       +'</tr>'
-    +'<tr class="expand-row" id="exp-'+rowId+'"><td colspan="9"><div style="padding:12px;color:#bbb;text-align:center;font-size:13px">Loading...</div></td></tr>';
+    ;
 }
 
 function updateStats(rows, board) {
