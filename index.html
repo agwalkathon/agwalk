@@ -4,67 +4,45 @@
   <meta charset="UTF-8">
   <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Arcgate Walkathon 2026 — Powered by Strava</title>
+  <title>Arcgate Walkathon 2026 — Login</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #1A1A1A; color: white; display: flex; flex-direction: column; min-height: 100vh; overflow: hidden; }
+    html, body { min-height: 100%; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #1A1A1A; color: white; display: flex; flex-direction: column; min-height: 100vh; }
     .header { background: #fff; border-bottom: 3px solid #E8622A; padding: 12px 40px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
     .header img { height: 40px; object-fit: contain; }
     .header-links { display: flex; gap: 8px; align-items: center; }
-    .header-links a { font-size: 13px; color: #555; text-decoration: none; padding: 7px 14px; border-radius: 8px; transition: all 0.15s; }
+    .header-links a { font-size: 13px; color: #555; text-decoration: none; padding: 7px 14px; border-radius: 8px; }
     .header-links a:hover { background: #f5f5f5; color: #1A1A1A; }
     .header-links a.btn-dark { background: #1A1A1A; color: white; font-weight: 600; }
-    .header-links a.btn-dark:hover { background: #333; }
-    .hero { flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 48px; padding: 0 80px; }
-    .hero-left { flex: 1; max-width: 560px; }
+    .hero { flex: 1; display: grid; grid-template-columns: 1fr 430px; gap: 50px; align-items: center; padding: 48px 80px; }
     .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: rgba(232,98,42,0.15); border: 1px solid rgba(232,98,42,0.3); color: #E8622A; font-size: 12px; font-weight: 600; padding: 5px 14px; border-radius: 20px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; }
-    .hero h1 { font-size: 40px; font-weight: 800; line-height: 1.15; letter-spacing: -1px; margin-bottom: 20px; }
-    .hero h1 em { color: #E8622A; font-style: normal; }
-    .hero p { font-size: 17px; opacity: 0.65; line-height: 1.75; margin-bottom: 36px; max-width: 440px; }
-    .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
-    .cta-orange { display: inline-flex; align-items: center; gap: 10px; padding: 14px 28px; border-radius: 10px; font-size: 15px; font-weight: 600; text-decoration: none; background: #E8622A; color: white; box-shadow: 0 4px 20px rgba(232,98,42,0.4); transition: all 0.2s; }
-    .cta-orange:hover { background: #d4561f; transform: translateY(-1px); }
+    h1 { font-size: 40px; font-weight: 800; line-height: 1.15; letter-spacing: -1px; margin-bottom: 20px; }
+    h1 em { color: #E8622A; font-style: normal; }
+    .hero-left p { font-size: 17px; opacity: 0.65; line-height: 1.75; margin-bottom: 26px; max-width: 480px; }
+    .login-card { background: white; color: #1A1A1A; border-radius: 18px; padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.35); }
+    .login-card h2 { font-size: 22px; margin-bottom: 6px; }
+    .login-card .sub { color: #777; font-size: 13px; line-height: 1.5; margin-bottom: 20px; }
+    label { display: block; font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; margin: 12px 0 6px; }
+    input, select { width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 9px; font-size: 14px; background: #fafafa; }
+    input:focus, select:focus { outline: none; border-color: #E8622A; background: white; }
+    .cta-orange { width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 13px 22px; border-radius: 10px; font-size: 15px; font-weight: 700; text-decoration: none; background: #E8622A; color: white; border: none; cursor: pointer; margin-top: 16px; }
+    .cta-orange:hover { background: #d4561f; }
     .cta-orange svg { width: 18px; height: 18px; fill: white; flex-shrink: 0; }
-    .msg { display: none; margin-top: 20px; padding: 14px 18px; border-radius: 10px; font-size: 14px; line-height: 1.6; max-width: 420px; }
-    .msg-success { background: rgba(46,125,50,0.15); border: 1px solid rgba(46,125,50,0.3); color: #81c784; }
-    .msg-already  { background: rgba(21,101,192,0.15); border: 1px solid rgba(21,101,192,0.3); color: #90caf9; }
-    .msg-error    { background: rgba(198,40,40,0.15); border: 1px solid rgba(198,40,40,0.3); color: #ef9a9a; }
-    .processing   { display: none; align-items: center; gap: 10px; margin-top: 20px; font-size: 14px; color: rgba(255,255,255,0.5); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+    .full { grid-column: 1 / -1; }
+    .msg { display: none; margin-top: 16px; padding: 13px 15px; border-radius: 10px; font-size: 13px; line-height: 1.55; }
+    .msg-success { background: #e8f5e9; border: 1px solid #a5d6a7; color: #2e7d32; }
+    .msg-info { background: #e3f2fd; border: 1px solid #90caf9; color: #1565c0; }
+    .msg-error { background: #ffebee; border: 1px solid #ef9a9a; color: #c62828; }
+    .processing { display: none; align-items: center; gap: 10px; margin-top: 16px; font-size: 13px; color: #777; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.15); border-top-color: #E8622A; border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
-    .hero-right { display: flex; flex-direction: column; gap: 12px; flex-shrink: 0; }
-    .stat-pill { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 16px 24px; display: flex; align-items: center; gap: 16px; transition: background 0.2s; }
-    .stat-pill:hover { background: rgba(255,255,255,0.09); }
-    .stat-pill .icon { font-size: 26px; flex-shrink: 0; }
-    .stat-pill .val { font-size: 24px; font-weight: 700; color: #E8622A; line-height: 1; }
-    .stat-pill .lbl { font-size: 12px; opacity: 0.5; margin-top: 3px; }
+    .spinner { width: 18px; height: 18px; border: 2px solid #eee; border-top-color: #E8622A; border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
     .footer-bar { flex-shrink: 0; background: rgba(252,76,2,0.08); border-top: 1px solid rgba(252,76,2,0.15); padding: 10px 40px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 12px; color: rgba(255,255,255,0.4); flex-wrap: wrap; }
-    .footer-bar svg { width: 14px; height: 14px; fill: #FC4C02; flex-shrink: 0; }
     .footer-bar a { color: rgba(255,255,255,0.5); text-decoration: none; }
-    .footer-bar a:hover { color: #E8622A; }
-    .footer-bar code { background: rgba(255,255,255,0.07); padding: 1px 5px; border-radius: 4px; font-size: 11px; }
-    @media (max-width: 900px) {
-      body { overflow: auto; }
-      .hero { flex-direction: column; align-items: flex-start; padding: 36px 20px; gap: 28px; }
-      .hero h1 { font-size: 34px; }
-      .hero-right { flex-direction: row; flex-wrap: wrap; width: 100%; }
-      .stat-pill { flex: 1; min-width: 140px; }
-      .header { padding: 12px 20px; }
-      .footer-bar { padding: 10px 20px; }
-    }
-
-    @media (max-width: 768px) {
-      body { overflow: auto; }
-      .hero { flex-direction: column; padding: 36px 20px; gap: 24px; }
-      .hero h1 { font-size: 28px; }
-      .hero p { font-size: 15px; }
-      .hero-right { flex-direction: row; flex-wrap: wrap; width: 100%; }
-      .stat-pill { flex: 1; min-width: 140px; padding: 12px 16px; }
-      .header { padding: 12px 16px; }
-      .header-links a { font-size: 12px; padding: 6px 10px; }
-      .footer-bar { padding: 10px 16px; font-size: 11px; flex-wrap: wrap; gap: 6px; }
-    }
+    .hidden { display: none; }
+    @media (max-width: 960px) { .hero { grid-template-columns: 1fr; padding: 36px 20px; } h1 { font-size: 32px; } .header { padding: 12px 20px; } }
+    @media (max-width: 520px) { .form-grid { grid-template-columns: 1fr; } .login-card { padding: 22px; } }
   </style>
 </head>
 <body>
@@ -73,93 +51,153 @@
   <div class="header-links">
     <a href="privacy.html">Privacy Policy</a>
     <a href="terms.html">Terms</a>
-    <a href="admin-login.html" class="btn-dark">Admin Login</a>
+    <a href="admin-login.html" class="btn-dark">Manual Admin Login</a>
   </div>
 </div>
+
 <div class="hero">
   <div class="hero-left">
-    <div class="hero-eyebrow">
-      <svg style="width:12px;height:12px;fill:#E8622A" viewBox="0 0 24 24"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
-      Arcgate Internal Event · 2026
-    </div>
+    <div class="hero-eyebrow">Arcgate Internal Event · 2026</div>
     <h1>Arcgate Walkathon is an initiative of<br><em>Healthy Arcgate Community.</em></h1>
-    <p>Arcgate Walkathon is a company fitness challenge connecting employees through Strava. Walk and Run your way to the top of the leaderboard.</p>
-    <div class="hero-cta">
+    <p>One login for registered participants and admins. New participants must submit a request first and can connect Strava only after approval.</p>
+  </div>
+
+  <div class="login-card">
+    <h2>Login / Registration</h2>
+    <p class="sub">Choose your login type below.</p>
+
+    <label>Login Type</label>
+    <select id="login-type" onchange="switchMode()">
+      <option value="existing">Existing Participant</option>
+      <option value="new">New Participant</option>
+    </select>
+
+    <div id="existing-box">
+      <p class="sub" style="margin-top:14px">Only approved participants from the registration table can connect with Strava.</p>
       <a id="strava-btn" href="#" class="cta-orange">
         <svg viewBox="0 0 24 24"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
-        Connect Strava
+        Connect with Strava
       </a>
     </div>
-    <div class="processing" id="processing">
-      <div class="spinner"></div>
-      Connecting your account...
-    </div>
-    <div class="msg msg-success" id="msg-success">
-      ✅ <strong>Registration successful!</strong><br>
-      Welcome to Arcgate Walkathon 2026! Your activities will appear on the leaderboard automatically within 30 seconds of saving on Strava.
-    </div>
-    <div class="msg msg-already" id="msg-already">
-      ✅ <strong>You're already registered!</strong><br>
-      You previously connected your Strava account. Your activities are being tracked automatically — no action needed!
-    </div>
-    <div class="msg msg-error" id="msg-error">
-      ❌ <strong>Something went wrong.</strong><br>
-      Please try again or contact prakash@arcgate.com
-    </div>
-  </div>
-  <div class="hero-right">
-    <div class="stat-pill"><div class="icon">👥</div><div><div class="val">500+</div><div class="lbl">Registered participants</div></div></div>
-    <div class="stat-pill"><div class="icon">🏙️</div><div><div class="val">6</div><div class="lbl">Competing city teams</div></div></div>
-    <div class="stat-pill"><div class="icon">📅</div><div><div class="val">June 2026</div><div class="lbl">Event period</div></div></div>
-    <div class="stat-pill"><div class="icon">⚡</div><div><div class="val">Live</div><div class="lbl">Real-time leaderboard</div></div></div>
-    <div class="stat-pill"><div class="icon">🔒</div><div><div class="val">Secure</div><div class="lbl">Data used only for this event</div></div></div>
+
+    <form id="request-form" class="hidden" onsubmit="submitRequest(event)">
+      <div class="form-grid">
+        <div class="full"><label>Full Name *</label><input id="full_name" required></div>
+        <div><label>EMP Code</label><input id="emp_code"></div>
+        <div><label>Gender</label><select id="gender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+        <div class="full"><label>Event to Register *</label><select id="event_name" required><option value="walkathon2026">Arcgate Walkathon 2026</option></select></div>
+        <div class="full"><label>Email *</label><input id="email" type="email" required></div>
+        <div><label>WhatsApp #</label><input id="whatsapp"></div>
+        <div><label>Shift</label><input id="shift" placeholder="Day / Night"></div>
+        <div class="full"><label>Team Lead</label><input id="team_lead"></div>
+        <div class="full"><label>T-Shirt Size</label><select id="tshirt_size"><option value="">Select</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option><option>XXXL</option></select></div>
+      </div>
+      <button class="cta-orange" type="submit">Submit Request</button>
+    </form>
+
+    <div class="processing" id="processing"><div class="spinner"></div><span id="processing-text">Processing...</span></div>
+    <div class="msg msg-success" id="msg-success"></div>
+    <div class="msg msg-info" id="msg-info"></div>
+    <div class="msg msg-error" id="msg-error"></div>
   </div>
 </div>
+
 <div class="footer-bar">
-  <svg viewBox="0 0 24 24"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
-  Powered by Strava API &nbsp;·&nbsp; Scopes: <code>read</code> <code>activity:read</code> only &nbsp;·&nbsp;
-  <a href="privacy.html">Privacy Policy</a> &nbsp;·&nbsp;
-  <a href="terms.html">Terms of Service</a> &nbsp;·&nbsp;
-  <a href="https://www.strava.com/legal/api" target="_blank">Strava API Terms</a>
+  Powered by Strava API · Scopes: read + activity:read only · <a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms of Service</a>
 </div>
+
 <script>
-  var STRAVA_CLIENT_ID = '29159';
-  var BACKEND_URL      = 'https://walkathon-backend-hv9j.onrender.com';
-  var EVENT_CODE       = 'walkathon2026';
-  var params           = new URLSearchParams(window.location.search);
-  var authCode         = params.get('code');
-  var redirectURI      = window.location.origin + window.location.pathname;
-  var authUrl = 'https://www.strava.com/oauth/authorize'
-    + '?client_id='    + STRAVA_CLIENT_ID
-    + '&redirect_uri=' + encodeURIComponent(redirectURI)
-    + '&response_type=code'
-    + '&scope=read,activity:read'
-    + '&state='        + EVENT_CODE;
-  document.getElementById('strava-btn').href = authUrl;
-  if (authCode) {
-    document.getElementById('strava-btn').style.display = 'none';
-    document.getElementById('processing').style.display = 'flex';
-    fetch(BACKEND_URL + '/register', {
+var STRAVA_CLIENT_ID = '29159';
+var BACKEND_URL = 'https://walkathon-backend-hv9j.onrender.com';
+var SUPABASE_URL = 'https://jhdgkncpkrttvemvwukc.supabase.co';
+var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoZGdrbmNwa3J0dHZlbXZ3dWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NzgyNjMsImV4cCI6MjA5NzI1NDI2M30.d7mvXOYDq5G4aqs1Mbc6HFNgTBlQk4B6ah0eahE_yZE';
+var EVENT_CODE = 'walkathon2026';
+var params = new URLSearchParams(window.location.search);
+var authCode = params.get('code');
+var redirectURI = window.location.origin + window.location.pathname;
+var authUrl = 'https://www.strava.com/oauth/authorize'
+  + '?client_id=' + STRAVA_CLIENT_ID
+  + '&redirect_uri=' + encodeURIComponent(redirectURI)
+  + '&response_type=code'
+  + '&scope=read,activity:read'
+  + '&state=' + EVENT_CODE;
+document.getElementById('strava-btn').href = authUrl;
+
+function showMsg(type, html) {
+  ['msg-success','msg-info','msg-error'].forEach(function(id){ document.getElementById(id).style.display = 'none'; });
+  var el = document.getElementById(type);
+  el.innerHTML = html;
+  el.style.display = 'block';
+}
+function setProcessing(show, text) {
+  document.getElementById('processing-text').textContent = text || 'Processing...';
+  document.getElementById('processing').style.display = show ? 'flex' : 'none';
+}
+function switchMode() {
+  var mode = document.getElementById('login-type').value;
+  document.getElementById('existing-box').classList.toggle('hidden', mode !== 'existing');
+  document.getElementById('request-form').classList.toggle('hidden', mode !== 'new');
+  ['msg-success','msg-info','msg-error'].forEach(function(id){ document.getElementById(id).style.display = 'none'; });
+}
+async function submitRequest(e) {
+  e.preventDefault();
+  setProcessing(true, 'Submitting request...');
+  var payload = {
+    full_name: document.getElementById('full_name').value.trim(),
+    emp_code: document.getElementById('emp_code').value.trim(),
+    gender: document.getElementById('gender').value,
+    event_name: document.getElementById('event_name').value,
+    email: document.getElementById('email').value.trim(),
+    whatsapp: document.getElementById('whatsapp').value.trim(),
+    shift: document.getElementById('shift').value.trim(),
+    team_lead: document.getElementById('team_lead').value.trim(),
+    tshirt_size: document.getElementById('tshirt_size').value,
+    status: 'pending'
+  };
+  try {
+    var r = await fetch(SUPABASE_URL + '/rest/v1/registration_requests', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: authCode, event_code: EVENT_CODE })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      document.getElementById('processing').style.display = 'none';
-      if (d.success) {
-        document.getElementById('msg-success').style.display = 'block';
-      } else if (d.already_registered) {
-        document.getElementById('msg-already').style.display = 'block';
-      } else {
-        document.getElementById('msg-error').style.display = 'block';
-      }
-    })
-    .catch(function() {
-      document.getElementById('processing').style.display = 'none';
-      document.getElementById('msg-error').style.display = 'block';
+      headers: { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + SUPABASE_ANON, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+      body: JSON.stringify(payload)
     });
+    if (!r.ok) throw new Error('Request failed');
+    document.getElementById('request-form').reset();
+    showMsg('msg-success', '✅ <strong>Request submitted.</strong><br>Admin will review your request. Once approved, you can login as Existing Participant and connect Strava.');
+  } catch (err) {
+    showMsg('msg-error', '❌ <strong>Unable to submit request.</strong><br>Please try again or contact the event admin.');
   }
+  setProcessing(false);
+}
+
+if (authCode) {
+  document.getElementById('strava-btn').style.display = 'none';
+  setProcessing(true, 'Connecting your Strava account...');
+  fetch(BACKEND_URL + '/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code: authCode, event_code: EVENT_CODE })
+  })
+  .then(function(r) { return r.json().then(function(d){ d.http_status = r.status; return d; }); })
+  .then(function(d) {
+    setProcessing(false);
+    if (d.success) {
+      var role = d.role || 'user';
+      var session = { loggedIn: true, role: role, athleteId: d.athlete_id, name: d.name, expires: Date.now() + (8 * 60 * 60 * 1000) };
+      sessionStorage.setItem('wk_admin', JSON.stringify(session));
+      sessionStorage.setItem('wk_user', JSON.stringify(session));
+      showMsg('msg-success', '✅ <strong>Login successful.</strong><br>Redirecting...');
+      setTimeout(function(){ window.location.href = role === 'admin' ? 'admin.html' : 'participant.html'; }, 900);
+    } else if (d.error === 'not_registered') {
+      showMsg('msg-error', '⛔ <strong>You are not registered for this event.</strong><br>Please submit a New Participant request first.');
+    } else {
+      showMsg('msg-error', '❌ <strong>Login failed.</strong><br>Please try again or contact the event admin.');
+    }
+  })
+  .catch(function() {
+    setProcessing(false);
+    showMsg('msg-error', '❌ <strong>Something went wrong.</strong><br>Please try again or contact the event admin.');
+  });
+}
 </script>
 </body>
 </html>
