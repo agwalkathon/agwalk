@@ -580,21 +580,29 @@ function renderDashboard(data) {
   showScreen('dashboard-screen');
 }
 
-// OAuth
+// OAuth - redirect URI for fresh login via this page
 var redirectURI=window.location.origin+window.location.pathname;
 var authUrl='https://www.strava.com/oauth/authorize?client_id='+STRAVA_CLIENT_ID+'&redirect_uri='+encodeURIComponent(redirectURI)+'&response_type=code&scope=read,activity:read&state=portal';
 document.getElementById('strava-login-btn').href=authUrl;
 
-// Check existing session first — skip login if already authenticated
-var existingSession = JSON.parse(localStorage.getItem('wk_portal_session') || '{}');
-if(existingSession.loggedIn && existingSession.expires > Date.now()) {
-  // Restore from cached session - show dashboard with stored data
-  // Just show login again to re-authenticate (tokens may be stale)
-}
-
 var params=new URLSearchParams(window.location.search);
 var authCode=params.get('code'), state=params.get('state');
-if(authCode&&state==='portal') {
+
+// ── Check if already logged in via index.html (session stored) ──
+var storedSession = JSON.parse(sessionStorage.getItem('wk_user')||'{}');
+if(!authCode && storedSession.loggedIn && storedSession.expires > Date.now() && storedSession.athleteId) {
+  // User already authenticated via index.html — load their data directly
+  setLoading('Loading your data...');
+  fetch(BACKEND_URL+'/my-data-by-id',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({athlete_id:storedSession.athleteId})})
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    if(!data.success) { showError('⚠️','Something went wrong',data.error||'Please sign in again.'); return; }
+    document.getElementById('loading-text').textContent='Calculating your points...';
+    renderDashboard(data);
+  })
+  .catch(function(){ showError('⚠️','Connection error','Could not reach the server. Please try again.'); });
+} else if(authCode&&state==='portal') {
+  // Fresh OAuth login directly on this page
   setLoading('Verifying your Strava account...');
   window.history.replaceState({},'',window.location.pathname);
   fetch(BACKEND_URL+'/my-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:authCode})})
@@ -605,6 +613,8 @@ if(authCode&&state==='portal') {
       else showError('⚠️','Something went wrong',data.error||'Please try again.');
       return;
     }
+    // Save session for page reloads
+    sessionStorage.setItem('wk_user', JSON.stringify({loggedIn:true,role:data.role||'user',athleteId:data.athlete.id,name:data.participant.full_name,expires:Date.now()+(8*60*60*1000)}));
     document.getElementById('loading-text').textContent='Calculating your points...';
     renderDashboard(data);
   })
