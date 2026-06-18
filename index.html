@@ -183,8 +183,9 @@ if (authCode) {
     if (d.success) {
       var role = d.role || 'user';
       var session = { loggedIn: true, role: role, athleteId: d.athlete_id, name: d.name, expires: Date.now() + (8 * 60 * 60 * 1000) };
-      sessionStorage.setItem('wk_admin', JSON.stringify(session));
+      sessionStorage.removeItem('wk_admin');
       sessionStorage.setItem('wk_user', JSON.stringify(session));
+      if (role === 'admin') sessionStorage.setItem('wk_admin', JSON.stringify(session));
       showMsg('msg-success', '✅ <strong>Login successful.</strong><br>Redirecting...');
       setTimeout(function(){ window.location.href = role === 'admin' ? 'admin.html' : 'participant.html'; }, 900);
     } else if (d.error === 'not_registered') {
