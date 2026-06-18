@@ -465,7 +465,7 @@ async function loadSmtp() {
   try {
     var rows = await dbGet('smtp_config', '?select=*&limit=1');
     if (rows && rows[0]) {
-      var s = rows[0];
+      var s = rows[0].config || rows[0];
       var fields = ['host','port','user','pass','from_name','from_email','enc','reply'];
       fields.forEach(function(k) {
         var el = document.getElementById('smtp-' + k);
@@ -481,12 +481,13 @@ async function saveSmtp() {
   setBtnLoading('smtp-save-btn', true, '💾 Save SMTP Settings');
   setStatus('smtp-status', 'wait', '⏳ Saving...');
   var fields = ['host','port','user','pass','from_name','from_email','enc','reply'];
-  var data = {};
+  var cfg = {};
   fields.forEach(function(k) {
     var el = document.getElementById('smtp-' + k);
-    if (el) data[k] = el.value;
+    if (el) cfg[k] = el.value;
   });
-  data.port = parseInt(data.port) || 587;
+  cfg.port = parseInt(cfg.port) || 587;
+  var data = { config: cfg };
   try {
     var existing = await dbGet('smtp_config', '?select=id&limit=1');
     if (existing && existing.length > 0) {
