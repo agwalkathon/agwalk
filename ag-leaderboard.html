@@ -49,9 +49,11 @@
     .lb-rank { font-size: 15px; font-weight: 800; color: #bbb; width: 36px; text-align: center; flex-shrink: 0; }
     .lb-rank.r1 { color: #FFD700; } .lb-rank.r2 { color: #C0C0C0; } .lb-rank.r3 { color: #CD7F32; }
     .lb-main { flex: 1; min-width: 0; }
-    .lb-name-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+    .lb-name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
     .lb-name { font-size: 15px; font-weight: 700; color: #1A1A1A; }
-    .lb-meta { font-size: 12px; color: #999; display: flex; gap: 12px; flex-wrap: wrap; }
+    .lb-name-link { font-size: 15px; font-weight: 700; color: #1A1A1A; text-decoration: none; }
+    .lb-name-link:hover { color: #E8622A; text-decoration: underline; }
+    .lb-meta { font-size: 12px; color: #888; display: flex; gap: 8px; flex-wrap: wrap; }
     .lb-meta span { display: flex; align-items: center; gap: 4px; }
     .lb-pts { font-size: 22px; font-weight: 800; color: #E8622A; text-align: right; flex-shrink: 0; }
     .lb-pts-label { font-size: 10px; color: #bbb; text-transform: uppercase; letter-spacing: 0.5px; text-align: right; }
@@ -113,27 +115,36 @@
 
     /* ── Mobile responsive ────────────────────────────────── */
     @media (max-width: 768px) {
-      .site-header { padding: 10px 16px; }
-      .site-header nav { display: none; } /* hide nav on mobile - use hamburger */
-      .page-bar { padding: 14px 16px; }
-      .page-bar h1 { font-size: 16px; }
-      .content { padding: 14px 16px; }
-      .stats-grid { gap: 10px; }
-      .stat-card { min-width: 100px; padding: 12px 14px; }
-      .stat-card .val { font-size: 20px; }
-      .filter-bar, .filter-strip { padding: 14px 16px; }
-      .filter-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-      .filter-group select, .filter-group input { font-size: 14px; }
-      .filter-left { gap: 8px; }
-      table { font-size: 12px; }
-      th, td { padding: 8px 10px; }
-      .site-footer { padding: 14px 16px; font-size: 11px; }
+      .site-header { padding: 10px 14px; }
+      .site-header nav a { font-size: 11px; padding: 5px 8px; }
+      .page-bar { padding: 12px 14px; }
+      .page-bar h1 { font-size: 15px; }
+      .content { padding: 10px 12px; }
+      .stats-grid { gap: 8px; }
+      .stat-card { min-width: 80px; padding: 10px 12px; }
+      .stat-card .val { font-size: 18px; }
+      .stat-card .lbl { font-size: 10px; }
+      .filter-bar, .filter-strip { padding: 12px 14px; }
+      .filter-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .filter-group select, .filter-group input { font-size: 13px; }
+      .filter-left { gap: 8px; flex-wrap: wrap; }
+      .site-footer { padding: 12px 14px; font-size: 11px; }
+      /* Card layout mobile */
+      .lb-card { padding: 10px 12px; gap: 8px; }
+      .lb-rank { font-size: 18px; min-width: 36px; }
+      .lb-name-link, .lb-name { font-size: 14px; }
+      .lb-meta { font-size: 11px; gap: 6px; }
+      .lb-pts { font-size: 20px; }
+      .lb-pts-label { font-size: 10px; }
+      .medal-pill { font-size: 10px; padding: 2px 6px; }
     }
     @media (max-width: 480px) {
+      .stats-grid { grid-template-columns: 1fr 1fr 1fr; display: grid; }
+      .lb-card { flex-wrap: wrap; }
+      .lb-main { flex: 1; min-width: 0; }
+      .lb-meta { gap: 4px; }
+      .lb-meta span { font-size: 11px; }
       .filter-grid { grid-template-columns: 1fr; }
-      .stats-grid { grid-template-columns: 1fr 1fr; display: grid; }
-      .hero h1 { font-size: 28px; }
-      .hero p { font-size: 14px; }
     }
 
     .lb-row { cursor: pointer; }
@@ -153,7 +164,6 @@
     <a href="admin.html">Dashboard</a>
     <a href="activities.html">Activities</a>
     <a href="ag-leaderboard.html" class="active">AG Leaderboards</a>
-    <a href="ag-config.html">Config</a>
     <a href="participants.html">Participants</a>
     <a href="#" onclick="logout();return false;">Sign out</a>
   </nav>
@@ -170,8 +180,8 @@
     <div class="stat-card gold-card"><div class="val" id="stat-gold">—</div><div class="lbl">🥇 Gold</div></div>
     <div class="stat-card silver-card"><div class="val" id="stat-silver">—</div><div class="lbl">🥈 Silver</div></div>
     <div class="stat-card bronze-card"><div class="val" id="stat-bronze">—</div><div class="lbl">🥉 Bronze</div></div>
+    <div class="stat-card"><div class="val" id="stat-medals">—</div><div class="lbl">🏅 Total Medals</div></div>
     <div class="stat-card"><div class="val" id="stat-km">—</div><div class="lbl">Total km</div></div>
-    <div class="stat-card"><div class="val" id="stat-pts">—</div><div class="lbl">Total points</div></div>
   </div>
 
   <!-- Filter bar -->
@@ -260,16 +270,7 @@
 // ── Indian number format ─────────────────────────────────────
 function fmtIndian(n) {
   var num = parseFloat(n) || 0;
-  var fixed = num.toFixed(1);
-  var parts = fixed.split('.');
-  var intPart = parts[0];
-  var dec = parts[1];
-  if (intPart.length <= 3) return intPart + '.' + dec;
-  var last3 = intPart.slice(-3);
-  var rem = intPart.slice(0, -3);
-  var result = '';
-  while (rem.length > 2) { result = ',' + rem.slice(-2) + result; rem = rem.slice(0,-2); }
-  return rem + ',' + result.slice(1) + ',' + last3 + '.' + dec;
+  return num.toLocaleString('en-IN', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 }
 function fmtIndianInt(n) {
   var num = Math.round(parseFloat(n)) || 0;
@@ -526,20 +527,54 @@ function calcPoints(acts, athleteId, gender) {
   totalDistKm  = parseFloat(totalDistKm.toFixed(2));
   totalDistPts = parseFloat(totalDistPts.toFixed(2));
 
-  // Challenge bonus — check each activity
-  acts.filter(function(a){ return a.strava_athlete_id===athleteId; }).forEach(function(a) {
-    CHALLENGES.forEach(function(c) {
-      var key = c.id;
-      if (earnedChallenges.has(key)) return;
-      var eligible = c.eligible==='all' || c.eligible===(gender||'').toLowerCase() ||
-        (c.eligible==='dayshift') || (c.eligible==='nightshift');
-      if (!eligible) return;
-      if (checkChallenge(a, c)) {
-        earnedChallenges.add(key);
-        totalChallenge += c.bonus_points;
-        challengeNames.push(c.name);
-      }
-    });
+  // Challenge bonus — respects activity_scope (single vs daily total)
+  CHALLENGES.forEach(function(c) {
+    var key = c.id;
+    if (earnedChallenges.has(key)) return;
+    var eligible = c.eligible==='all' || c.eligible===(gender||'').toLowerCase() ||
+      (c.eligible==='dayshift') || (c.eligible==='nightshift');
+    if (!eligible) return;
+
+    if (c.activity_scope === 'daily') {
+      // Check each day's TOTAL distance against challenge criteria
+      Object.keys(byDay).forEach(function(day) {
+        if (earnedChallenges.has(key)) return; // already earned this challenge
+        var dayActs = byDay[day];
+        // Check date range
+        if (day < c.start_date || day > c.end_date) return;
+        // Check sport types — at least one activity matches
+        var sportTypes = c.sport_types || ['Walk','Run','Hike','Ride'];
+        var hasMatchingSport = dayActs.some(function(a){ return sportTypes.includes(a.sport_type); });
+        if (!hasMatchingSport) return;
+        // Sum total distance for the day (only matching sport types)
+        var dayTotalKm = 0;
+        dayActs.forEach(function(a){
+          if (sportTypes.includes(a.sport_type)) dayTotalKm += (a.distance_meters||0)/1000;
+        });
+        // Apply distance type check on daily total
+        var qualifies = false;
+        if (c.distance_type === 'fixed' || c.distance_type === 'range') {
+          qualifies = dayTotalKm >= c.distance_min - 0.1 && dayTotalKm <= c.distance_max + 0.1;
+        } else { // extended (min+)
+          qualifies = dayTotalKm >= c.distance_min;
+        }
+        if (qualifies) {
+          earnedChallenges.add(key);
+          totalChallenge += c.bonus_points;
+          challengeNames.push(c.name);
+        }
+      });
+    } else {
+      // Single activity scope — check each activity individually
+      acts.filter(function(a){ return a.strava_athlete_id===athleteId; }).forEach(function(a) {
+        if (earnedChallenges.has(key)) return;
+        if (checkChallenge(a, c)) {
+          earnedChallenges.add(key);
+          totalChallenge += c.bonus_points;
+          challengeNames.push(c.name);
+        }
+      });
+    }
   });
 
   // Add manual bonus from activities
@@ -747,14 +782,14 @@ function buildRow(row, i) {
     + '<div class="lb-rank '+rankCls+'">'+rankLabel+'</div>'
     + '<div class="lb-main">'
     +   '<div class="lb-name-row">'
-    +     '<span class="lb-name">'+p.full_name+'</span>'
+    +     '<a href="https://www.strava.com/athletes/'+athleteId+'" target="_blank" class="lb-name-link">'+p.full_name+'</a>'
     +     '<span class="medal-pill '+medal.cls+'">'+medal.label+'</span>'
     +   '</div>'
     +   '<div class="lb-meta">'
     +     '<span>🏙️ '+(p.leaderboard_team||'—')+'</span>'
-    +     '<span>📏 Distance: <strong>'+pts.distKm.toFixed(2)+' KM</strong></span>'
-    +     '<span>⚡ Bonus: <strong>+'+pts.bonusPts+'</strong></span>'
-    +     (pts.challengePts > 0 ? '<span>🎯 Challenge Bonus: <strong>+'+pts.challengePts+'</strong></span>' : '')
+    +     '<span>📏 <strong>'+pts.distKm.toFixed(2)+' KM</strong></span>'
+    +     '<span>⚡ <strong>+'+pts.bonusPts+'</strong></span>'
+    +     (pts.challengePts > 0 ? '<span>🎯 <strong>+'+pts.challengePts+'</strong></span>' : '')
     +   '</div>'
     + '</div>'
     + '<div style="text-align:right">'
@@ -766,21 +801,20 @@ function buildRow(row, i) {
 
 
 function updateStats(rows, board) {
-  var golds=0, silvers=0, bronzes=0, km=0, pts=0;
+  var golds=0, silvers=0, bronzes=0, km=0;
   rows.forEach(function(row) {
     var m = getMedal(row.pts.totalPts, row.p.gender);
     if (m.cls==='medal-gold')   golds++;
     if (m.cls==='medal-silver') silvers++;
     if (m.cls==='medal-bronze') bronzes++;
-    km  += Number(row.pts.distKm) || 0;
-    pts += row.pts.totalPts;
+    km += Number(row.pts.distKm) || 0;
   });
   document.getElementById('stat-total').textContent  = rows.length;
   document.getElementById('stat-gold').textContent   = golds;
   document.getElementById('stat-silver').textContent = silvers;
   document.getElementById('stat-bronze').textContent = bronzes;
+  document.getElementById('stat-medals').textContent = golds + silvers + bronzes;
   document.getElementById('stat-km').textContent     = fmtIndian(km)+' km';
-  document.getElementById('stat-pts').textContent    = fmtIndianInt(pts);
 }
 
 loadAll();
