@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Upload — Arcgate Walkathon 2026</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F5F5F5;color:#1A1A1A;min-height:100vh;display:flex;flex-direction:column}.site-header{background:#fff;border-bottom:3px solid #E8622A;padding:12px 28px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.06)}.site-header img{height:40px;object-fit:contain}.site-header nav{display:flex;gap:4px;flex-wrap:wrap}.site-header nav a{font-size:13px;color:#555;text-decoration:none;padding:6px 12px;border-radius:6px}.site-header nav a:hover{background:#f0f0f0}.site-header nav a.active{background:#E8622A;color:white}.page-bar{background:#1A1A1A;color:white;padding:18px 28px;display:flex;justify-content:space-between;align-items:center}.page-bar h1{font-size:20px;font-weight:600}.page-bar .back{color:rgba(255,255,255,.5);text-decoration:none;font-size:13px}.content{flex:1;padding:24px 28px;max-width:1100px;width:100%;margin:0 auto}.card{background:white;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);overflow:hidden;margin-bottom:20px}.card-head{padding:18px 24px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:10px}.card-head h2{font-size:15px;font-weight:700}.card-head span{font-size:18px}.card-body{padding:24px}.btn{padding:9px 18px;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:6px}.btn-primary{background:#E8622A;color:white}.btn-primary:hover{background:#d4541f}.btn-primary:disabled{background:#ccc;cursor:not-allowed}.btn-ghost{background:#f0f0f0;color:#555}.btn-ghost:hover{background:#e8e8e8}.btn-danger{background:#c62828;color:white}.btn-danger:hover{background:#b71c1c}
+/* Drop zone */
+.drop-zone{border:2px dashed #e0e0e0;border-radius:12px;padding:40px 24px;text-align:center;cursor:pointer;transition:all .2s;background:#fafafa}.drop-zone:hover,.drop-zone.drag-over{border-color:#E8622A;background:#fff5f0}.drop-zone .dz-icon{font-size:36px;margin-bottom:12px}.drop-zone .dz-text{font-size:14px;color:#555;margin-bottom:6px}.drop-zone .dz-sub{font-size:12px;color:#aaa}
+/* Format table */
+.fmt-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}
+.fmt-table th{background:#f5f5f5;padding:7px 12px;text-align:left;color:#888;font-weight:600;border-bottom:1px solid #eee}.fmt-table td{padding:7px 12px;border-bottom:1px solid #f5f5f5;vertical-align:top}.fmt-table td:first-child{font-family:monospace;color:#E8622A;white-space:nowrap}.fmt-table td:last-child{color:#888}
+/* Progress */
+.progress-wrap{margin-top:20px;display:none}.progress-bar-bg{height:8px;background:#f0f0f0;border-radius:4px;overflow:hidden;margin:8px 0}.progress-bar-fill{height:100%;background:#E8622A;border-radius:4px;transition:width .3s;width:0%}.progress-log{background:#1A1A1A;color:#a5d6a7;border-radius:8px;padding:14px 16px;font-size:12px;font-family:monospace;max-height:220px;overflow-y:auto;margin-top:12px;line-height:1.8}
+/* Stats row */
+.stats-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}.stat-box{background:white;border-radius:10px;padding:14px 18px;flex:1;min-width:110px;border-left:4px solid #E8622A;box-shadow:0 2px 8px rgba(0,0,0,.05)}.stat-box.green{border-color:#2e7d32}.stat-box.red{border-color:#c62828}.stat-box.grey{border-color:#9e9e9e}.stat-box .v{font-size:24px;font-weight:700;color:#E8622A}.stat-box.green .v{color:#2e7d32}.stat-box.red .v{color:#c62828}.stat-box.grey .v{color:#9e9e9e}.stat-box .l{font-size:11px;color:#888;margin-top:3px}
+/* Preview table */
+.preview-wrap{overflow-x:auto;border-radius:8px;border:1px solid #f0f0f0}table{width:100%;border-collapse:collapse;min-width:800px}th{background:#fafafa;padding:9px 12px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.4px;border-bottom:2px solid #f0f0f0;white-space:nowrap}td{padding:9px 12px;font-size:13px;border-bottom:1px solid #f8f8f8;white-space:nowrap}.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500}.badge-new{background:#e8f5e9;color:#2e7d32}.badge-dup{background:#fff3e0;color:#e65100}.badge-err{background:#ffebee;color:#c62828}
+@keyframes spin{to{transform:rotate(360deg)}}.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite}
+.site-footer{background:#1A1A1A;color:#666;text-align:center;padding:16px 28px;font-size:12px;margin-top:auto}.site-footer a{color:#E8622A;text-decoration:none;margin:0 8px}
+@media(max-width:768px){.site-header{padding:10px 16px}.site-header nav a{font-size:11px;padding:5px 8px}.page-bar{padding:14px 16px}.page-bar h1{font-size:16px}.content{padding:12px 14px}.stats-row{display:grid;grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="site-header">
+  <img src="aw_logo.jpg" alt="Arcgate Walkathon 2026">
+  <nav>
+    <a href="admin.html">Dashboard</a>
+    <a href="activities.html">Activities</a>
+    <a href="ag-leaderboard.html">AG Leaderboards</a>
+    <a href="ag-config.html">Config</a>
+    <a href="participants.html">Participants</a>
+    <a href="data-upload.html" class="active">Data Upload</a>
+    <a href="#" onclick="logout();return false;">Sign out</a>
+  </nav>
+</div>
+<div class="page-bar">
+  <h1>📤 Data Upload</h1>
+  <a href="admin.html" class="back">← Dashboard</a>
+</div>
+
+<div class="content">
+
+  <!-- Format reference -->
+  <div class="card">
+    <div class="card-head"><span>📋</span><h2>CSV Format Reference</h2></div>
+    <div class="card-body">
+      <p style="font-size:13px;color:#555;margin-bottom:12px">Upload a CSV file with external activity data. Duplicates are detected by <strong>strava_activity_id</strong> and skipped automatically.</p>
+      <div style="background:#f5f5f5;border-radius:8px;padding:12px 16px;font-family:monospace;font-size:12px;color:#555;margin-bottom:16px;overflow-x:auto;white-space:nowrap">
+        strava_activity_id,strava_athlete_id,activity_name,sport_type,activity_date,distance_meters,moving_time_seconds,elapsed_time_seconds,elevation_gain,avg_speed
+      </div>
+      <table class="fmt-table">
+        <thead><tr><th>Column</th><th>Type</th><th>Required</th><th>Example / Notes</th></tr></thead>
+        <tbody>
+          <tr><td>strava_activity_id</td><td>integer</td><td>✅ Yes</td><td>12345678 — unique ID, used for duplicate check</td></tr>
+          <tr><td>strava_athlete_id</td><td>integer</td><td>✅ Yes</td><td>98765432 — must match a registered participant</td></tr>
+          <tr><td>activity_name</td><td>text</td><td>✅ Yes</td><td>Morning Walk</td></tr>
+          <tr><td>sport_type</td><td>text</td><td>✅ Yes</td><td>Walk / Run / Hike / Ride</td></tr>
+          <tr><td>activity_date</td><td>datetime</td><td>✅ Yes</td><td>2026-06-14T06:30:00 (ISO format)</td></tr>
+          <tr><td>distance_meters</td><td>number</td><td>✅ Yes</td><td>5230 (meters, not km)</td></tr>
+          <tr><td>moving_time_seconds</td><td>integer</td><td></td><td>2400</td></tr>
+          <tr><td>elapsed_time_seconds</td><td>integer</td><td></td><td>2600</td></tr>
+          <tr><td>elevation_gain</td><td>number</td><td></td><td>45.5</td></tr>
+          <tr><td>avg_speed</td><td>number</td><td></td><td>m/s — e.g. 1.45 = ~11.5 min/km pace</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:12px;font-size:12px;color:#888">
+        💡 Tip: To convert km to meters multiply by 1000. To convert pace (min/km) to avg_speed (m/s): speed = 1000 ÷ (pace_min × 60).
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload zone -->
+  <div class="card">
+    <div class="card-head"><span>📁</span><h2>Upload CSV File</h2></div>
+    <div class="card-body">
+      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+        <div class="dz-icon">📄</div>
+        <div class="dz-text" id="dz-text">Click to select CSV file or drag & drop here</div>
+        <div class="dz-sub" id="dz-sub">Supports .csv files only</div>
+      </div>
+      <input type="file" id="file-input" accept=".csv" style="display:none">
+
+      <!-- Stats row (hidden until parsed) -->
+      <div class="stats-row" id="stats-row" style="display:none;margin-top:20px">
+        <div class="stat-box"><div class="v" id="st-total">0</div><div class="l">Total rows</div></div>
+        <div class="stat-box green"><div class="v" id="st-new">0</div><div class="l">New (will import)</div></div>
+        <div class="stat-box red"><div class="v" id="st-dup">0</div><div class="l">Duplicates (skip)</div></div>
+        <div class="stat-box grey"><div class="v" id="st-err">0</div><div class="l">Invalid rows</div></div>
+      </div>
+
+      <!-- Preview table -->
+      <div id="preview-section" style="display:none;margin-top:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:600" id="preview-label">Preview (first 50 rows)</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost" onclick="resetUpload()">🗑 Clear</button>
+            <button class="btn btn-primary" id="import-btn" onclick="startImport()">
+              ⬆️ Import New Activities
+            </button>
+          </div>
+        </div>
+        <div class="preview-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Status</th><th>Activity ID</th><th>Athlete ID</th>
+                <th>Name</th><th>Type</th><th>Date</th><th>Distance</th><th>Reason</th>
+              </tr>
+            </thead>
+            <tbody id="preview-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-wrap" id="progress-wrap">
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:#555;margin-bottom:4px">
+          <span id="progress-label">Importing...</span>
+          <span id="progress-pct">0%</span>
+        </div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill"></div></div>
+        <div class="progress-log" id="progress-log"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="site-footer">© 2026 Arcgate Walkathon &nbsp;·&nbsp;<a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms of Service</a></div>
+
+<script>
+var SUPABASE_URL='https://jhdgkncpkrttvemvwukc.supabase.co';
+var SUPABASE_ANON=atob(['ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW1wb1pHZHJibU53YTNKMGRIWmxiWFozZFd0aklpd2ljbTlzWlNJNkltRnViMjRpTENKcFlYUWlPakUzT0RFMk56Z3lOak1zSW1WNGNDSTZNakE1TnpJMU5ESTJNMzAuZDdtdlhPWURxNUc0YXFzMU1iYzZIRk5nVEJsUWs0QjZhaDBlYWhFX3laRQ=='].join(''));
+var HDR={apikey:SUPABASE_ANON,Authorization:'Bearer '+SUPABASE_ANON};
+
+function authGuard(){var s=JSON.parse(sessionStorage.getItem('wk_admin')||'{}');if(!s.loggedIn||s.expires<Date.now())window.location.href='admin-login.html';}
+function logout(){sessionStorage.removeItem('wk_admin');window.location.href='admin-login.html';}
+authGuard();
+
+var parsedRows = [];     // all parsed CSV rows
+var existingIds = new Set(); // activity IDs already in DB
+
+// ── Drag & drop ──────────────────────────────────────────────
+var dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', function(e){ e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', function(){ dz.classList.remove('drag-over'); });
+dz.addEventListener('drop', function(e){
+  e.preventDefault(); dz.classList.remove('drag-over');
+  var f = e.dataTransfer.files[0];
+  if (f) handleFile(f);
+});
+document.getElementById('file-input').addEventListener('change', function(e){
+  if (e.target.files[0]) handleFile(e.target.files[0]);
+});
+
+// ── Parse CSV ─────────────────────────────────────────────────
+function parseCSV(text) {
+  var lines = text.trim().split('\n');
+  if (lines.length < 2) return { headers: [], rows: [] };
+  var headers = lines[0].split(',').map(function(h){ return h.trim().replace(/^"|"$/g,''); });
+  var rows = [];
+  for (var i = 1; i < lines.length; i++) {
+    var line = lines[i].trim();
+    if (!line) continue;
+    // Handle quoted fields
+    var cols = [];
+    var inQ = false, cur = '';
+    for (var c = 0; c < line.length; c++) {
+      var ch = line[c];
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
+      else { cur += ch; }
+    }
+    cols.push(cur.trim());
+    var row = {};
+    headers.forEach(function(h, idx){ row[h] = cols[idx] !== undefined ? cols[idx] : ''; });
+    rows.push(row);
+  }
+  return { headers: headers, rows: rows };
+}
+
+// ── Validate a row ────────────────────────────────────────────
+function validateRow(row) {
+  var errors = [];
+  var actId = parseInt(row['strava_activity_id']);
+  var athId = parseInt(row['strava_athlete_id']);
+  var dist  = parseFloat(row['distance_meters']);
+  if (!row['strava_activity_id'] || isNaN(actId)) errors.push('Missing activity ID');
+  if (!row['strava_athlete_id']  || isNaN(athId)) errors.push('Missing athlete ID');
+  if (!row['activity_date'])                       errors.push('Missing date');
+  if (!row['sport_type'])                          errors.push('Missing sport type');
+  if (isNaN(dist) || dist <= 0)                   errors.push('Invalid distance');
+  return errors;
+}
+
+// ── Build activity object from row ───────────────────────────
+function rowToActivity(row) {
+  return {
+    strava_activity_id:   parseInt(row['strava_activity_id']),
+    strava_athlete_id:    parseInt(row['strava_athlete_id']),
+    activity_name:        row['activity_name'] || 'Imported Activity',
+    sport_type:           row['sport_type'] || 'Walk',
+    activity_date:        row['activity_date'],
+    distance_meters:      parseFloat(row['distance_meters']) || 0,
+    moving_time_seconds:  parseInt(row['moving_time_seconds']) || null,
+    elapsed_time_seconds: parseInt(row['elapsed_time_seconds']) || null,
+    elevation_gain:       parseFloat(row['elevation_gain']) || null,
+    avg_speed:            parseFloat(row['avg_speed']) || null,
+    max_speed:            parseFloat(row['max_speed']) || null,
+    avg_cadence:          parseFloat(row['avg_cadence']) || null,
+    calories:             parseFloat(row['calories']) || null,
+    avg_heart_rate:       parseFloat(row['avg_heart_rate']) || null,
+    max_heart_rate:       parseFloat(row['max_heart_rate']) || null,
+    steps:                parseInt(row['steps']) || null,
+    is_flagged:           false,
+    is_deleted:           false,
+    flag_reason:          null
+  };
+}
+
+// ── Handle file selected ──────────────────────────────────────
+async function handleFile(file) {
+  if (!file.name.endsWith('.csv')) {
+    alert('Please upload a .csv file only.');
+    return;
+  }
+  document.getElementById('dz-text').textContent = '⏳ Reading ' + file.name + '...';
+  document.getElementById('dz-sub').textContent  = '';
+
+  var text = await file.text();
+  var parsed = parseCSV(text);
+
+  if (!parsed.rows.length) {
+    document.getElementById('dz-text').textContent = '❌ No data rows found in CSV';
+    return;
+  }
+
+  document.getElementById('dz-text').textContent = '✅ ' + file.name;
+  document.getElementById('dz-sub').textContent  = parsed.rows.length + ' rows found — checking duplicates...';
+
+  // Fetch all existing activity IDs from DB
+  existingIds = await loadExistingIds();
+
+  // Validate and classify rows
+  parsedRows = parsed.rows.map(function(row, i) {
+    var errors = validateRow(row);
+    var actId  = parseInt(row['strava_activity_id']);
+    var isDup  = !isNaN(actId) && existingIds.has(actId);
+    return {
+      row:    row,
+      index:  i + 1,
+      errors: errors,
+      isDup:  isDup,
+      actId:  actId
+    };
+  });
+
+  renderPreview();
+}
+
+// ── Load all existing activity IDs ───────────────────────────
+async function loadExistingIds() {
+  var ids = new Set();
+  var from = 0;
+  while (true) {
+    var r = await fetch(
+      SUPABASE_URL + '/rest/v1/activities?select=strava_activity_id&is_deleted=eq.false',
+      { headers: Object.assign({}, HDR, {'Range-Unit':'items','Range': from+'-'+(from+999)}) }
+    );
+    var page = await r.json();
+    if (!Array.isArray(page) || page.length === 0) break;
+    page.forEach(function(a){ ids.add(parseInt(a.strava_activity_id)); });
+    if (page.length < 1000) break;
+    from += 1000;
+  }
+  return ids;
+}
+
+// ── Render preview table ──────────────────────────────────────
+function renderPreview() {
+  var total  = parsedRows.length;
+  var dups   = parsedRows.filter(function(r){ return r.isDup; }).length;
+  var errs   = parsedRows.filter(function(r){ return r.errors.length > 0 && !r.isDup; }).length;
+  var newRows= parsedRows.filter(function(r){ return !r.isDup && r.errors.length === 0; }).length;
+
+  document.getElementById('st-total').textContent = total;
+  document.getElementById('st-new').textContent   = newRows;
+  document.getElementById('st-dup').textContent   = dups;
+  document.getElementById('st-err').textContent   = errs;
+  document.getElementById('stats-row').style.display = 'flex';
+
+  var importBtn = document.getElementById('import-btn');
+  importBtn.disabled = newRows === 0;
+  importBtn.innerHTML = newRows === 0
+    ? '⬆️ Nothing to Import'
+    : '⬆️ Import ' + newRows + ' New Activities';
+
+  var preview = parsedRows.slice(0, 50);
+  document.getElementById('preview-body').innerHTML = preview.map(function(r) {
+    var statusBadge, reason = '';
+    if (r.errors.length > 0) {
+      statusBadge = '<span class="badge badge-err">❌ Invalid</span>';
+      reason = r.errors.join(', ');
+    } else if (r.isDup) {
+      statusBadge = '<span class="badge badge-dup">⚠️ Duplicate</span>';
+      reason = 'Already in DB (ID: ' + r.actId + ')';
+    } else {
+      statusBadge = '<span class="badge badge-new">✅ New</span>';
+    }
+    var d = r.row['activity_date'] ? r.row['activity_date'].split('T')[0] : '—';
+    var km = r.row['distance_meters'] ? (parseFloat(r.row['distance_meters'])/1000).toFixed(2)+' km' : '—';
+    return '<tr>'
+      + '<td style="color:#aaa">' + r.index + '</td>'
+      + '<td>' + statusBadge + '</td>'
+      + '<td style="font-family:monospace;font-size:12px">' + (r.row['strava_activity_id']||'—') + '</td>'
+      + '<td style="font-family:monospace;font-size:12px">' + (r.row['strava_athlete_id']||'—') + '</td>'
+      + '<td style="max-width:160px;overflow:hidden;text-overflow:ellipsis">' + (r.row['activity_name']||'—') + '</td>'
+      + '<td>' + (r.row['sport_type']||'—') + '</td>'
+      + '<td>' + d + '</td>'
+      + '<td>' + km + '</td>'
+      + '<td style="color:#c62828;font-size:12px">' + reason + '</td>'
+      + '</tr>';
+  }).join('');
+
+  if (parsedRows.length > 50) {
+    document.getElementById('preview-body').innerHTML +=
+      '<tr><td colspan="9" style="text-align:center;padding:12px;color:#888;font-size:13px">…and ' + (parsedRows.length - 50) + ' more rows not shown</td></tr>';
+  }
+
+  document.getElementById('dz-sub').textContent = total + ' rows — ' + newRows + ' new, ' + dups + ' duplicates, ' + errs + ' invalid';
+  document.getElementById('preview-section').style.display = 'block';
+  document.getElementById('preview-label').textContent = 'Preview' + (parsedRows.length > 50 ? ' (first 50 of ' + total + ' rows)' : ' (' + total + ' rows)');
+}
+
+// ── Start import ──────────────────────────────────────────────
+async function startImport() {
+  var toImport = parsedRows.filter(function(r){ return !r.isDup && r.errors.length === 0; });
+  if (!toImport.length) return;
+
+  var btn = document.getElementById('import-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Importing...';
+
+  var pw = document.getElementById('progress-wrap');
+  pw.style.display = 'block';
+  var log = document.getElementById('progress-log');
+  var fill = document.getElementById('progress-fill');
+  var pct  = document.getElementById('progress-pct');
+  var lbl  = document.getElementById('progress-label');
+  log.innerHTML = '';
+
+  function addLog(msg, color) {
+    log.innerHTML += '<div style="color:' + (color||'#a5d6a7') + '">' + msg + '</div>';
+    log.scrollTop = log.scrollHeight;
+  }
+
+  addLog('🚀 Starting import of ' + toImport.length + ' activities...');
+
+  var success = 0, failed = 0, skipped = 0;
+  var BATCH = 50; // insert in batches of 50
+
+  for (var i = 0; i < toImport.length; i += BATCH) {
+    var batch = toImport.slice(i, i + BATCH);
+    var activities = batch.map(function(r){ return rowToActivity(r.row); });
+
+    try {
+      var r = await fetch(SUPABASE_URL + '/rest/v1/activities', {
+        method: 'POST',
+        headers: Object.assign({}, HDR, {
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=ignore-duplicates,return=minimal'
+        }),
+        body: JSON.stringify(activities)
+      });
+
+      if (r.ok) {
+        success += batch.length;
+        addLog('✅ Batch ' + Math.ceil((i+BATCH)/BATCH) + ': imported rows ' + (i+1) + '–' + Math.min(i+BATCH, toImport.length));
+      } else {
+        var err = await r.text();
+        failed += batch.length;
+        addLog('❌ Batch error: ' + err.substring(0, 120), '#ef9a9a');
+      }
+    } catch(e) {
+      failed += batch.length;
+      addLog('❌ Network error: ' + e.message, '#ef9a9a');
+    }
+
+    // Update progress
+    var done = Math.min(i + BATCH, toImport.length);
+    var pctVal = Math.round(done / toImport.length * 100);
+    fill.style.width = pctVal + '%';
+    pct.textContent = pctVal + '%';
+    lbl.textContent = 'Importing… ' + done + ' / ' + toImport.length;
+  }
+
+  // Done
+  fill.style.width = '100%';
+  pct.textContent = '100%';
+  lbl.textContent = '✅ Import complete';
+  addLog('');
+  addLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', '#555');
+  addLog('✅ Imported:  ' + success);
+  addLog('⚠️  Skipped:  ' + skipped);
+  if (failed) addLog('❌ Failed:    ' + failed, '#ef9a9a');
+  addLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', '#555');
+
+  btn.innerHTML = '✅ Done — ' + success + ' imported';
+  btn.disabled = false;
+}
+
+// ── Reset ─────────────────────────────────────────────────────
+function resetUpload() {
+  parsedRows = [];
+  existingIds = new Set();
+  document.getElementById('file-input').value = '';
+  document.getElementById('dz-text').textContent = 'Click to select CSV file or drag & drop here';
+  document.getElementById('dz-sub').textContent  = 'Supports .csv files only';
+  document.getElementById('stats-row').style.display = 'none';
+  document.getElementById('preview-section').style.display = 'none';
+  document.getElementById('progress-wrap').style.display = 'none';
+  document.getElementById('progress-log').innerHTML = '';
+  document.getElementById('progress-fill').style.width = '0%';
+}
+</script>
+</body>
+</html>
