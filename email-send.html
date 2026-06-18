@@ -143,7 +143,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="card">
       <div class="card-head">
         <div class="card-head-left"><span>⚙️</span><h2>SMTP Server Settings</h2></div>
-        <button class="btn btn-primary btn-sm" onclick="saveSmtp()">💾 Save</button>
       </div>
       <div class="card-body">
         <p style="font-size:13px;color:#888;margin-bottom:20px">Configure your SMTP server to send emails. Settings are saved securely in your database.</p>
@@ -436,22 +435,42 @@ async function loadSmtp() {
   } catch(e) { console.warn('loadSmtp:', e.message); }
 }
 async function saveSmtp() {
+  var btn = document.querySelector('#tab-smtp .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+  var statusEl = document.getElementById('smtp-status');
+  if (statusEl) statusEl.textContent = '⏳ Saving...';
+
   var s = {};
   ['host','port','user','pass','from-name','from-email','enc','reply'].forEach(function(k){
     var el = document.getElementById('smtp-'+k);
     if (el) s[k] = el.value;
   });
+
+  console.log('Saving SMTP config:', Object.assign({}, s, {pass: '***'}));
+
   try {
     var existing = await sbGet("leaderboard_config?config_key=eq.smtp_settings");
-    if (existing && existing[0]) {
-      await sbPatch("leaderboard_config?config_key=eq.smtp_settings", {config_value: s});
+    console.log('Existing config rows:', existing);
+
+    var result;
+    if (Array.isArray(existing) && existing.length > 0) {
+      result = await sbPatch("leaderboard_config?config_key=eq.smtp_settings", {config_value: s});
     } else {
-      await sbPost("leaderboard_config", {config_key:'smtp_settings', config_value: s});
+      result = await sbPost("leaderboard_config", {config_key: 'smtp_settings', config_value: s});
     }
+    console.log('Save result:', result);
+
+    if (result && result.code) throw new Error(result.message || result.hint || result.code);
+
+    if (statusEl) statusEl.textContent = '✅ Saved!';
+    setTimeout(function(){ if(statusEl) statusEl.textContent = ''; }, 3000);
     showSaved('smtp-saved');
   } catch(e) {
-    alert('❌ Save failed: ' + e.message + '\nCheck browser console for details.');
     console.error('saveSmtp error:', e);
+    if (statusEl) statusEl.textContent = '❌ ' + e.message;
+    alert('❌ Save failed: ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '💾 Save SMTP Settings'; }
   }
 }
 async function testSmtp() {
