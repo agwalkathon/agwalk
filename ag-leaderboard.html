@@ -660,13 +660,13 @@ function toggleExpand(athleteId, gender, trEl) {
     if (existing.style.display === 'block') {
       existing.style.display = 'none'; return;
     } else {
-      existing.style.display = 'table-row';
+      existing.style.display = 'block';
     }
     return;
   }
 
   // Create expand row with loader
-  var expRow = document.createElement('tr');
+  var expRow = document.createElement('div');
   expRow.id = expId;
   expRow.className = 'expand-card';
   expRow.style.display = 'block';
