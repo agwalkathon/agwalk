@@ -401,7 +401,8 @@ async function fetchFlagCandidates() {
       var aboveMin = distMin === null || km >= distMin;
       var belowMax = distMax === null || km <= distMax;
       if (aboveMin && belowMax) {
-        flagReasons.push('Manual Review - Distance Issue');
+        var dLabel = (distMin!==null?distMin:'') + '-' + (distMax!==null?distMax:'');
+        flagReasons.push('Manual Review - Distance Issue (' + dLabel + ')');
       }
     }
 
@@ -414,7 +415,8 @@ async function fetchFlagCandidates() {
         var aboveMin = rule.minPace === null || paceMinkm >= rule.minPace;
         var belowMax = rule.maxPace === null || paceMinkm <= rule.maxPace;
         if (aboveMin && belowMax) {
-          flagReasons.push('Manual Review - Pace Issue');
+          var pLabel = (rule.minPace!==null?rule.minPace:'') + '-' + (rule.maxPace!==null?rule.maxPace:'');
+          flagReasons.push('Manual Review - Pace Issue (' + pLabel + ')');
           break;
         }
       }
