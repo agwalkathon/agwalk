@@ -207,11 +207,11 @@
     <div class="filter-right">
       <div class="info-chips">
         <span class="chip">📅 June 1–30</span>
-        <span class="chip" id="challenge-info">🎯 —</span>
+        
       </div>
       <div class="filter-actions">
         <button class="btn-clear" onclick="clearFilters()">Clear</button>
-        <button class="btn-refresh" onclick="allData={};loadAll()">🔄 Refresh</button>
+        <button class="btn-refresh" onclick="doRefresh()">🔄 Refresh</button>
         <a href="ag-config.html" class="btn-config">⚙️ Config</a>
       </div>
     </div>
@@ -347,8 +347,7 @@ async function loadChallenges() {
   try {
     var r = await fetch(SB_URL+'/rest/v1/challenges?is_active=eq.true&select=*', {headers:HDR});
     CHALLENGES = await r.json();
-    var names = CHALLENGES.map(function(c){ return c.name; }).join(', ');
-    document.getElementById('challenge-info').innerHTML = '🎯 Challenges: <strong>'+(names||'None')+'</strong>';
+    // challenge chip removed
   } catch(e) { CHALLENGES = []; }
 }
 
@@ -530,7 +529,16 @@ function calcPoints(acts, athleteId, gender) {
   };
 }
 
-var allActivities = []; // global for sport filter
+var allActivities = [];
+
+function doRefresh() {
+  allData = {};
+  allActivities = [];
+  // Clear any expanded rows
+  document.querySelectorAll('.expand-row').forEach(function(r){ r.remove(); });
+  loadAll();
+}
+ // global for sport filter
 
 async function loadAll() {
   allData = {};
@@ -595,6 +603,12 @@ function renderBoard(rows, board) {
     });
   }
   document.getElementById('lb-body').innerHTML = renderedRows.join('');
+  // Attach click listeners to all rows
+  document.querySelectorAll('.lb-row[data-athlete]').forEach(function(tr) {
+    tr.addEventListener('click', function() {
+      toggleExpand(tr.getAttribute('data-athlete'), tr.getAttribute('data-gender'), tr);
+    });
+  });
 }
 
 function toggleExpand(athleteId, gender, trEl) {
@@ -688,9 +702,11 @@ function buildRow(row, i) {
     var rankCls = i===0?'r1':i===1?'r2':i===2?'r3':'';
     var medal_icon = i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
     var chalHtml = pts.challengePts > 0
-      ? '<div>+'+pts.challengePts+'<br><span class="challenge-badge">'+pts.challenges.join(', ')+'</span></div>'
+      ? '<strong style="color:#1565c0;font-size:14px">+'+pts.challengePts+'</strong>'
       : '<span style="color:#ddd">—</span>';
-    return '<tr class="lb-row '+topCls+'" onclick="toggleExpand(\''+row.p.strava_athlete_id+'\',\''+((row.p.gender||'').toLowerCase())+'\'\',this)" style="cursor:pointer"> '
+    var athleteId = row.p.strava_athlete_id;
+    var gender = (row.p.gender||'').toLowerCase();
+    return '<tr class="lb-row '+topCls+'" data-athlete="'+athleteId+'" data-gender="'+gender+'" style="cursor:pointer"> '
       +'<td><span class="rank '+rankCls+'">'+medal_icon+'</span></td>'
       +'<td><strong>'+p.full_name+'</strong></td>'
       +'<td style="font-size:12px;color:#888">'+( p.leaderboard_team||'—')+'</td>'
