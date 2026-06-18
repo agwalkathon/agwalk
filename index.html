@@ -271,11 +271,12 @@ var BACKEND_URL = 'https://walkathon-backend-hv9j.onrender.com';
 var EVENT_CODE  = 'walkathon2026';
 var params      = new URLSearchParams(window.location.search);
 var authCode    = params.get('code');
-var redirectURI = window.location.origin + window.location.pathname;
+// Redirect to portal.html after Strava auth — portal handles the code
+var portalURI = window.location.origin + window.location.pathname.replace('index.html','') + 'portal.html';
 var authUrl = 'https://www.strava.com/oauth/authorize'
   + '?client_id=' + STRAVA_CLIENT_ID
-  + '&redirect_uri=' + encodeURIComponent(redirectURI)
-  + '&response_type=code&scope=read,activity:read&state=' + EVENT_CODE;
+  + '&redirect_uri=' + encodeURIComponent(portalURI)
+  + '&response_type=code&scope=read,activity:read&state=portal';
 document.getElementById('strava-btn').href = authUrl;
 
 function showMsg(type, html) {
@@ -288,34 +289,7 @@ function setProcessing(show, text) {
   document.getElementById('strava-btn').style.display  = show ? 'none' : 'flex';
 }
 
-if (authCode) {
-  setProcessing(true, 'Connecting your account...');
-  fetch(BACKEND_URL + '/register', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ code: authCode, event_code: EVENT_CODE })
-  })
-  .then(function(r){ return r.json().then(function(d){ d.http_status=r.status; return d; }); })
-  .then(function(d) {
-    setProcessing(false);
-    if (d.success) {
-      var role = d.role||'user';
-      var session = { loggedIn:true, role:role, athleteId:d.athlete_id, name:d.name, expires:Date.now()+(8*60*60*1000) };
-      sessionStorage.removeItem('wk_admin');
-      sessionStorage.setItem('wk_user', JSON.stringify(session));
-      if (role==='admin') sessionStorage.setItem('wk_admin', JSON.stringify(session));
-      showMsg('msg-success','✅ <strong>Logged in!</strong> Redirecting...');
-      setTimeout(function(){ window.location.href = role==='admin' ? 'admin.html' : 'portal.html'; }, 800);
-    } else if (d.error==='not_registered') {
-      showMsg('msg-error','⛔ <strong>Not registered.</strong><br>Your Strava account is not registered for this event. Contact your event admin.');
-    } else {
-      showMsg('msg-error','❌ <strong>Login failed.</strong><br>Please try again.');
-    }
-  })
-  .catch(function(){
-    setProcessing(false);
-    showMsg('msg-error','❌ Connection error. Please try again.');
-  });
-}
+
 </script>
 </body>
 </html>
