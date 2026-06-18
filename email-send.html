@@ -567,10 +567,6 @@ async function saveTemplate() {
       await dbInsert('email_templates', { name: name, subject: subj, body_html: body, description: desc });
     }
     setStatus('tpl-status', 'ok', '✅ Template saved!');
-    document.getElementById('tpl-name').value = '';
-    document.getElementById('tpl-subject').value = '';
-    document.getElementById('tpl-body').value = '';
-    document.getElementById('tpl-desc').value = '';
     loadTemplates();
   } catch(e) {
     setStatus('tpl-status', 'err', '❌ Save failed: ' + e.message);
@@ -722,7 +718,6 @@ async function saveJob() {
       frequency: freq, send_time: time, status: status
     });
     setStatus('job-status', 'ok', '✅ Job saved!');
-    document.getElementById('job-name').value = '';
     loadJobs();
   } catch(e) {
     setStatus('job-status', 'err', '❌ Save failed: ' + e.message);
@@ -857,7 +852,71 @@ async function loadHistory() {
   }
 }
 
+// ── Persist form fields via localStorage ──────────────
+var PERSIST_FIELDS = [
+  'smtp-host','smtp-port','smtp-user','smtp-from_name','smtp-from_email','smtp-enc','smtp-reply',
+  'tpl-name','tpl-subject','tpl-desc',
+  'job-name','job-freq','job-time','job-status',
+  'send-test-email'
+];
+
+function saveFieldsToStorage() {
+  PERSIST_FIELDS.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) localStorage.setItem('wk_email_' + id, el.value);
+  });
+}
+
+function restoreFieldsFromStorage() {
+  PERSIST_FIELDS.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var saved = localStorage.getItem('wk_email_' + id);
+    if (saved !== null && saved !== '') el.value = saved;
+  });
+  // tpl-body is too large for per-keystroke, restore separately
+  var body = localStorage.getItem('wk_email_tpl-body');
+  if (body) { var el = document.getElementById('tpl-body'); if (el) el.value = body; }
+}
+
+function attachPersistListeners() {
+  PERSIST_FIELDS.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', function() {
+      localStorage.setItem('wk_email_' + id, el.value);
+    });
+    el.addEventListener('change', function() {
+      localStorage.setItem('wk_email_' + id, el.value);
+    });
+  });
+  // tpl-body separately (debounced — don't save on every keypress)
+  var bodyEl = document.getElementById('tpl-body');
+  if (bodyEl) {
+    var bodyTimer;
+    bodyEl.addEventListener('input', function() {
+      clearTimeout(bodyTimer);
+      bodyTimer = setTimeout(function() {
+        localStorage.setItem('wk_email_tpl-body', bodyEl.value);
+      }, 800);
+    });
+  }
+}
+
+// Clear template form fields but keep localStorage (so they repopulate next visit)
+function clearTplForm() {
+  ['tpl-name','tpl-subject','tpl-body','tpl-desc'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+    localStorage.removeItem('wk_email_' + id);
+  });
+  var btn = document.getElementById('tpl-save-btn');
+  if (btn) { btn.removeAttribute('data-edit-id'); btn.textContent = '💾 Save Template'; }
+}
+
 // ── Init ───────────────────────────────────────────────
+restoreFieldsFromStorage();
+attachPersistListeners();
 loadSmtp();
 
 </script>
