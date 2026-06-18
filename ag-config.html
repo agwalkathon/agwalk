@@ -126,11 +126,21 @@
 
   <!-- Challenges -->
   <div class="section">
-    <div class="section-title">🎯 Challenges</div>
-    <div class="section-sub">Configure challenge bonuses. Participants earn bonus points by completing a qualifying activity.</div>
-    <div id="challenges-list">Loading...</div>
-    <button class="btn-add" onclick="addChallenge()">+ Add challenge</button>
-    <span class="saved-msg" id="ch-saved">✅ Saved!</span>
+    <div class="section-header" onclick="toggleSection('challenges')">
+      <div class="section-header-left">
+        <span>🎯</span>
+        <div>
+          <div class="section-title">Challenges</div>
+          <div class="section-sub-inline">Configure challenge bonus criteria and points</div>
+        </div>
+      </div>
+      <span class="section-chevron" id="chev-challenges">▼</span>
+    </div>
+    <div class="section-body" id="body-challenges">
+      <div id="challenges-list">Loading...</div>
+      <button class="btn-add" onclick="addChallenge()">+ Add challenge</button>
+      <span class="saved-msg" id="ch-saved">✅ Saved!</span>
+    </div>
   </div>
 
 
