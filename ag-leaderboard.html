@@ -548,6 +548,8 @@ async function doRefresh() {
  // global for sport filter
 
 async function loadAll() {
+  document.getElementById('lb-body').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:60px;color:#bbb"><div class="spinner"></div><span style="font-size:14px">Loading all activities...</span></div>';
+  try {
   allData = {};
   await Promise.all([loadConfig(), loadChallenges()]);
   var [reg, acts] = await Promise.all([loadRegistration(), loadActivities()]);
@@ -571,12 +573,16 @@ async function loadAll() {
     if (el) el.textContent = rows.length;
   });
 
-  applyFilters();
+    applyFilters();
+  } catch(err) {
+    console.error('loadAll error:', err);
+    document.getElementById('lb-body').innerHTML = '<div style="text-align:center;padding:60px;color:#c62828;font-size:14px">❌ Error loading data: '+err.message+'</div>';
+  }
 }
 
 function renderBoard(rows, board) {
   if (!rows || !rows.length) {
-    document.getElementById('lb-body').innerHTML = '<tr><td colspan="9"><div class="empty">No participants with activities found</div></td></tr>';
+    document.getElementById('lb-body').innerHTML = '<div style="text-align:center;padding:60px;color:#bbb;font-size:15px">No participants with activities found</div>';
     updateStats([]);
     return;
   }
