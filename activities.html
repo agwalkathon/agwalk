@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Search Activities — Arcgate Walkathon 2026</title>
   <style>
@@ -82,6 +83,32 @@
     .btn-cancel  { background: #f0f0f0; color: #555; }
     .dist-field { display: none; }
     .dist-field.show { display: block; }
+
+    @media (max-width: 768px) {
+      .site-header { padding: 10px 16px; }
+      .site-header nav { gap: 2px; }
+      .site-header nav a { font-size: 11px; padding: 5px 8px; }
+      .page-bar { padding: 14px 16px; }
+      .page-bar h1 { font-size: 16px; }
+      .content { padding: 14px 16px; }
+      .stats-grid { gap: 8px; }
+      .stat-card { min-width: 90px; padding: 10px 12px; }
+      .stat-card .val { font-size: 18px; }
+      .filter-bar { padding: 14px 16px; }
+      .filter-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      table { font-size: 12px; }
+      th, td { padding: 7px 8px; }
+      .table-wrap { -webkit-overflow-scrolling: touch; }
+    }
+    @media (max-width: 480px) {
+      .filter-grid { grid-template-columns: 1fr; }
+      .stats-grid { display: grid; grid-template-columns: 1fr 1fr; }
+    }
+
+    .editable { cursor: pointer; }
+    .editable:hover { background: #fff5f0; border-radius: 4px; }
+    .edit-input { width: 80px; padding: 4px 6px; border: 1px solid #E8622A; border-radius: 4px; font-size: 12px; }
+    .edit-select { width: 100px; padding: 4px 6px; border: 1px solid #E8622A; border-radius: 4px; font-size: 12px; }
   </style>
 </head>
 <body>
@@ -338,6 +365,47 @@ async function confirmStatus() {
 }
 document.getElementById('flag-modal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
 
+
+function editDist(cell, actId, currentM) {
+  var currentKm = (parseFloat(currentM)||0)/1000;
+  cell.innerHTML = '<input class="edit-input" type="number" step="0.01" value="'+currentKm.toFixed(2)+'" onblur="saveDist(this,'+actId+')" onkeydown="if(event.key===\'Enter\')this.blur();if(event.key===\'Escape\')location.reload()" autofocus>';
+  cell.querySelector('input').focus();
+}
+async function saveDist(input, actId) {
+  var km = parseFloat(input.value) || 0;
+  var meters = Math.round(km * 1000);
+  var cell = input.parentElement;
+  cell.innerHTML = '<span style="color:#E8622A">Saving...</span>';
+  try {
+    var resp = await fetch(SUPABASE_URL+'/rest/v1/activities?id=eq.'+actId, {
+      method:'PATCH', headers:{apikey:SUPABASE_ANON,Authorization:'Bearer '+SUPABASE_ANON,'Content-Type':'application/json'},
+      body: JSON.stringify({distance_meters: meters})
+    });
+    cell.innerHTML = km.toFixed(2)+' km';
+    cell.setAttribute('ondblclick','editDist(this,'+actId+','+meters+')');
+  } catch(e) { cell.innerHTML = 'Error'; }
+}
+function editType(cell, actId, currentType) {
+  var types = ['Walk','Run','Hike','Ride','VirtualRun','VirtualRide','MountainBikeRide'];
+  var opts = types.map(function(t){ return '<option value="'+t+'"'+(t===currentType?' selected':'')+'>'+t+'</option>'; }).join('');
+  cell.innerHTML = '<select class="edit-select" onblur="saveType(this,'+actId+')" onkeydown="if(event.key===\'Enter\')this.blur()"><option value="">Select...</option>'+opts+'</select>';
+  cell.querySelector('select').focus();
+}
+async function saveType(sel, actId) {
+  var newType = sel.value;
+  if (!newType) { location.reload(); return; }
+  var cell = sel.parentElement;
+  cell.innerHTML = '<span style="color:#E8622A">Saving...</span>';
+  try {
+    await fetch(SUPABASE_URL+'/rest/v1/activities?id=eq.'+actId, {
+      method:'PATCH', headers:{apikey:SUPABASE_ANON,Authorization:'Bearer '+SUPABASE_ANON,'Content-Type':'application/json'},
+      body: JSON.stringify({sport_type: newType})
+    });
+    cell.innerHTML = '<span class="badge '+bc(newType)+'">'+newType+'</span>';
+    cell.setAttribute('ondblclick','editType(this,'+actId+',\''+newType+'\')');
+  } catch(e) { cell.innerHTML = 'Error'; }
+}
+
 function clearFilters() {
   ['date-from','date-to','athlete-name'].forEach(function(id){ document.getElementById(id).value=''; });
   ['sport-filter','team-filter','status-filter','flag-reason-filter'].forEach(function(id){ document.getElementById(id).value=''; });
@@ -429,11 +497,11 @@ async function loadActivities() {
         +'<td id="status-cell-'+a.id+'" data-reason="'+(a.flag_reason||'')+'">'+statusBadge+'</td>'
         +'<td><a href="https://www.strava.com/athletes/'+a.strava_athlete_id+'" target="_blank" class="ath">'+(r?.full_name||'Unknown')+'</a></td>'
         +'<td style="font-size:12px;color:#888">'+(r?.leaderboard_team||'—')+'</td>'
-        +'<td><a href="'+actUrl+'" target="_blank" class="act-link">'+(a.activity_name||'—')+'</a></td>'
-        +'<td><span class="badge '+bc(a.sport_type)+'">'+(a.sport_type||'—')+'</span></td>'
+        +'<td style="max-width:130px"><a href="'+actUrl+'" target="_blank" class="act-link" title="'+(a.activity_name||'')+'" style="display:inline-block;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(a.activity_name||'—')+'</a></td>'
+        +'<td class="editable" ondblclick="editType(this,'+a.id+',\''+( a.sport_type||'')+'\'\')" title="Double-click to edit"><span class="badge '+bc(a.sport_type)+'">'+(a.sport_type||'—')+'</span></td>'
         +'<td>'+fmtDate(a.activity_date)+'</td>'
         +'<td>'+fmtTime(a.activity_date)+'</td>'
-        +'<td>'+(a.distance_meters?(a.distance_meters/1000).toFixed(2)+' km':'—')+'</td>'
+        +'<td class="editable" ondblclick="editDist(this,'+a.id+','+( a.distance_meters||0)+')" title="Double-click to edit">'+(a.distance_meters?(a.distance_meters/1000).toFixed(2)+' km':'—')+'</td>'
         +'<td>'+(a.moving_time_seconds?fmtDur(a.moving_time_seconds):'—')+'</td>'
         +'<td>'+fmtPS(a.avg_speed,a.sport_type)+'</td>'
         +'<td>'+(a.elevation_gain?a.elevation_gain.toFixed(0)+' m':'—')+'</td>'
