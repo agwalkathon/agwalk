@@ -378,7 +378,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 <script>
 var SUPABASE_URL='https://jhdgkncpkrttvemvwukc.supabase.co';
-var SUPABASE_ANON=atob(['ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW1wb1pHZHJibU53YTNKMGRIWmxiWFozZFd0aklpd2ljbTlzWlNJNkltRnViMjRpTENKcFlYUWlPakUzT0RFMk56Z3lOak1zSW1WNGNDSTZNakE5TnpJMU5ESTJNMzAuZDdtdlhPWURxNUc0YXFzMU1iYzZIRk5nVEJsUWs0QjZhaDBlYWhFX3laRQ=='].join(''));
+var SUPABASE_ANON=atob(['ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW1wb1pHZHJibU53YTNKMGRIWmxiWFozZFd0aklpd2ljbTlzWlNJNkltRnViMjRpTENKcFlYUWlPakUzT0RFMk56Z3lOak1zSW1WNGNDSTZNakE1TnpJMU5ESTJNMzAuZDdtdlhPWURxNUc0YXFzMU1iYzZIRk5nVEJsUWs0QjZhaDBlYWhFX3laRQ=='].join(''));
 var HDR={apikey:SUPABASE_ANON,Authorization:'Bearer '+SUPABASE_ANON,'Content-Type':'application/json'};
 
 function authGuard(){var s=JSON.parse(sessionStorage.getItem('wk_admin')||'{}');if(!s.loggedIn||s.expires<Date.now())window.location.href='admin-login.html';}
@@ -435,14 +435,18 @@ async function saveSmtp() {
     var el = document.getElementById('smtp-'+k);
     if (el) s[k] = el.value;
   });
-  // Upsert
-  var existing = await sbGet("leaderboard_config?config_key=eq.smtp_settings");
-  if (existing && existing[0]) {
-    await sbPatch("leaderboard_config?config_key=eq.smtp_settings", {config_value: s});
-  } else {
-    await sbPost("leaderboard_config", {config_key:'smtp_settings', config_value: s});
+  try {
+    var existing = await sbGet("leaderboard_config?config_key=eq.smtp_settings");
+    if (existing && existing[0]) {
+      await sbPatch("leaderboard_config?config_key=eq.smtp_settings", {config_value: s});
+    } else {
+      await sbPost("leaderboard_config", {config_key:'smtp_settings', config_value: s});
+    }
+    showSaved('smtp-saved');
+  } catch(e) {
+    alert('❌ Save failed: ' + e.message + '\nCheck browser console for details.');
+    console.error('saveSmtp error:', e);
   }
-  showSaved('smtp-saved');
 }
 async function testSmtp() {
   document.getElementById('smtp-status').textContent = '⏳ Sending test email...';
@@ -513,13 +517,19 @@ async function saveTemplate() {
   var body = document.getElementById('tpl-body').value.trim();
   var desc = document.getElementById('tpl-desc').value.trim();
   if (!name || !body) { alert('Template name and HTML body are required.'); return; }
-  await sbPost("email_templates", {name:name, subject:subj, body_html:body, description:desc});
-  showSaved('tpl-saved');
-  document.getElementById('tpl-name').value='';
-  document.getElementById('tpl-subject').value='';
-  document.getElementById('tpl-body').value='';
-  document.getElementById('tpl-desc').value='';
-  loadTemplates();
+  try {
+    var result = await sbPost("email_templates", {name:name, subject:subj, body_html:body, description:desc});
+    if (result && result.code) throw new Error(result.message || result.code);
+    showSaved('tpl-saved');
+    document.getElementById('tpl-name').value='';
+    document.getElementById('tpl-subject').value='';
+    document.getElementById('tpl-body').value='';
+    document.getElementById('tpl-desc').value='';
+    loadTemplates();
+  } catch(e) {
+    alert('❌ Save failed: ' + e.message + '\n\nMake sure you ran the SQL to create the email_templates table in Supabase.');
+    console.error('saveTemplate error:', e);
+  }
 }
 async function editTemplate(id) {
   var rows = await sbGet("email_templates?id=eq."+id);
@@ -597,18 +607,24 @@ async function saveJob() {
   var time  = document.getElementById('job-time').value;
   var status= document.getElementById('job-status').value;
   if (!name) { alert('Job name is required.'); return; }
-  if (!tplId) { alert('Please select a template.'); return; }
-  await sbPost("email_jobs", {
-    name: name,
-    event_name: event||null,
-    template_id: parseInt(tplId),
-    frequency: freq,
-    send_time: time,
-    status: status
-  });
-  showSaved('job-saved');
-  document.getElementById('job-name').value='';
-  loadJobs();
+  if (!tplId) { alert('Please select a template first from the Templates tab.'); return; }
+  try {
+    var result = await sbPost("email_jobs", {
+      name: name,
+      event_name: event||null,
+      template_id: parseInt(tplId),
+      frequency: freq,
+      send_time: time,
+      status: status
+    });
+    if (result && result.code) throw new Error(result.message || result.code);
+    showSaved('job-saved');
+    document.getElementById('job-name').value='';
+    loadJobs();
+  } catch(e) {
+    alert('❌ Save failed: ' + e.message + '\n\nMake sure you ran the SQL to create the email_jobs table in Supabase.');
+    console.error('saveJob error:', e);
+  }
 }
 async function toggleJob(id, currentStatus) {
   var newStatus = currentStatus==='active' ? 'paused' : 'active';
