@@ -605,7 +605,7 @@ function renderBoard(rows, board) {
     });
     teamNames.forEach(function(teamName) {
       // Team header row
-      renderedRows.push('<div style="background:#f5f5f5;padding:10px 20px;font-weight:700;color:#1A1A1A;font-size:14px;border-top:2px solid #E8622A"' >🏙️ '+teamName+'</div>');
+      renderedRows.push('<div style="background:#f5f5f5;padding:10px 20px;font-weight:700;color:#1A1A1A;font-size:14px;border-top:2px solid #E8622A">🏙️ '+teamName+'</div>');
       teams[teamName].forEach(function(row, i) {
         renderedRows.push(buildRow(row, i));
       });
