@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Leaderboard Config — Arcgate Walkathon 2026</title>
   <style>
@@ -111,6 +112,36 @@
     <div id="challenges-list">Loading...</div>
     <button class="btn-add" onclick="addChallenge()">+ Add challenge</button>
     <span class="saved-msg" id="ch-saved">✅ Saved!</span>
+  </div>
+
+
+  <!-- Manual Bonus -->
+  <div class="section">
+    <div class="section-title">🎁 Manual Bonus by Activity ID</div>
+    <div class="section-sub">Add manual challenge bonus for activities where criteria cannot be auto-tracked. Enter one Activity ID per line.</div>
+    <div class="form-grid" style="max-width:600px">
+      <div class="field" style="grid-column:1/-1">
+        <label>Activity IDs (one per line)</label>
+        <textarea id="manual-ids" rows="6" style="width:100%;padding:10px 12px;border:1px solid #e8e8e8;border-radius:8px;font-size:13px;font-family:monospace;resize:vertical" placeholder="18757426157&#10;18755858909&#10;18773676802"></textarea>
+      </div>
+      <div class="field">
+        <label>Bonus points per activity</label>
+        <input type="number" id="manual-pts" value="3" min="1" max="50">
+      </div>
+      <div class="field">
+        <label>Reason / Challenge name</label>
+        <input type="text" id="manual-reason" placeholder="e.g. World Environment Day">
+      </div>
+    </div>
+    <button class="save-btn" onclick="saveManualBonus()">Apply manual bonus</button>
+    <span class="saved-msg" id="manual-saved">✅ Applied!</span>
+    <div id="manual-result" style="margin-top:14px;font-size:13px;color:#666"></div>
+
+    <!-- View existing manual bonuses -->
+    <div style="margin-top:24px">
+      <div style="font-size:14px;font-weight:600;margin-bottom:12px">Existing manual bonuses</div>
+      <div id="manual-list">Loading...</div>
+    </div>
   </div>
 
 </div>
@@ -266,8 +297,80 @@ async function addChallenge() {
   loadChallenges();
 }
 
+
+async function saveManualBonus() {
+  var idsRaw = document.getElementById('manual-ids').value.trim();
+  var pts    = parseInt(document.getElementById('manual-pts').value) || 0;
+  var reason = document.getElementById('manual-reason').value.trim() || 'Manual bonus';
+  if (!idsRaw || !pts) { alert('Please enter activity IDs and bonus points'); return; }
+
+  var ids = idsRaw.split(/[\n,\s]+/).map(function(s){ return s.trim(); }).filter(Boolean);
+  var resultEl = document.getElementById('manual-result');
+  resultEl.textContent = 'Processing ' + ids.length + ' activities...';
+
+  var success=0, failed=0;
+  for (var i=0; i<ids.length; i++) {
+    var id = ids[i];
+    try {
+      // Get current manual_bonus value
+      var r = await fetch(SB_URL+'/rest/v1/activities?strava_activity_id=eq.'+id+'&select=id,manual_bonus,flag_reason', {headers:HDR});
+      var rows = await r.json();
+      if (!rows || rows.length===0) { failed++; continue; }
+      var row = rows[0];
+      var existing = parseFloat(row.manual_bonus)||0;
+      var newBonus = existing + pts;
+      var newReason = (row.flag_reason||'') + (row.flag_reason?', ':'') + reason+' (+'+pts+')';
+      await fetch(SB_URL+'/rest/v1/activities?id=eq.'+row.id, {
+        method:'PATCH', headers:HDR,
+        body: JSON.stringify({manual_bonus: newBonus})
+      });
+      success++;
+    } catch(e) { failed++; }
+  }
+  resultEl.innerHTML = '✅ Applied to '+success+' activities' + (failed?' | ❌ '+failed+' not found':'');
+  showSaved('manual-saved');
+  loadManualBonuses();
+}
+
+async function loadManualBonuses() {
+  try {
+    var r = await fetch(SB_URL+'/rest/v1/activities?manual_bonus=gt.0&select=strava_activity_id,activity_name,strava_athlete_id,manual_bonus&order=manual_bonus.desc&limit=50', {headers:HDR});
+    var rows = await r.json();
+    if (!Array.isArray(rows) || rows.length===0) {
+      document.getElementById('manual-list').innerHTML = '<p style="color:#bbb;font-size:13px">No manual bonuses applied yet.</p>';
+      return;
+    }
+    document.getElementById('manual-list').innerHTML =
+      '<table style="width:100%;border-collapse:collapse;font-size:13px">'
+      +'<thead><tr style="background:#fafafa"><th style="padding:8px 12px;text-align:left;color:#888;font-size:11px">Activity ID</th><th style="padding:8px 12px;text-align:left;color:#888;font-size:11px">Name</th><th style="padding:8px 12px;text-align:left;color:#888;font-size:11px">Bonus Pts</th><th style="padding:8px 12px;text-align:left;color:#888;font-size:11px">Action</th></tr></thead>'
+      +'<tbody>'+rows.map(function(r){
+        return '<tr style="border-bottom:1px solid #f5f5f5">'
+          +'<td style="padding:8px 12px"><a href="https://www.strava.com/activities/'+r.strava_activity_id+'" target="_blank" style="color:#E8622A;text-decoration:none">'+r.strava_activity_id+'</a></td>'
+          +'<td style="padding:8px 12px">'+(r.activity_name||'—')+'</td>'
+          +'<td style="padding:8px 12px;font-weight:700;color:#1565c0">+'+r.manual_bonus+'</td>'
+          +'<td style="padding:8px 12px"><button style="padding:4px 10px;background:#ffebee;color:#c62828;border:none;border-radius:6px;font-size:12px;cursor:pointer" onclick="clearManualBonus('+r.strava_activity_id+')">Clear</button></td>'
+          +'</tr>';
+      }).join('')+'</tbody></table>';
+  } catch(e) {
+    document.getElementById('manual-list').innerHTML = '<p style="color:#bbb;font-size:13px">Could not load — add manual_bonus column to activities table first.</p>';
+  }
+}
+
+async function clearManualBonus(activityId) {
+  if (!confirm('Clear manual bonus for activity '+activityId+'?')) return;
+  var r = await fetch(SB_URL+'/rest/v1/activities?strava_activity_id=eq.'+activityId+'&select=id', {headers:HDR});
+  var rows = await r.json();
+  if (rows && rows[0]) {
+    await fetch(SB_URL+'/rest/v1/activities?id=eq.'+rows[0].id, {
+      method:'PATCH', headers:HDR, body: JSON.stringify({manual_bonus: 0})
+    });
+    loadManualBonuses();
+  }
+}
+
 loadConfig();
 loadChallenges();
+loadManualBonuses();
 </script>
 </body>
 </html>
