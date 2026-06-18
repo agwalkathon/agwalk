@@ -132,10 +132,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="content">
   <!-- Tabs -->
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('smtp')">⚙️ SMTP Config</button>
-    <button class="tab-btn" onclick="switchTab('jobs')">📅 Email Jobs</button>
-    <button class="tab-btn" onclick="switchTab('templates')">📝 Templates</button>
-    <button class="tab-btn" onclick="switchTab('send')">🚀 Send Now</button>
+    <button class="tab-btn active" data-tab="smtp" onclick="switchTab('smtp')">⚙️ SMTP Config</button>
+    <button class="tab-btn" data-tab="jobs" onclick="switchTab('jobs')">📅 Email Jobs</button>
+    <button class="tab-btn" data-tab="templates" onclick="switchTab('templates')">📝 Templates</button>
+    <button class="tab-btn" data-tab="send" onclick="switchTab('send')">🚀 Send Now</button>
   </div>
 
   <!-- ── TAB 1: SMTP Config ── -->
@@ -387,17 +387,21 @@ authGuard();
 
 // ── Tab switching ──────────────────────────────────────────
 function switchTab(name) {
-  document.querySelectorAll('.tab-btn').forEach(function(b,i){
-    var tabs=['smtp','jobs','templates','send'];
-    b.classList.toggle('active', tabs[i]===name);
+  document.querySelectorAll('.tab-btn').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-tab')===name);
   });
   document.querySelectorAll('.tab-pane').forEach(function(p){
     p.classList.toggle('active', p.id==='tab-'+name);
   });
-  if(name==='jobs') { loadJobs(); loadEventOptions('job-event'); loadTemplateOptions('job-template'); }
-  if(name==='templates') loadTemplates();
-  if(name==='send') { loadJobs(); loadEventOptions('send-event'); loadTemplateOptions('send-template'); loadHistory(); }
-  if(name==='smtp') loadSmtp();
+  if(name==='jobs')      { safeRun(loadJobs); safeRun(function(){loadEventOptions('job-event')}); safeRun(function(){loadTemplateOptions('job-template')}); }
+  if(name==='templates') { safeRun(loadTemplates); }
+  if(name==='send')      { safeRun(function(){loadEventOptions('send-event')}); safeRun(function(){loadTemplateOptions('send-template')}); safeRun(loadHistory); }
+  if(name==='smtp')      { safeRun(loadSmtp); }
+}
+
+function safeRun(fn) {
+  try { var r = fn(); if (r && r.catch) r.catch(function(e){ console.warn('Tab load error:', e.message); }); }
+  catch(e) { console.warn('Tab load error:', e.message); }
 }
 
 // ── Supabase helpers ───────────────────────────────────────
@@ -420,14 +424,16 @@ function showSaved(id) { var el=document.getElementById(id); el.style.display='i
 
 // ── SMTP ───────────────────────────────────────────────────
 async function loadSmtp() {
-  var rows = await sbGet("leaderboard_config?config_key=eq.smtp_settings&select=config_value");
-  if (rows && rows[0]) {
-    var s = rows[0].config_value;
-    ['host','port','user','pass','from-name','from-email','enc','reply'].forEach(function(k){
-      var el = document.getElementById('smtp-'+k);
-      if (el && s[k] !== undefined) el.value = s[k];
-    });
-  }
+  try {
+    var rows = await sbGet("leaderboard_config?config_key=eq.smtp_settings&select=config_value");
+    if (Array.isArray(rows) && rows[0] && rows[0].config_value) {
+      var s = rows[0].config_value;
+      ['host','port','user','pass','from-name','from-email','enc','reply'].forEach(function(k){
+        var el = document.getElementById('smtp-'+k);
+        if (el && s[k] !== undefined) el.value = s[k];
+      });
+    }
+  } catch(e) { console.warn('loadSmtp:', e.message); }
 }
 async function saveSmtp() {
   var s = {};
@@ -771,8 +777,8 @@ async function loadHistory() {
 
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);}
 
-// Init
-loadSmtp();
+// Init — wrapped so errors never block tab clicks
+safeRun(loadSmtp);
 </script>
 </body>
 </html>
