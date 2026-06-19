@@ -363,44 +363,37 @@ async function startImport() {
     log.scrollTop = log.scrollHeight;
   }
 
-  addLog('🚀 Starting import of ' + toImport.length + ' activities...');
+  var allActivities = toImport.map(function(r){ return rowToActivity(r.row); });
+  addLog('🚀 Starting import of ' + allActivities.length + ' activities...');
+  addLog('📡 Sending to server — this may take a moment...', '#fff3e0');
 
+  // Update progress to show working
+  fill.style.width = '50%';
+  pct.textContent = '50%';
+  lbl.textContent = 'Uploading to server...';
+
+  var BACKEND_URL = 'https://walkathon-backend-hv9j.onrender.com';
   var success = 0, failed = 0, skipped = 0;
-  var BATCH = 50; // insert in batches of 50
 
-  for (var i = 0; i < toImport.length; i += BATCH) {
-    var batch = toImport.slice(i, i + BATCH);
-    var activities = batch.map(function(r){ return rowToActivity(r.row); });
+  try {
+    var r = await fetch(BACKEND_URL + '/bulk-import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ activities: allActivities })
+    });
 
-    try {
-      var r = await fetch(SUPABASE_URL + '/rest/v1/activities', {
-        method: 'POST',
-        headers: Object.assign({}, HDR, {
-          'Content-Type': 'application/json',
-          'Prefer': 'resolution=ignore-duplicates,return=minimal'
-        }),
-        body: JSON.stringify(activities)
-      });
-
-      if (r.ok) {
-        success += batch.length;
-        addLog('✅ Batch ' + Math.ceil((i+BATCH)/BATCH) + ': imported rows ' + (i+1) + '–' + Math.min(i+BATCH, toImport.length));
-      } else {
-        var err = await r.text();
-        failed += batch.length;
-        addLog('❌ Batch error: ' + err.substring(0, 120), '#ef9a9a');
-      }
-    } catch(e) {
-      failed += batch.length;
-      addLog('❌ Network error: ' + e.message, '#ef9a9a');
+    var result = await r.json();
+    if (r.ok && result.success) {
+      success = result.imported || 0;
+      skipped = result.skipped || 0;
+      failed  = result.failed  || 0;
+    } else {
+      failed = allActivities.length;
+      addLog('❌ Server error: ' + (result.error || 'Unknown error'), '#ef9a9a');
     }
-
-    // Update progress
-    var done = Math.min(i + BATCH, toImport.length);
-    var pctVal = Math.round(done / toImport.length * 100);
-    fill.style.width = pctVal + '%';
-    pct.textContent = pctVal + '%';
-    lbl.textContent = 'Importing… ' + done + ' / ' + toImport.length;
+  } catch(e) {
+    failed = allActivities.length;
+    addLog('❌ Network error: ' + e.message, '#ef9a9a');
   }
 
   // Done
@@ -410,7 +403,7 @@ async function startImport() {
   addLog('');
   addLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', '#555');
   addLog('✅ Imported:  ' + success);
-  addLog('⚠️  Skipped:  ' + skipped);
+  addLog('⚠️  Skipped (duplicates): ' + skipped);
   if (failed) addLog('❌ Failed:    ' + failed, '#ef9a9a');
   addLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', '#555');
 
