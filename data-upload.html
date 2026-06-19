@@ -139,7 +139,7 @@
 
 <script>
 var SUPABASE_URL='https://jhdgkncpkrttvemvwukc.supabase.co';
-var SUPABASE_ANON=atob(['ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW1wb1pHZHJibU53YTNKMGRIWmxiWFozZFd0aklpd2ljbTlzWlNJNkltRnViMjRpTENKcFlYUWlPakUzT0RFMk56Z3lOak1zSW1WNGNDSTZNakE1TnpJMU5ESTJNMzAuZDdtdlhPWURxNUc0YXFzMU1iYzZIRk5nVEJsUWs0QjZhaDBlYWhFX3laRQ=='].join(''));
+var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoZGdrbmNwa3J0dHZlbXZ3dWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NzgyNjMsImV4cCI6MjA5NzI1NDI2M30.d7mvXOYDq5G4aqs1Mbc6HFNgTBlQk4B6ah0eahE_yZE';
 var HDR={apikey:SUPABASE_ANON,Authorization:'Bearer '+SUPABASE_ANON};
 
 function authGuard(){var s=JSON.parse(sessionStorage.getItem('wk_admin')||'{}');if(!s.loggedIn||s.expires<Date.now())window.location.href='admin-login.html';}
