@@ -45,12 +45,7 @@
     /* ── Profile card ── */
     .profile-card{background:var(--dark);padding:10px 16px;display:flex;align-items:center;
                gap:12px;overflow:hidden;}
-    .profile-photo-wrap{flex-shrink:0;width:44px;height:44px;}
-    .profile-photo{width:44px!important;height:44px!important;border-radius:50%;
-                   object-fit:cover;border:2px solid var(--brand);display:block;}
-    .profile-initials{width:44px!important;height:44px!important;border-radius:50%;
-                      background:var(--brand);color:white;font-size:16px;font-weight:800;
-                      display:none;align-items:center;justify-content:center;flex-shrink:0;}
+
     .profile-info{flex:1;min-width:0;}
     .profile-name{font-size:15px;font-weight:700;color:white;
                   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -229,10 +224,7 @@
 
 <!-- Profile Card -->
 <div class="profile-card" id="profile-card">
-  <div class="profile-photo-wrap">
-    <img class="profile-photo" id="p-photo" src="" alt="" style="display:none;">
-    <div class="profile-initials" id="p-initials"></div>
-  </div>
+
   <div class="profile-info">
     <div class="profile-name" id="p-name">Loading...</div>
     <div class="profile-tags" id="p-tags"></div>
@@ -627,17 +619,7 @@ async function load() {
     var initials = name.split(' ').map(function(w){ return w[0]||''; }).slice(0,2).join('').toUpperCase();
     document.getElementById('p-initials').textContent = initials;
     // profile photo from session (set during login via Strava)
-    var photoUrl = s.profilePhoto || '';
-    var photoEl    = document.getElementById('p-photo');
-    var initialsEl = document.getElementById('p-initials');
-    if (photoUrl && photoEl) {
-      photoEl.onload  = function() { photoEl.style.display = 'block'; if (initialsEl) initialsEl.style.display = 'none'; };
-      photoEl.onerror = function() { photoEl.style.display = 'none';  if (initialsEl) initialsEl.style.display = 'flex'; };
-      photoEl.src = photoUrl;
-    } else {
-      if (photoEl)    photoEl.style.display    = 'none';
-      if (initialsEl) initialsEl.style.display = 'flex';
-    }
+
     var tags = [];
     if (reg.gender) tags.push(reg.gender === 'Female' ? '👩 Female' : '👨 Male');
     if (reg.shift) tags.push('⏰ ' + reg.shift);
