@@ -32,7 +32,7 @@
             padding:12px 20px;padding-top:max(12px,env(safe-area-inset-top));
             display:flex;align-items:center;justify-content:space-between;
             position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
-    .header img{height:36px;object-fit:contain;}
+    .header .logo-
     .header-right{display:flex;align-items:center;gap:8px;}
     .refresh-btn{background:none;border:none;cursor:pointer;padding:8px;border-radius:8px;
                  color:var(--muted);display:flex;align-items:center;justify-content:center;}
@@ -46,11 +46,11 @@
     .profile-card{background:var(--dark);padding:14px 20px;display:flex;align-items:center;
                gap:14px;overflow:hidden;}
     .profile-photo-wrap{flex-shrink:0;width:56px;height:56px;}
-    .profile-photo{width:56px;height:56px;border-radius:50%;object-fit:cover;
-                   border:2px solid var(--brand);display:block;}
-    .profile-initials{width:56px;height:56px;border-radius:50%;background:var(--brand);
-                      color:white;font-size:20px;font-weight:800;display:none;
-                      align-items:center;justify-content:center;}
+    .profile-photo{width:56px!important;height:56px!important;border-radius:50%;
+                   object-fit:cover;border:2px solid var(--brand);display:block;}
+    .profile-initials{width:56px!important;height:56px!important;border-radius:50%;
+                      background:var(--brand);color:white;font-size:20px;font-weight:800;
+                      display:none;align-items:center;justify-content:center;flex-shrink:0;}
     .profile-info{flex:1;min-width:0;}
     .profile-name{font-size:17px;font-weight:800;color:white;letter-spacing:-0.3px;
                   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -215,7 +215,7 @@
 <body>
 
 <header class="header">
-  <img src="aw_logo.jpg" alt="Arcgate Walkathon 2026">
+  <img src="aw_logo.jpg" class="logo-img" alt="Arcgate Walkathon 2026">
   <div class="header-right">
     <button class="refresh-btn" id="refresh-btn" onclick="refreshData()" title="Refresh">
       <svg id="refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
