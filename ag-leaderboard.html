@@ -9,6 +9,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AG Leaderboards — Arcgate Walkathon 2026</title>
   <style>
+
+/* === icon rail nav === */
+.rail-nav{position:fixed;top:0;left:0;bottom:0;width:56px;background:#fff;border-right:0.5px solid #e8e8e8;display:flex;flex-direction:column;align-items:center;padding:12px 0 8px;z-index:200;transition:width 0.22s ease;}
+.rail-nav:hover,.rail-nav.expanded{width:188px;}
+.rail-logo-wrap{display:block;padding:8px 10px 12px;text-align:center;flex-shrink:0;text-decoration:none;}
+.rail-logo-wrap img{width:36px;height:36px;object-fit:contain;border-radius:6px;transition:width 0.22s;}
+.rail-nav:hover .rail-logo-wrap img,.rail-nav.expanded .rail-logo-wrap img{width:120px;height:36px;object-fit:contain;}
+.rail-item{display:flex;align-items:center;width:100%;padding:0 10px;margin-bottom:2px;text-decoration:none;border-left:3px solid transparent;box-sizing:border-box;overflow:hidden;min-height:44px;}
+.rail-item:hover{background:#fdf3ef;border-left-color:#E8622A;}
+.rail-item.active{border-left-color:#E8622A;background:#fff5f0;}
+.rail-item i{font-size:20px;color:#888;flex-shrink:0;width:36px;text-align:center;}
+.rail-item.active i{color:#E8622A;}
+.rail-item:hover i{color:#E8622A;}
+.rail-label{font-size:13px;color:#555;white-space:nowrap;opacity:0;transition:opacity 0.15s;overflow:hidden;}
+.rail-nav:hover .rail-label,.rail-nav.expanded .rail-label{opacity:1;}
+.rail-item.active .rail-label{color:#E8622A;font-weight:500;}
+.rail-spacer{flex:1;}
+.rail-signout{display:flex;align-items:center;width:100%;padding:0 10px;text-decoration:none;border-left:3px solid transparent;box-sizing:border-box;overflow:hidden;min-height:44px;cursor:pointer;background:none;border-top:0.5px solid #f0f0f0;margin-top:4px;}
+.rail-signout:hover{background:#fdf3ef;}
+.rail-signout i{font-size:20px;color:#bbb;flex-shrink:0;width:36px;text-align:center;}
+.rail-signout:hover i{color:#E8622A;}
+.rail-signout .rail-label{color:#999;}
+.site-header{display:none !important;}
+body.rail-layout{margin-left:56px;}
+@media(max-width:768px){
+  .rail-nav{width:56px;bottom:0;}
+  body.rail-layout{margin-left:56px;}
+}
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F5F5F5; color: #1A1A1A; min-height: 100vh; display: flex; flex-direction: column; }
     .site-header { background: #fff; border-bottom: 3px solid #E8622A; padding: 12px 28px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
@@ -17,7 +46,7 @@
     .site-header nav a { font-size: 13px; color: #555; text-decoration: none; padding: 6px 12px; border-radius: 6px; }
     .site-header nav a:hover { background: #f0f0f0; }
     .site-header nav a.active { background: #E8622A; color: white; }
-    .page-bar { background: #1A1A1A; color: white; padding: 18px 28px; display: flex; justify-content: space-between; align-items: center; }
+    .page-bar { background:#E8622A; color: white; padding: 18px 28px; display: flex; justify-content: space-between; align-items: center; }
     .page-bar h1 { font-size: 20px; font-weight: 600; }
     .page-bar .back { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 13px; }
     .content { flex: 1; padding: 24px 28px; max-width: 1400px; width: 100%; margin: 0 auto; }
@@ -113,7 +142,7 @@
     .btn-config  { padding: 7px 14px; background: #E8622A; color: white; border-radius: 8px; font-size: 13px; font-weight: 500; text-decoration: none; }
     .btn-config:hover { background: #d4561f; }
     .result-info { font-size: 13px; color: #888; margin-bottom: 12px; }
-    .site-footer { background: #1A1A1A; color: #666; text-align: center; padding: 16px 28px; font-size: 12px; margin-top: auto; }
+    .site-footer { background:#fff; color:#888; text-align: center; padding: 16px 28px; font-size: 12px; margin-top: auto; border-top:2px solid #E8622A;}
     .site-footer a { color: #E8622A; text-decoration: none; margin: 0 8px; }
 
     /* ── Mobile responsive ────────────────────────────────── */
@@ -131,7 +160,7 @@
       .filter-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
       .filter-group select, .filter-group input { font-size: 13px; }
       .filter-left { gap: 8px; flex-wrap: wrap; }
-      .site-footer { padding: 12px 14px; font-size: 11px; }
+      .site-footer { padding: 12px 14px; font-size: 11px; border-top:2px solid #E8622A;}
       /* Card layout mobile */
       .lb-card { padding: 10px 12px; gap: 8px; }
       .lb-rank { font-size: 18px; min-width: 36px; }
@@ -159,8 +188,24 @@
     .day-table td { padding: 7px 14px; font-size: 12px; border-bottom: 1px solid #f0f0f0; color: #555; }
     .day-table tr:last-child td { border-bottom: none; }
   </style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 </head>
-<body>
+<body class="rail-layout">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<nav class="rail-nav" id="rail-nav" aria-label="Admin navigation">
+  <a href="admin.html" style="display:block;padding:8px 10px 12px;text-align:center;flex-shrink:0;"><img src="aw_logo.jpg" alt="AW" style="width:36px;height:36px;object-fit:contain;border-radius:6px;"></a>
+  <a href="admin.html" class="rail-item"><i class="ti ti-home" aria-hidden="true"></i><span class="rail-label">Dashboard</span></a>
+<a href="activities.html" class="rail-item"><i class="ti ti-activity" aria-hidden="true"></i><span class="rail-label">Activities</span></a>
+<a href="ag-leaderboard.html" class="rail-item active"><i class="ti ti-trophy" aria-hidden="true"></i><span class="rail-label">Leaderboard</span></a>
+<a href="ag-config.html" class="rail-item"><i class="ti ti-settings" aria-hidden="true"></i><span class="rail-label">Config</span></a>
+<a href="participants.html" class="rail-item"><i class="ti ti-users" aria-hidden="true"></i><span class="rail-label">Participants</span></a>
+<a href="participant-requests.html" class="rail-item"><i class="ti ti-user-check" aria-hidden="true"></i><span class="rail-label">Requests</span></a>
+<a href="data-upload.html" class="rail-item"><i class="ti ti-upload" aria-hidden="true"></i><span class="rail-label">Data Upload</span></a>
+<a href="email-send.html" class="rail-item"><i class="ti ti-mail" aria-hidden="true"></i><span class="rail-label">Email Send</span></a>
+
+  <div class="rail-spacer"></div>
+  <button class="rail-signout" onclick="logout()" aria-label="Sign out"><i class="ti ti-logout" aria-hidden="true"></i><span class="rail-label">Sign out</span></button>
+</nav>
 <div class="site-header">
   <img src="aw_logo.jpg" alt="Arcgate Walkathon 2026">
   <nav>
@@ -533,16 +578,7 @@ function calcPoints(acts, athleteId, gender) {
     var dayKm = 0.0;
     dayActs.forEach(function(a) {
       var dm = parseFloat(a.distance_meters) || 0;
-      var actKm = dm / 1000.0;
-      // Exclude in-range activities from dayKm for any active range_split challenge on this date
-      var isInRangeSplit = CHALLENGES.some(function(c) {
-        if (!c.range_split || !c.is_active) return false;
-        if (day < c.start_date || day > c.end_date) return false;
-        var cST = Array.isArray(c.sport_types) && c.sport_types.length ? c.sport_types : ['Walk','Run','Hike','Ride'];
-        if (!cST.includes(a.sport_type)) return false;
-        return actKm >= (c.distance_min - 0.1) && actKm <= c.distance_max;
-      });
-      if (!isInRangeSplit) dayKm += actKm;
+      dayKm += dm / 1000.0;
     });
     dayKm = parseFloat(dayKm.toFixed(4));
 
@@ -842,18 +878,7 @@ function toggleExpand(athleteId, gender, trEl) {
   var g = (gender||'').toLowerCase();
   var dayRows = days.map(function(day) {
     var rawKm = 0;
-    byDay[day].forEach(function(a){
-      var actKm = (parseFloat(a.distance_meters)||0)/1000;
-      // Exclude in-range activities from rawKm for any active range_split challenge
-      var isInRangeSplitExp = CHALLENGES.some(function(c) {
-        if (!c.range_split || !c.is_active) return false;
-        if (day < c.start_date || day > c.end_date) return false;
-        var cST = Array.isArray(c.sport_types) && c.sport_types.length ? c.sport_types : ['Walk','Run','Hike','Ride'];
-        if (!cST.includes(a.sport_type)) return false;
-        return actKm >= (c.distance_min - 0.1) && actKm <= c.distance_max;
-      });
-      if (!isInRangeSplitExp) rawKm += actKm;
-    });
+    byDay[day].forEach(function(a){ rawKm += (parseFloat(a.distance_meters)||0)/1000; });
     rawKm = parseFloat(rawKm.toFixed(4));
 
     // Apply 21 km daily cap unless this date is a special day
