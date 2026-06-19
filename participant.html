@@ -92,6 +92,7 @@
     .progress-bar-bg{background:var(--border);border-radius:20px;height:7px;overflow:hidden;}
     .progress-bar-fill{height:100%;border-radius:20px;transition:width 0.6s ease;}
     .medal-row-pct{font-size:11px;color:var(--muted);margin-top:4px;text-align:right;}
+    .pts-needed{font-size:10px;color:var(--muted);font-weight:400;}
     .medal-row.achieved .medal-row-name{color:var(--green);}
     .medal-row.bronze-row .progress-bar-fill{background:#CD7F32;}
     .medal-row.silver-row .progress-bar-fill{background:#94A3B8;}
@@ -227,8 +228,8 @@
 <!-- Profile Card -->
 <div class="profile-card" id="profile-card">
   <div class="profile-photo-wrap">
-    <img class="profile-photo" id="p-photo" src="" alt="" onerror="this.style.display='none';document.getElementById('p-initials').style.display='flex'">
-    <div class="profile-initials" id="p-initials"></div>
+    <img class="profile-phid="p-photo" src="" alt="" style="display:none;" onload="this.style.display='block';document.getElementById('p-initials').style.display='none';" onerror="this.style.display='none';document.getElementById('p-initials').style.display='flex';">
+    <div class="profile-initials" id="p-initials" style="display:flex;"></div></div>
   </div>
   <div class="profile-info">
     <div class="profile-name" id="p-name">Loading...</div>
@@ -689,10 +690,13 @@ async function load() {
       var done = myPts >= m.thresh;
       var row  = document.createElement('div');
       row.className = 'medal-row ' + m.cls + (done ? ' achieved' : '');
+      var needed = Math.max(0, m.thresh - myPts);
       row.innerHTML =
         '<div class="medal-row-head">' +
           '<span class="medal-row-name">' + m.name + (done ? ' ✓' : '') + '</span>' +
-          '<span class="medal-row-pts">' + myPts.toFixed(1) + ' / ' + m.thresh + ' pts</span>' +
+          '<span class="medal-row-pts">' + myPts.toFixed(1) + ' / ' + m.thresh + ' pts' +
+            (!done ? ' <span class="pts-needed">(need ' + needed.toFixed(1) + ' more)</span>' : '') +
+          '</span>' +
         '</div>' +
         '<div class="progress-bar-bg"><div class="progress-bar-fill" style="width:' + pct + '%"></div></div>' +
         '<div class="medal-row-pct">' + (done ? '100% Achieved' : pct + '% achieved') + '</div>';
@@ -903,9 +907,10 @@ function toggleDay(id) {
 function showTab(tab) {
   document.getElementById('tab-dashboard').style.display  = tab === 'dashboard'  ? 'block' : 'none';
   document.getElementById('tab-activities').style.display = tab === 'activities' ? 'block' : 'none';
-  ['dashboard','activities'].forEach(function(t) {
-    document.getElementById('bnav-' + t).classList.toggle('active', t === tab);
-  });
+  var bDash = document.getElementById('bnav-dashboard');
+  var bActs = document.getElementById('bnav-activities');
+  if (bDash) bDash.classList.toggle('active', tab === 'dashboard');
+  if (bActs) bActs.classList.toggle('active', tab === 'activities');
 }
 
 
