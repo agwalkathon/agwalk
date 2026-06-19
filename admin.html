@@ -2,247 +2,884 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — Arcgate Walkathon 2026</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
   <link rel="icon" type="image/png" href="favicon.png">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard — Arcgate Walkathon 2026</title>
   <style>
+    /* ─── Reset & Base ─── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* === icon rail nav === */
-.rail-nav{position:fixed;top:0;left:0;bottom:0;width:56px;background:#fff;border-right:0.5px solid #e8e8e8;display:flex;flex-direction:column;align-items:center;padding:12px 0 8px;z-index:200;transition:width 0.22s ease;}
-.rail-nav:hover,.rail-nav.expanded{width:188px;}
-.rail-logo-wrap{display:block;padding:8px 10px 12px;text-align:center;flex-shrink:0;text-decoration:none;}
-.rail-logo-wrap img{width:36px;height:36px;object-fit:contain;border-radius:6px;transition:width 0.22s;}
-.rail-nav:hover .rail-logo-wrap img,.rail-nav.expanded .rail-logo-wrap img{width:120px;height:36px;object-fit:contain;}
-.rail-item{display:flex;align-items:center;width:100%;padding:0 10px;margin-bottom:2px;text-decoration:none;border-left:3px solid transparent;box-sizing:border-box;overflow:hidden;min-height:44px;}
-.rail-item:hover{background:#fdf3ef;border-left-color:#E8622A;}
-.rail-item.active{border-left-color:#E8622A;background:#fff5f0;}
-.rail-item i{font-size:20px;color:#888;flex-shrink:0;width:36px;text-align:center;}
-.rail-item.active i{color:#E8622A;}
-.rail-item:hover i{color:#E8622A;}
-.rail-label{font-size:13px;color:#555;white-space:nowrap;opacity:0;transition:opacity 0.15s;overflow:hidden;}
-.rail-nav:hover .rail-label,.rail-nav.expanded .rail-label{opacity:1;}
-.rail-item.active .rail-label{color:#E8622A;font-weight:500;}
-.rail-spacer{flex:1;}
-.rail-signout{display:flex;align-items:center;width:100%;padding:0 10px;text-decoration:none;border-left:3px solid transparent;box-sizing:border-box;overflow:hidden;min-height:44px;cursor:pointer;background:none;border-top:0.5px solid #f0f0f0;margin-top:4px;}
-.rail-signout:hover{background:#fdf3ef;}
-.rail-signout i{font-size:20px;color:#bbb;flex-shrink:0;width:36px;text-align:center;}
-.rail-signout:hover i{color:#E8622A;}
-.rail-signout .rail-label{color:#999;}
-.site-header{display:none !important;}
-body.rail-layout{margin-left:56px;}
-@media(max-width:768px){
-  .rail-nav{width:56px;bottom:0;}
-  body.rail-layout{margin-left:56px;}
-}
+    :root {
+      --brand:        #E8622A;
+      --brand-light:  #FFF0EA;
+      --brand-mid:    #f97d4e;
+      --sidebar-bg:   #0F1117;
+      --sidebar-w:    64px;
+      --sidebar-exp:  220px;
+      --page-bg:      #F4F6FA;
+      --card-bg:      #FFFFFF;
+      --text-primary: #0F1117;
+      --text-secondary:#6B7280;
+      --text-muted:   #9CA3AF;
+      --border:       rgba(0,0,0,0.07);
+      --shadow-sm:    0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md:    0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+      --shadow-lg:    0 12px 40px rgba(0,0,0,0.12);
+      --radius-sm:    8px;
+      --radius-md:    14px;
+      --radius-lg:    20px;
+      --font:         'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F5F5F5; color: #1A1A1A; min-height: 100vh; display: flex; flex-direction: column; }
-    .site-header { background: #fff; border-bottom: 3px solid #E8622A; padding: 12px 28px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-    .site-header img { height: 40px; object-fit: contain; }
-    .site-header nav { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
-    .site-header nav a { font-size: 13px; color: #555; text-decoration: none; padding: 6px 12px; border-radius: 6px; transition: all 0.15s; }
-    .site-header nav a:hover { background: #f0f0f0; }
-    .site-header nav a.active { background: #E8622A; color: white; }
-    .page-bar { background:#E8622A; color: white; padding: 18px 28px; display: flex; justify-content: space-between; align-items: center; }
-    .page-bar h1 { font-size: 20px; font-weight: 600; }
-    .content { flex: 1; padding: 24px 28px; max-width: 1400px; width: 100%; margin: 0 auto; }
-    .stats-grid { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 22px; }
-    .stat-card { background: white; border-radius: 12px; padding: 16px 20px; flex: 1; min-width: 130px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); border-left: 4px solid #E8622A; }
-    .stat-card .val { font-size: 24px; font-weight: 700; color: #E8622A; }
-    .stat-card .lbl { font-size: 12px; color: #888; margin-top: 4px; }
-    .stat-card.green .val { color: #2e7d32; } .stat-card.green { border-left-color: #2e7d32; }
-    .stat-card.dark  .val { color: #1A1A1A; } .stat-card.dark  { border-left-color: #1A1A1A; }
-    .stat-card.red   .val { color: #c62828; } .stat-card.red   { border-left-color: #c62828; }
-    .nav-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .nav-card { background: white; border-radius: 14px; padding: 24px; text-decoration: none; display: block; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 2px solid transparent; border-top: 4px solid #E8622A; transition: all 0.2s; }
-    .nav-card:hover { border-color: #E8622A; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(232,98,42,0.15); }
-    .nav-card .icon { font-size: 30px; margin-bottom: 10px; }
-    .nav-card .title { font-size: 16px; font-weight: 600; color: #1A1A1A; margin-bottom: 6px; }
-    .nav-card .desc { font-size: 13px; color: #888; line-height: 1.5; }
-    .nav-card .badge { display: inline-block; margin-top: 10px; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
-    .card { background: white; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; }
-    .card-header { padding: 16px 22px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
-    .card-header h2 { font-size: 16px; font-weight: 600; }
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; min-width: 600px; }
-    th { background: #fafafa; padding: 10px 14px; text-align: left; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #f0f0f0; white-space: nowrap; }
-    td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid #f8f8f8; vertical-align: middle; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #fdfcfb; }
-    .badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 12px; font-weight: 500; }
-    .badge-walk { background: #e8f5e9; color: #2e7d32; }
-    .badge-run  { background: #e3f2fd; color: #1565c0; }
-    .badge-ride { background: #fff3e0; color: #e65100; }
-    .badge-hike { background: #f3e5f5; color: #6a1b9a; }
-    .badge-clean { background: #e8f5e9; color: #2e7d32; }
-    .badge-flag  { background: #ffebee; color: #c62828; }
-    .badge-conn  { background: #e3f2fd; color: #1565c0; }
-    .badge-active{ background: #e8f5e9; color: #2e7d32; }
-    .ath { color: #E8622A; text-decoration: none; font-weight: 500; }
-    .ath:hover { text-decoration: underline; }
-    .btn { padding: 7px 14px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; text-decoration: none; display: inline-block; }
-    .btn-ghost { background: #f0f0f0; color: #555; }
-    .loading-row td { text-align: center; padding: 48px; color: #bbb; font-size: 14px; }
-    .site-footer { background:#fff; color:#888; text-align: center; padding: 16px 28px; font-size: 12px; margin-top: auto; border-top:2px solid #E8622A;}
-    .site-footer a { color: #E8622A; text-decoration: none; margin: 0 8px; }
+    body {
+      font-family: var(--font);
+      background: var(--page-bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+    }
 
+    /* ─── Sidebar ─── */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: var(--sidebar-w);
+      background: var(--sidebar-bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 0 12px;
+      z-index: 300;
+      transition: width 0.24s cubic-bezier(0.4,0,0.2,1);
+      overflow: hidden;
+    }
+    .sidebar:hover { width: var(--sidebar-exp); }
+
+    .sb-logo {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      width: 100%;
+      padding: 4px 14px 20px;
+      text-decoration: none;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .sb-logo-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--brand);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .sb-logo-icon img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+    }
+    .sb-logo-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      opacity: 0;
+      white-space: nowrap;
+      transition: opacity 0.18s;
+      line-height: 1.3;
+    }
+    .sb-logo-text span { display: block; font-size: 10px; font-weight: 400; color: rgba(255,255,255,0.45); }
+    .sidebar:hover .sb-logo-text { opacity: 1; }
+
+    .sb-section {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.22);
+      padding: 0 14px 6px;
+      width: 100%;
+      opacity: 0;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+    .sidebar:hover .sb-section { opacity: 1; }
+
+    .sb-item {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: 0 12px;
+      min-height: 42px;
+      text-decoration: none;
+      gap: 10px;
+      border-left: 3px solid transparent;
+      transition: all 0.16s;
+      position: relative;
+    }
+    .sb-item:hover { background: rgba(255,255,255,0.06); border-left-color: rgba(232,98,42,0.5); }
+    .sb-item.active { background: rgba(232,98,42,0.12); border-left-color: var(--brand); }
+
+    .sb-item i {
+      font-size: 19px;
+      color: rgba(255,255,255,0.38);
+      flex-shrink: 0;
+      width: 28px;
+      text-align: center;
+      transition: color 0.16s;
+    }
+    .sb-item:hover i { color: rgba(255,255,255,0.7); }
+    .sb-item.active i { color: var(--brand); }
+
+    .sb-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.5);
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .sidebar:hover .sb-label { opacity: 1; }
+    .sb-item:hover .sb-label { color: rgba(255,255,255,0.9); }
+    .sb-item.active .sb-label { color: #fff; font-weight: 600; }
+
+    .sb-spacer { flex: 1; }
+
+    .sb-divider {
+      width: calc(100% - 24px);
+      height: 1px;
+      background: rgba(255,255,255,0.07);
+      margin: 6px 12px;
+      flex-shrink: 0;
+    }
+
+    .sb-signout {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: 0 12px;
+      min-height: 42px;
+      gap: 10px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      transition: all 0.16s;
+    }
+    .sb-signout:hover { background: rgba(255,80,80,0.08); }
+    .sb-signout i { font-size: 19px; color: rgba(255,255,255,0.25); flex-shrink: 0; width: 28px; text-align: center; }
+    .sb-signout:hover i { color: #ff6b6b; }
+    .sb-signout .sb-label { color: rgba(255,255,255,0.3); }
+    .sb-signout:hover .sb-label { color: #ff6b6b; }
+
+    /* ─── Main Layout ─── */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── Top bar ─── */
+    .topbar {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-left h1 {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .topbar-left p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    #realtime-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: #F3F4F6;
+      color: var(--text-secondary);
+      font-family: var(--font);
+      border: none;
+      transition: all 0.3s;
+    }
+    #realtime-badge.live { background: #ECFDF5; color: #059669; }
+    #realtime-badge.live::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #10B981; display: inline-block; animation: pulse 2s infinite; }
+    #realtime-badge.new-act { background: #FFF7ED; color: #EA580C; }
+    #realtime-badge.error { background: #FEF2F2; color: #DC2626; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    /* ─── Content ─── */
+    .content {
+      flex: 1;
+      padding: 28px 32px;
+      max-width: 1440px;
+      width: 100%;
+    }
+
+    /* ─── Stats Grid ─── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+    .stat-card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    .stat-card-icon.orange { background: var(--brand-light); color: var(--brand); }
+    .stat-card-icon.green  { background: #ECFDF5; color: #059669; }
+    .stat-card-icon.blue   { background: #EFF6FF; color: #3B82F6; }
+    .stat-card-icon.red    { background: #FEF2F2; color: #DC2626; }
+    .stat-card-icon.purple { background: #F5F3FF; color: #7C3AED; }
+    .stat-card-icon.slate  { background: #F1F5F9; color: #475569; }
+
+    .stat-val {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+    .stat-val.orange { color: var(--brand); }
+    .stat-val.green  { color: #059669; }
+    .stat-val.red    { color: #DC2626; }
+    .stat-val.blue   { color: #3B82F6; }
+    .stat-val.purple { color: #7C3AED; }
+
+    .stat-lbl {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 400;
+      margin-top: 2px;
+    }
+
+    .stat-bottom { display: flex; flex-direction: column; }
+
+    /* ─── Nav Cards ─── */
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 14px;
+    }
+
+    .nav-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .nav-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      text-decoration: none;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+      transition: all 0.18s;
+      position: relative;
+    }
+    .nav-card:hover {
+      border-color: var(--brand);
+      box-shadow: 0 4px 20px rgba(232,98,42,0.12);
+      transform: translateY(-1px);
+    }
+    .nav-card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--brand-light);
+      color: var(--brand);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+      transition: background 0.18s;
+    }
+    .nav-card:hover .nav-card-icon { background: var(--brand); color: #fff; }
+    .nav-card-body { flex: 1; min-width: 0; }
+    .nav-card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .nav-card-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .nav-card-badge {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-flag { background: #FEF2F2; color: #DC2626; }
+    .badge-ok   { background: #ECFDF5; color: #059669; }
+    .badge-info { background: #EFF6FF; color: #3B82F6; }
+
+    /* ─── Recent Activities Card ─── */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-header-left { display: flex; align-items: center; gap: 10px; }
+    .card-header-icon {
+      width: 34px; height: 34px;
+      border-radius: 9px;
+      background: var(--brand-light);
+      color: var(--brand);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px;
+    }
+    .card-header h2 { font-size: 15px; font-weight: 600; }
+    .card-header-sub { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: var(--page-bg);
+      border: 1px solid var(--border);
+      text-decoration: none;
+      transition: all 0.15s;
+      font-family: var(--font);
+      cursor: pointer;
+    }
+    .btn-ghost:hover { background: #EAECF0; color: var(--text-primary); }
+
+    /* ─── Activity Feed ─── */
+    .activity-feed { padding: 8px 0; }
+
+    .act-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 24px;
+      border-bottom: 1px solid #F9FAFB;
+      transition: background 0.15s;
+      cursor: default;
+    }
+    .act-row:last-child { border-bottom: none; }
+    .act-row:hover { background: #FAFAFA; }
+
+    .act-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      letter-spacing: -0.5px;
+    }
+
+    .act-info { flex: 1; min-width: 0; }
+    .act-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      text-decoration: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .act-name:hover { color: var(--brand); }
+    .act-title {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 1px;
+    }
+
+    .act-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .pill-walk   { background: #ECFDF5; color: #059669; }
+    .pill-run    { background: #EFF6FF; color: #3B82F6; }
+    .pill-ride   { background: #FFF7ED; color: #EA580C; }
+    .pill-hike   { background: #F5F3FF; color: #7C3AED; }
+    .pill-other  { background: #F1F5F9; color: #475569; }
+    .pill-flag   { background: #FEF2F2; color: #DC2626; }
+    .pill-clean  { background: #ECFDF5; color: #059669; }
+
+    .act-dist {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      min-width: 64px;
+      text-align: right;
+    }
+    .act-time {
+      font-size: 11px;
+      color: var(--text-muted);
+      min-width: 80px;
+      text-align: right;
+    }
+
+    /* empty / loading */
+    .feed-state {
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .feed-state i { font-size: 36px; display: block; margin-bottom: 10px; opacity: 0.3; }
+
+    /* ─── Footer ─── */
+    .site-footer {
+      background: var(--card-bg);
+      border-top: 1px solid var(--border);
+      padding: 16px 32px;
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+    }
+    .site-footer a { color: var(--brand); text-decoration: none; margin-left: 14px; }
+    .site-footer a:hover { text-decoration: underline; }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 1100px) {
+      .stats-grid { grid-template-columns: repeat(3, 1fr); }
+    }
     @media (max-width: 768px) {
-      .site-header { padding: 10px 16px; }
-      .site-header nav { display: none; }
-      .content { padding: 14px 16px; }
-      .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-      .stat-card .val { font-size: 18px; }
-      table { font-size: 12px; }
-      th, td { padding: 7px 8px; }
+      .sidebar { width: 56px; }
+      .main { margin-left: 56px; }
+      .content { padding: 16px; }
+      .topbar { padding: 0 16px; height: 54px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+      .stat-card { padding: 14px 16px; }
+      .stat-val { font-size: 20px; }
+      .nav-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .act-time { display: none; }
+      .site-footer { flex-direction: column; gap: 6px; text-align: center; }
+    }
+    @media (max-width: 420px) {
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .nav-grid { grid-template-columns: 1fr; }
     }
   </style>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 </head>
-<body class="rail-layout">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
-<nav class="rail-nav" id="rail-nav" aria-label="Admin navigation">
-  <a href="admin.html" style="display:block;padding:8px 10px 12px;text-align:center;flex-shrink:0;"><img src="aw_logo.jpg" alt="AW" style="width:36px;height:36px;object-fit:contain;border-radius:6px;"></a>
-  <a href="admin.html" class="rail-item active"><i class="ti ti-home" aria-hidden="true"></i><span class="rail-label">Dashboard</span></a>
-<a href="activities.html" class="rail-item"><i class="ti ti-activity" aria-hidden="true"></i><span class="rail-label">Activities</span></a>
-<a href="ag-leaderboard.html" class="rail-item"><i class="ti ti-trophy" aria-hidden="true"></i><span class="rail-label">Leaderboard</span></a>
-<a href="ag-config.html" class="rail-item"><i class="ti ti-settings" aria-hidden="true"></i><span class="rail-label">Config</span></a>
-<a href="participants.html" class="rail-item"><i class="ti ti-users" aria-hidden="true"></i><span class="rail-label">Participants</span></a>
-<a href="participant-requests.html" class="rail-item"><i class="ti ti-user-check" aria-hidden="true"></i><span class="rail-label">Requests</span></a>
-<a href="data-upload.html" class="rail-item"><i class="ti ti-upload" aria-hidden="true"></i><span class="rail-label">Data Upload</span></a>
-<a href="email-send.html" class="rail-item"><i class="ti ti-mail" aria-hidden="true"></i><span class="rail-label">Email Send</span></a>
+<body>
 
-  <div class="rail-spacer"></div>
-  <button class="rail-signout" onclick="logout()" aria-label="Sign out"><i class="ti ti-logout" aria-hidden="true"></i><span class="rail-label">Sign out</span></button>
-</nav>
-<div class="site-header">
-  <img src="aw_logo.jpg" alt="Arcgate Walkathon 2026">
-  <nav>
-    <a href="admin.html" class="active">Dashboard</a>
-    <a href="activities.html">Activities</a>
-    <a href="ag-leaderboard.html">AG Leaderboards</a>
-    <a href="ag-config.html">Config</a>
-    <a href="participants.html">Participants</a>
-    <a href="participant-requests.html">Requests</a>
-    <a href="data-upload.html">Data Upload</a>
-    <a href="email-send.html">Email Send</a>
-    <a href="#" onclick="logout();return false;">Sign out</a>
-  </nav>
-</div>
-<div class="page-bar">
-  <h1>🏠 Admin Dashboard</h1>
-  <div style="display:flex;align-items:center;gap:12px">
-    <span id="realtime-badge" style="font-size:12px;color:rgba(255,255,255,.75);background:rgba(255,255,255,.12);padding:4px 10px;border-radius:12px">🔄 Connecting...</span>
-    <span style="font-size:13px;opacity:0.5">Arcgate Walkathon 2026</span>
-  </div>
-</div>
-<div class="content">
-  <div class="stats-grid">
-    <div class="stat-card"><div class="val" id="s-participants">—</div><div class="lbl">Registered participants</div></div>
-    <div class="stat-card green"><div class="val" id="s-activities">—</div><div class="lbl">Total activities</div></div>
-    <div class="stat-card"><div class="val" id="s-km">—</div><div class="lbl">Total km covered</div></div>
-    <div class="stat-card red"><div class="val" id="s-flagged">—</div><div class="lbl">Flagged activities</div></div>
-    <div class="stat-card dark"><div class="val" id="s-today">—</div><div class="lbl">Today's activities</div></div>
-    <div class="stat-card"><div class="val" id="s-connected">—</div><div class="lbl">Strava connected</div></div>
-  </div>
-      <div class="desc">Filter by date, type, athlete and team. View all metrics including pace, steps and heart rate.</div>
-      <span class="badge badge-conn">Live data</span>
-    </a>
-  </div>
-  <div class="card">
-    <div class="card-header">
-      <h2>⏱️ Recent activities</h2>
-      <a href="activities.html" class="btn btn-ghost">View all →</a>
+<!-- ── Sidebar ── -->
+<aside class="sidebar" id="sidebar">
+  <a class="sb-logo" href="admin.html">
+    <div class="sb-logo-icon">
+      <img src="favicon.png" alt="AW">
     </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Athlete</th><th>Activity</th><th>Type</th><th>Date & time</th><th>Distance</th><th>Pace / Speed</th><th>Status</th></tr></thead>
-        <tbody id="recent-body"><tr class="loading-row"><td colspan="7">Loading...</td></tr></tbody>
-      </table>
+    <div class="sb-logo-text">Walkathon 2026 <span>Admin Panel</span></div>
+  </a>
+
+  <div class="sb-section">Main</div>
+  <a href="admin.html"              class="sb-item active"><i class="ti ti-layout-dashboard"></i><span class="sb-label">Dashboard</span></a>
+  <a href="activities.html"         class="sb-item"><i class="ti ti-run"></i><span class="sb-label">Activities</span></a>
+  <a href="ag-leaderboard.html"     class="sb-item"><i class="ti ti-trophy"></i><span class="sb-label">Leaderboard</span></a>
+  <a href="participants.html"       class="sb-item"><i class="ti ti-users"></i><span class="sb-label">Participants</span></a>
+  <a href="participant-requests.html" class="sb-item"><i class="ti ti-user-check"></i><span class="sb-label">Requests</span></a>
+
+  <div class="sb-section" style="margin-top:10px;">Config</div>
+  <a href="ag-config.html"          class="sb-item"><i class="ti ti-settings-2"></i><span class="sb-label">Settings</span></a>
+  <a href="data-upload.html"        class="sb-item"><i class="ti ti-upload"></i><span class="sb-label">Data Upload</span></a>
+  <a href="email-send.html"         class="sb-item"><i class="ti ti-mail"></i><span class="sb-label">Email Send</span></a>
+
+  <div class="sb-spacer"></div>
+  <div class="sb-divider"></div>
+  <button class="sb-signout" onclick="logout()">
+    <i class="ti ti-logout"></i><span class="sb-label">Sign out</span>
+  </button>
+</aside>
+
+<!-- ── Main ── -->
+<div class="main">
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1>Dashboard</h1>
+      <p id="topbar-date">Loading...</p>
     </div>
-  </div>
-</div>
-<div class="site-footer">
-  © 2026 Arcgate Walkathon &nbsp;·&nbsp;
-  <a href="privacy.html">Privacy Policy</a>
-  <a href="terms.html">Terms of Service</a>
-</div>
+    <div class="topbar-right">
+      <span id="realtime-badge">Connecting…</span>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- ── Stats ── -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-card-icon orange"><i class="ti ti-users"></i></div>
+        <div class="stat-bottom">
+          <div class="stat-val orange" id="s-participants">—</div>
+          <div class="stat-lbl">Participants</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon green"><i class="ti ti-run"></i></div>
+        <div class="stat-bottom">
+          <div class="stat-val green" id="s-activities">—</div>
+          <div class="stat-lbl">Total activities</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon blue"><i class="ti ti-map-pin"></i></div>
+        <div class="stat-bottom">
+          <div class="stat-val blue" id="s-km">—</div>
+          <div class="stat-lbl">Distance covered</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon purple"><i class="ti ti-brand-strava"></i></div>
+        <div class="stat-bottom">
+          <div class="stat-val purple" id="s-connected">—</div>
+          <div class="stat-lbl">Strava connected</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon orange"><i class="ti ti-calendar-check"></i></div>
+        <div class="stat-bottom">
+          <div class="stat-val orange" id="s-today">—</div>
+          <div class="stat-lbl">Today's activities</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon red"><i class="ti ti-flag"></i></div>
+        <div class="stat-bottom">
+          <div class="stat-val red" id="s-flagged">—</div>
+          <div class="stat-lbl">Flagged</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Quick Nav ── -->
+    <div class="section-title">Quick access</div>
+    <div class="nav-grid">
+      <a href="activities.html" class="nav-card">
+        <div class="nav-card-icon"><i class="ti ti-run"></i></div>
+        <div class="nav-card-body">
+          <div class="nav-card-title">Activities</div>
+          <div class="nav-card-desc">Filter, review and manage all logged workouts</div>
+        </div>
+      </a>
+      <a href="ag-leaderboard.html" class="nav-card">
+        <div class="nav-card-icon"><i class="ti ti-trophy"></i></div>
+        <div class="nav-card-body">
+          <div class="nav-card-title">Leaderboard</div>
+          <div class="nav-card-desc">Team and individual rankings with cap logic</div>
+        </div>
+      </a>
+      <a href="participants.html" class="nav-card">
+        <div class="nav-card-icon"><i class="ti ti-users"></i></div>
+        <div class="nav-card-body">
+          <div class="nav-card-title">Participants</div>
+          <div class="nav-card-desc">Manage registered Arcgate employees</div>
+        </div>
+        <span class="nav-card-badge badge-info" id="part-badge">—</span>
+      </a>
+      <a href="participant-requests.html" class="nav-card">
+        <div class="nav-card-icon"><i class="ti ti-user-check"></i></div>
+        <div class="nav-card-body">
+          <div class="nav-card-title">Requests</div>
+          <div class="nav-card-desc">Approve or reject new registration requests</div>
+        </div>
+      </a>
+      <a href="ag-config.html" class="nav-card">
+        <div class="nav-card-icon"><i class="ti ti-settings-2"></i></div>
+        <div class="nav-card-body">
+          <div class="nav-card-title">Config & Rules</div>
+          <div class="nav-card-desc">Flag rules, special days, challenge settings</div>
+        </div>
+        <span class="nav-card-badge" id="flag-badge">—</span>
+      </a>
+      <a href="data-upload.html" class="nav-card">
+        <div class="nav-card-icon"><i class="ti ti-upload"></i></div>
+        <div class="nav-card-body">
+          <div class="nav-card-title">Data Upload</div>
+          <div class="nav-card-desc">Batch import activities via CSV / Excel</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- ── Recent Activity Feed ── -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-header-icon"><i class="ti ti-activity"></i></div>
+          <div>
+            <h2>Recent Activities</h2>
+            <div class="card-header-sub">Latest 10 across all participants</div>
+          </div>
+        </div>
+        <a href="activities.html" class="btn-ghost"><i class="ti ti-arrow-right"></i> View all</a>
+      </div>
+      <div class="activity-feed" id="activity-feed">
+        <div class="feed-state"><i class="ti ti-loader"></i>Loading activities…</div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <span>© 2026 Arcgate Walkathon</span>
+    <div>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+    </div>
+  </footer>
+</div><!-- /main -->
+
 <script>
 const SUPABASE_URL  = 'https://jhdgkncpkrttvemvwukc.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoZGdrbmNwa3J0dHZlbXZ3dWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NzgyNjMsImV4cCI6MjA5NzI1NDI2M30.d7mvXOYDq5G4aqs1Mbc6HFNgTBlQk4B6ah0eahE_yZE';
-const HDR = { apikey: SUPABASE_ANON, Authorization: 'Bearer '+SUPABASE_ANON };
-function authGuard() { const s=JSON.parse(sessionStorage.getItem('wk_admin')||'{}'); if(!s.loggedIn||s.expires<Date.now()) window.location.href='admin-login.html'; }
-function logout() { sessionStorage.removeItem('wk_admin'); window.location.href='admin-login.html'; }
-function fmtDate(d) { return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
-function fmtTime(d) { return new Date(d).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}); }
-function fmtPS(ms,t) { if(!ms) return '—'; if(t==='Ride'||t==='VirtualRide') return (ms*3.6).toFixed(1)+' km/h'; const p=1000/ms,min=Math.floor(p/60),sec=Math.round(p%60); return min+':'+sec.toString().padStart(2,'0')+' /km'; }
-function bc(t) { if(t==='Walk') return 'badge-walk'; if(t==='Run'||t==='VirtualRun') return 'badge-run'; if(t==='Ride'||t==='VirtualRide') return 'badge-ride'; return 'badge-hike'; }
+const HDR = { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + SUPABASE_ANON };
+
+function authGuard() {
+  const s = JSON.parse(sessionStorage.getItem('wk_admin') || '{}');
+  if (!s.loggedIn || s.expires < Date.now()) window.location.href = 'admin-login.html';
+}
+function logout() {
+  sessionStorage.removeItem('wk_admin');
+  window.location.href = 'admin-login.html';
+}
+
+// ── Date in topbar ──
+(function() {
+  const d = new Date();
+  const opts = { weekday:'long', day:'numeric', month:'long', year:'numeric' };
+  document.getElementById('topbar-date').textContent = d.toLocaleDateString('en-IN', opts);
+})();
+
+// ── Helpers ──
+function fmtDate(d) {
+  return new Date(d).toLocaleDateString('en-IN', { day:'2-digit', month:'short' });
+}
+function fmtTime(d) {
+  return new Date(d).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true });
+}
+function fmtDist(m) {
+  if (!m) return '—';
+  return (m / 1000).toFixed(2) + ' km';
+}
+function fmtPS(ms, t) {
+  if (!ms) return '';
+  if (t === 'Ride' || t === 'VirtualRide') return (ms * 3.6).toFixed(1) + ' km/h';
+  const p = 1000 / ms, min = Math.floor(p / 60), sec = Math.round(p % 60);
+  return min + ':' + sec.toString().padStart(2, '0') + ' /km';
+}
+function pillClass(t) {
+  if (t === 'Walk') return 'pill-walk';
+  if (t === 'Run' || t === 'VirtualRun') return 'pill-run';
+  if (t === 'Ride' || t === 'VirtualRide') return 'pill-ride';
+  if (t === 'Hike') return 'pill-hike';
+  return 'pill-other';
+}
+function initials(name) {
+  if (!name) return '?';
+  const p = name.trim().split(' ');
+  return (p[0][0] + (p[1] ? p[1][0] : '')).toUpperCase();
+}
+// Deterministic avatar color from name
+const AVATAR_COLORS = [
+  'linear-gradient(135deg,#E8622A,#f97d4e)',
+  'linear-gradient(135deg,#3B82F6,#60A5FA)',
+  'linear-gradient(135deg,#7C3AED,#A78BFA)',
+  'linear-gradient(135deg,#059669,#34D399)',
+  'linear-gradient(135deg,#DC2626,#F87171)',
+  'linear-gradient(135deg,#D97706,#FCD34D)',
+];
+function avatarGrad(name) {
+  let h = 0;
+  for (let i = 0; i < (name||'').length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xFFFF;
+  return AVATAR_COLORS[h % AVATAR_COLORS.length];
+}
+
 authGuard();
+
 async function load() {
   const today = new Date().toISOString().split('T')[0];
-  // All stats in ONE parallel batch — fast, no loops
+
   const [countR, distR, flagR, todayR, regR, connR, recentR] = await Promise.all([
-    fetch(SUPABASE_URL+'/rest/v1/activities?select=id&is_deleted=eq.false',
-      {headers:{...HDR,'Prefer':'count=exact','Range-Unit':'items','Range':'0-0'}}),
-    fetch(SUPABASE_URL+'/rest/v1/rpc/sum_distance',{method:'POST',headers:{...HDR,'Content-Type':'application/json'},body:'{}'}),
-    fetch(SUPABASE_URL+'/rest/v1/activities?select=id&is_deleted=eq.false&is_flagged=eq.true',
-      {headers:{...HDR,'Prefer':'count=exact','Range-Unit':'items','Range':'0-0'}}),
-    fetch(SUPABASE_URL+'/rest/v1/activities?select=id&is_deleted=eq.false&activity_date=gte.'+today+'T00:00:00&activity_date=lte.'+today+'T23:59:59',
-      {headers:{...HDR,'Prefer':'count=exact','Range-Unit':'items','Range':'0-0'}}),
-    fetch(SUPABASE_URL+'/rest/v1/registration?select=strava_athlete_id,full_name',{headers:HDR}),
-    fetch(SUPABASE_URL+'/rest/v1/participants?select=strava_athlete_id',{headers:HDR}),
-    fetch(SUPABASE_URL+'/rest/v1/activities?select=id,strava_activity_id,strava_athlete_id,activity_name,sport_type,activity_date,distance_meters,avg_speed,is_flagged&is_deleted=eq.false&order=activity_date.desc&limit=10',
-      {headers:HDR})
+    fetch(SUPABASE_URL + '/rest/v1/activities?select=id&is_deleted=eq.false',
+      { headers: { ...HDR, 'Prefer': 'count=exact', 'Range': '0-0' } }),
+    fetch(SUPABASE_URL + '/rest/v1/rpc/sum_distance',
+      { method: 'POST', headers: { ...HDR, 'Content-Type': 'application/json' }, body: '{}' }),
+    fetch(SUPABASE_URL + '/rest/v1/activities?select=id&is_deleted=eq.false&is_flagged=eq.true',
+      { headers: { ...HDR, 'Prefer': 'count=exact', 'Range': '0-0' } }),
+    fetch(SUPABASE_URL + '/rest/v1/activities?select=id&is_deleted=eq.false&activity_date=gte.' + today + 'T00:00:00&activity_date=lte.' + today + 'T23:59:59',
+      { headers: { ...HDR, 'Prefer': 'count=exact', 'Range': '0-0' } }),
+    fetch(SUPABASE_URL + '/rest/v1/registration?select=strava_athlete_id,full_name', { headers: HDR }),
+    fetch(SUPABASE_URL + '/rest/v1/participants?select=strava_athlete_id', { headers: HDR }),
+    fetch(SUPABASE_URL + '/rest/v1/activities?select=id,strava_activity_id,strava_athlete_id,activity_name,sport_type,activity_date,distance_meters,avg_speed,is_flagged&is_deleted=eq.false&order=activity_date.desc&limit=10',
+      { headers: HDR })
   ]);
-  const regs=await regR.json(), conn=await connR.json(), acts=await recentR.json();
-  // Parse counts from Content-Range headers (no extra fetch needed)
-  const totalCount = parseInt((countR.headers.get('content-range')||'').split('/')[1]) || 0;
-  const flagCount  = parseInt((flagR.headers.get('content-range')||'').split('/')[1]) || 0;
-  const todayCount = parseInt((todayR.headers.get('content-range')||'').split('/')[1]) || 0;
-  // Total KM from SQL function (single fast query)
+
+  const regs = await regR.json(), conn = await connR.json(), acts = await recentR.json();
+
+  const totalCount = parseInt((countR.headers.get('content-range') || '').split('/')[1]) || 0;
+  const flagCount  = parseInt((flagR.headers.get('content-range') || '').split('/')[1]) || 0;
+  const todayCount = parseInt((todayR.headers.get('content-range') || '').split('/')[1]) || 0;
+
   let totalKm = 0;
-  try { const d=await distR.json(); totalKm=(Number(d)||0)/1000; } catch(e){}
-  const nm={}; if(Array.isArray(regs)) regs.forEach(r=>nm[r.strava_athlete_id]=r.full_name);
-  document.getElementById('s-participants').textContent=Array.isArray(regs)?regs.length:0;
-  document.getElementById('s-activities').textContent=totalCount;
-  document.getElementById('s-km').textContent=totalKm.toFixed(1)+' km';
-  document.getElementById('s-flagged').textContent=flagCount;
-  document.getElementById('s-today').textContent=todayCount;
-  document.getElementById('s-connected').textContent=Array.isArray(conn)?conn.length:0;
-  document.getElementById('flag-badge').textContent=flagCount?flagCount+' need review':'✅ All clear';
-  document.getElementById('flag-badge').className='badge '+(flagCount?'badge-flag':'badge-active');
-  document.getElementById('part-badge').textContent=(Array.isArray(conn)?conn.length:0)+' connected';
-  const recent=Array.isArray(acts)?acts.slice(0,10):[];
-  document.getElementById('recent-body').innerHTML=recent.length
-    ?recent.map(a=>`<tr>
-        <td><a href="https://www.strava.com/athletes/${a.strava_athlete_id}" target="_blank" class="ath">${nm[a.strava_athlete_id]||'Unknown'}</a></td>
-        <td>${a.activity_name||'—'}</td>
-        <td><span class="badge ${bc(a.sport_type)}">${a.sport_type||'—'}</span></td>
-        <td>${fmtDate(a.activity_date)} ${fmtTime(a.activity_date)}</td>
-        <td>${a.distance_meters?(a.distance_meters/1000).toFixed(2)+' km':'—'}</td>
-        <td>${fmtPS(a.avg_speed,a.sport_type)}</td>
-        <td><span class="badge ${a.is_flagged?'badge-flag':'badge-clean'}">${a.is_flagged?'🚩 Flagged':'✅ Clean'}</span></td>
-      </tr>`).join('')
-    :'<tr class="loading-row"><td colspan="7">No activities yet</td></tr>';
+  try { const d = await distR.json(); totalKm = (Number(d) || 0) / 1000; } catch(e) {}
+
+  const nm = {};
+  if (Array.isArray(regs)) regs.forEach(r => nm[r.strava_athlete_id] = r.full_name);
+
+  document.getElementById('s-participants').textContent = Array.isArray(regs) ? regs.length : 0;
+  document.getElementById('s-activities').textContent   = totalCount;
+  document.getElementById('s-km').textContent           = totalKm.toFixed(1) + ' km';
+  document.getElementById('s-flagged').textContent      = flagCount;
+  document.getElementById('s-today').textContent        = todayCount;
+  document.getElementById('s-connected').textContent    = Array.isArray(conn) ? conn.length : 0;
+
+  // Flag badge on nav card
+  const fb = document.getElementById('flag-badge');
+  if (flagCount) {
+    fb.textContent = flagCount + ' flagged';
+    fb.className = 'nav-card-badge badge-flag';
+  } else {
+    fb.textContent = 'All clear';
+    fb.className = 'nav-card-badge badge-ok';
+  }
+  document.getElementById('part-badge').textContent = (Array.isArray(conn) ? conn.length : 0) + ' connected';
+
+  // ── Render activity feed ──
+  const feed = document.getElementById('activity-feed');
+  const recent = Array.isArray(acts) ? acts.slice(0, 10) : [];
+
+  if (!recent.length) {
+    feed.innerHTML = '<div class="feed-state"><i class="ti ti-mood-empty"></i>No activities yet</div>';
+    return;
+  }
+
+  feed.innerHTML = recent.map(a => {
+    const name  = nm[a.strava_athlete_id] || 'Unknown';
+    const pace  = fmtPS(a.avg_speed, a.sport_type);
+    return `
+      <div class="act-row">
+        <div class="act-avatar" style="background:${avatarGrad(name)}">${initials(name)}</div>
+        <div class="act-info">
+          <a href="https://www.strava.com/athletes/${a.strava_athlete_id}" target="_blank" class="act-name">${name}</a>
+          <div class="act-title">${a.activity_name || '—'}${pace ? ' · ' + pace : ''}</div>
+        </div>
+        <div class="act-meta">
+          <span class="pill ${pillClass(a.sport_type)}">${a.sport_type || '—'}</span>
+          <span class="pill ${a.is_flagged ? 'pill-flag' : 'pill-clean'}">${a.is_flagged ? '🚩 Flagged' : '✅ Clean'}</span>
+        </div>
+        <div class="act-dist">${fmtDist(a.distance_meters)}</div>
+        <div class="act-time">${fmtDate(a.activity_date)}<br><span style="font-size:10px">${fmtTime(a.activity_date)}</span></div>
+      </div>`;
+  }).join('');
 }
+
 load();
 
-// ── Supabase Realtime — auto-refresh recent activities on new insert ──
+// ── Realtime ──
 (function startRealtime() {
-  // Supabase Realtime v2 — postgres_changes subscription
-  const wsUrl = 'wss://jhdgkncpkrttvemvwukc.supabase.co/realtime/v1/websocket?vsn=1.0.0&apikey='+SUPABASE_ANON;
-  let ws, pingInterval, ref = 0;
+  const wsUrl = 'wss://jhdgkncpkrttvemvwukc.supabase.co/realtime/v1/websocket?vsn=1.0.0&apikey=' + SUPABASE_ANON;
+  let ws, ping, ref = 0;
+  const badge = document.getElementById('realtime-badge');
 
   function nextRef() { return String(++ref); }
+
+  function setBadge(state, text) {
+    badge.className = state;
+    badge.textContent = text;
+  }
 
   function connect() {
     try {
       ws = new WebSocket(wsUrl);
 
       ws.onopen = function() {
-        // Step 1: join the realtime channel with postgres_changes config
         ws.send(JSON.stringify({
           topic: 'realtime:activities-watch',
           event: 'phx_join',
@@ -260,51 +897,36 @@ load();
           ref: nextRef()
         }));
 
-        // Keep-alive heartbeat every 25s
-        pingInterval = setInterval(function() {
+        ping = setInterval(function() {
           if (ws.readyState === 1) {
-            ws.send(JSON.stringify({
-              topic: 'phoenix',
-              event: 'heartbeat',
-              payload: {},
-              ref: nextRef()
-            }));
+            ws.send(JSON.stringify({ topic: 'phoenix', event: 'heartbeat', payload: {}, ref: nextRef() }));
           }
         }, 25000);
       };
 
       ws.onmessage = function(evt) {
         try {
-          var msg = JSON.parse(evt.data);
-
-          // Subscription confirmed
+          const msg = JSON.parse(evt.data);
           if (msg.event === 'phx_reply' && msg.payload && msg.payload.status === 'ok') {
-            document.getElementById('realtime-badge').textContent = '🟢 Live';
+            setBadge('live', 'Live');
           }
-
-          // New/updated activity received
           if (msg.event === 'postgres_changes' ||
-              (msg.payload && msg.payload.data && msg.payload.data.type === 'INSERT') ||
-              (msg.payload && msg.payload.data && msg.payload.data.type === 'UPDATE')) {
-            document.getElementById('realtime-badge').textContent = '⚡ New activity!';
-            setTimeout(function() {
-              load();
-              document.getElementById('realtime-badge').textContent = '🟢 Live';
-            }, 1000);
+              (msg.payload && msg.payload.data && (msg.payload.data.type === 'INSERT' || msg.payload.data.type === 'UPDATE'))) {
+            setBadge('new-act', '⚡ New activity!');
+            setTimeout(function() { load(); setBadge('live', 'Live'); }, 1200);
           }
         } catch(e) {}
       };
 
       ws.onclose = function() {
-        clearInterval(pingInterval);
-        document.getElementById('realtime-badge').textContent = '🔴 Reconnecting...';
+        clearInterval(ping);
+        setBadge('error', 'Reconnecting…');
         setTimeout(connect, 5000);
       };
 
       ws.onerror = function() { ws.close(); };
-
     } catch(e) {
-      document.getElementById('realtime-badge').textContent = '🔴 Error';
+      setBadge('error', 'Error');
     }
   }
 
