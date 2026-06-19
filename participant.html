@@ -574,76 +574,94 @@ function renderActivities(acts, dayBreakdown, actBreakdown, gender) {
   dayBreakdown = dayBreakdown || {};
   actBreakdown = actBreakdown || {};
 
+  var list = document.getElementById('act-list');
+
   if (!acts.length) {
-    document.getElementById('act-list').innerHTML =
-      '<div class="empty-state"><div class="icon">🏃</div>' +
-      '<p>No activities yet.<br>Save a walk or run on Strava and it will appear here.</p></div>';
+    list.innerHTML = '<div class="empty-state"><div class="icon">🏃</div><p>No activities yet.<br>Save a walk or run on Strava and it will appear here.</p></div>';
     return;
   }
 
   var flaggedCount = acts.filter(function(a){ return a.is_flagged; }).length;
   if (flaggedCount > 0) document.getElementById('flagged-banner').style.display = 'block';
 
-  // ── Group activities by date ─────────────────────────────────────────────
-  var groups = {}; // { 'YYYY-MM-DD': [act, ...] }
+  // Group by date
+  var groups = {};
   var dateOrder = [];
   acts.forEach(function(a) {
-    var d = (a.activity_date || '').split('T')[0];
-    if (!d) d = 'Unknown';
+    var d = (a.activity_date || '').split('T')[0] || 'Unknown';
     if (!groups[d]) { groups[d] = []; dateOrder.push(d); }
     groups[d].push(a);
   });
-  // already sorted desc from DB query
 
-  var html = dateOrder.map(function(date, gi) {
+  // Build DOM directly (avoids all quote-escaping issues)
+  list.innerHTML = '';
+
+  dateOrder.forEach(function(date, gi) {
     var dayActs = groups[date];
     var db = dayBreakdown[date] || { distPts: 0, bonusPts: 0, challenges: [] };
 
-    // total km for this day (raw, before cap) for display
+    // Raw km for this day
     var rawKm = dayActs.filter(function(a){ return !a.is_flagged; })
-      .reduce(function(s,a){ return s + (a.distance_meters||0)/1000; }, 0);
+      .reduce(function(s, a){ return s + (a.distance_meters || 0) / 1000; }, 0);
 
-    // challenge pts for this day
-    var chPts = db.challenges.reduce(function(s,ch){ return s + ch.pts; }, 0);
+    // Collect challenge pts (daily-scope + single-scope)
+    var chPts = db.challenges.reduce(function(s, ch){ return s + ch.pts; }, 0);
     var chNames = db.challenges.map(function(ch){ return ch.name; });
-
-    // single-scope challenges on any act of this day
     dayActs.forEach(function(a) {
       var ab = actBreakdown[a.strava_activity_id] || { challenges: [] };
-      ab.challenges.forEach(function(ch) {
-        chPts += ch.pts;
-        chNames.push(ch.name);
-      });
+      ab.challenges.forEach(function(ch){ chPts += ch.pts; chNames.push(ch.name); });
     });
 
     var dayTotal = db.distPts + db.bonusPts + chPts;
 
-    // format date nicely
+    // Format date
     var dateObj = new Date(date + 'T00:00:00');
     var dateStr = dateObj.toLocaleDateString('en-IN', { weekday:'short', day:'2-digit', month:'short' });
     var actWord = dayActs.length === 1 ? '1 activity' : dayActs.length + ' activities';
 
-    // challenge tag
-    var chTag = chNames.length
-      ? '<span class="ch-tag">🎯 ' + esc(chNames[0]) + (chNames.length > 1 ? ' +' + (chNames.length-1) : '') + '</span>'
-      : '';
+    // ── Build date-group div ──────────────────────────────────────────────
+    var group = document.createElement('div');
+    group.className = 'date-group';
+    group.id = 'dg-' + gi;
 
-    // ── Activity items inside this date ───────────────────────────────────
-    var innerHtml = dayActs.map(function(a) {
-      var km = a.distance_meters ? (a.distance_meters/1000).toFixed(2) + ' km' : '—';
-      var dur = a.moving_time_seconds ? fmtDur(a.moving_time_seconds) : '—';
-      var ps  = fmtPS(a.avg_speed, a.sport_type);
+    // Date row (header)
+    var dateRow = document.createElement('div');
+    dateRow.className = 'date-row';
+    dateRow.innerHTML =
+      '<div class="date-col">' +
+        '<div class="date-label">' + esc(dateStr) + '</div>' +
+        '<div class="date-sub">' + rawKm.toFixed(2) + ' km · ' + actWord + '</div>' +
+      '</div>' +
+      '<div class="date-pts-strip">' +
+        '<span class="dpill dist">' + db.distPts.toFixed(1) + '</span>' +
+        '<span class="dpill bonus">⚡' + db.bonusPts + '</span>' +
+        (chPts > 0 ? '<span class="dpill chall">🎯' + chPts.toFixed(1) + '</span>' : '') +
+        '<span class="dpill total">' + dayTotal.toFixed(1) + '</span>' +
+      '</div>' +
+      '<div class="date-chevron">▼</div>';
+
+    dateRow.addEventListener('click', (function(id){ return function(){ toggleDay(id); }; })('dg-' + gi));
+    group.appendChild(dateRow);
+
+    // Activities inner
+    var inner = document.createElement('div');
+    inner.className = 'acts-inner';
+
+    dayActs.forEach(function(a) {
+      var km   = a.distance_meters ? (a.distance_meters / 1000).toFixed(2) + ' km' : '—';
+      var dur  = a.moving_time_seconds ? fmtDur(a.moving_time_seconds) : '—';
+      var ps   = fmtPS(a.avg_speed, a.sport_type);
       var actUrl = 'https://www.strava.com/activities/' + a.strava_activity_id;
-      var bc = badgeClass(a.sport_type);
+      var bc   = badgeClass(a.sport_type);
       var isFlag = a.is_flagged;
-      var timeStr = a.activity_date && a.activity_date.indexOf('T') > -1
-        ? fmtTime(a.activity_date) : '';
+      var timeStr = (a.activity_date && a.activity_date.indexOf('T') > -1) ? fmtTime(a.activity_date) : '';
 
-      return '<div class="act-item">' +
+      var item = document.createElement('div');
+      item.className = 'act-item';
+      item.innerHTML =
         '<div class="act-icon">' + renderIcon(a.sport_type) + '</div>' +
         '<div class="act-info">' +
-          '<a class="act-name" href="' + actUrl + '" target="_blank">' +
-            esc(a.activity_name || 'Activity') + '</a>' +
+          '<a class="act-name" href="' + actUrl + '" target="_blank">' + esc(a.activity_name || 'Activity') + '</a>' +
           '<div class="act-meta">' +
             (timeStr ? '<span>' + timeStr + '</span>' : '') +
             '<span>' + dur + '</span>' +
@@ -652,34 +670,19 @@ function renderActivities(acts, dayBreakdown, actBreakdown, gender) {
         '</div>' +
         '<div class="act-right">' +
           '<div class="act-dist">' + km + '</div>' +
-          '<span class="act-type-badge ' + bc + '">' + esc(a.sport_type||'—') + '</span>' +
+          '<span class="act-type-badge ' + bc + '">' + esc(a.sport_type || '—') + '</span>' +
           '<br>' +
           '<span class="act-status-dot ' + (isFlag ? 'badge-flag' : 'badge-clean') + '">' +
             (isFlag ? '⚑ Flagged' : '✓ Valid') +
           '</span>' +
-        '</div>' +
-      '</div>';
-    }).join('');
+        '</div>';
 
-    return '<div class="date-group" id="dg-' + gi + '">' +
-      '<div class="date-row" onclick="toggleDay('dg-' + gi + '')">' +
-        '<div class="date-col">' +
-          '<div class="date-label">' + dateStr + '</div>' +
-          '<div class="date-sub">' + rawKm.toFixed(2) + ' km · ' + actWord + '</div>' +
-        '</div>' +
-        '<div class="date-pts-strip">' +
-          '<span class="dpill dist">' + db.distPts.toFixed(1) + '</span>' +
-          '<span class="dpill bonus">⚡' + db.bonusPts + '</span>' +
-          (chPts > 0 ? '<span class="dpill chall">🎯' + chPts.toFixed(1) + '</span>' : '') +
-          '<span class="dpill total">' + dayTotal.toFixed(1) + '</span>' +
-        '</div>' +
-        '<div class="date-chevron">▼</div>' +
-      '</div>' +
-      '<div class="acts-inner">' + innerHtml + '</div>' +
-    '</div>';
-  }).join('');
+      inner.appendChild(item);
+    });
 
-  document.getElementById('act-list').innerHTML = html;
+    group.appendChild(inner);
+    list.appendChild(group);
+  });
 }
 
 function toggleDay(id) {
