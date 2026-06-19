@@ -158,7 +158,10 @@
   <div class="my-info">
     <div class="my-name" id="my-name">Loading...</div>
     <div class="my-tags" id="my-tags"></div>
-
+  </div>
+  <div style="text-align:center;flex-shrink:0;">
+    <div style="font-size:22px;font-weight:800;color:#E8622A;line-height:1;" id="my-rank">—</div>
+    <div style="font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:rgba(255,255,255,0.4);margin-top:2px;">My Rank</div>
   </div>
 </div>
 </div><!-- end top-bar -->
@@ -517,7 +520,7 @@ function renderRows(rows) {
 
   if (rows.length === 0) {
     list.innerHTML = '<div class="empty-box"><div class="ei">🏃</div><p>No activities yet in this category.</p></div>';
-    document.getElementById('my-rank').textContent = '—';
+    var rnkEl = document.getElementById('my-rank'); if(rnkEl) rnkEl.textContent = '—';
     return;
   }
 
@@ -569,7 +572,7 @@ function renderRows(rows) {
     list.appendChild(row);
   });
 
-  if (myRank > 0) document.getElementById('my-rank').textContent = '#' + myRank;
+  var rnkEl2 = document.getElementById('my-rank'); if(rnkEl2 && myRank > 0) rnkEl2.textContent = '#' + myRank;
 
 
 }
