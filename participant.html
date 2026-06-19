@@ -434,6 +434,15 @@ function calcFullPts(myActs, gender) {
   var actBreakdown = {};
 
   // ── Per-day distance + bonus ──────────────────────────────────────────────
+  // Pre-compute which days have exclude_normal_bonus challenges
+  var excludeBonusDays = {};
+  CHALLENGES_LB.forEach(function(ch) {
+    if (!ch.exclude_normal_bonus) return;
+    for (var day in byDay) {
+      if (day >= ch.start_date && day <= ch.end_date) excludeBonusDays[day] = true;
+    }
+  });
+
   for (var day in byDay) {
     var dayKm = 0;
     byDay[day].forEach(function(a){ dayKm += (parseFloat(a.distance_meters) || 0) / 1000; });
@@ -443,7 +452,7 @@ function calcFullPts(myActs, gender) {
     dayKm = parseFloat(dayKm.toFixed(4));
     var base = parseFloat(CONFIG_LB.basePer_km) || 1;
     var dPts = parseFloat((dayKm * base).toFixed(2));
-    var bPts = calcBonus(dayKm);
+    var bPts = excludeBonusDays[day] ? 0 : calcBonus(dayKm);
     totalDistKm  += dayKm;
     totalDistPts += dPts;
     totalBonus   += bPts;
@@ -504,29 +513,59 @@ function calcFullPts(myActs, gender) {
       }
 
     } else {
-      // ── Single activity scope: each activity checked individually ──
+      // ── Single activity scope ──
       var validActs = myActs.filter(function(a){ return !a.is_flagged; });
-      for (var ai = 0; ai < validActs.length; ai++) {
-        if (awarded) break;
-        var a = validActs[ai];
-        if (checkChallengeSingle(a, ch, cSports)) {
-          awarded = true;
-          awardedActId = a.strava_activity_id;
-          awardedDay   = (a.activity_date || '').split('T')[0];
+      var perActPts = Number(ch.per_activity_points) || 0;
+
+      if (perActPts > 0) {
+        // Per-activity challenge (e.g. 3KM Repeats): award per_activity_points for EACH qualifying activity
+        for (var ai = 0; ai < validActs.length; ai++) {
+          var a = validActs[ai];
+          if (checkChallengeSingle(a, ch, cSports)) {
+            awarded = true;
+            var actDay = (a.activity_date || '').split('T')[0];
+            totalChallenge += perActPts;
+            // Show per-activity line in breakdown
+            if (actDay && dayBreakdown[actDay]) {
+              dayBreakdown[actDay].challenges.push({ name: chName, pts: perActPts, actId: a.strava_activity_id });
+            }
+            if (!actBreakdown[a.strava_activity_id]) actBreakdown[a.strava_activity_id] = { challenges: [] };
+            actBreakdown[a.strava_activity_id].challenges.push({ name: chName, pts: perActPts });
+          }
+        }
+        if (awarded) earnedChallenges[key] = true;
+
+      } else {
+        // One-time award: first matching activity only
+        for (var ai = 0; ai < validActs.length; ai++) {
+          if (awarded) break;
+          var a = validActs[ai];
+          if (checkChallengeSingle(a, ch, cSports)) {
+            awarded = true;
+            awardedActId = a.strava_activity_id;
+            awardedDay   = (a.activity_date || '').split('T')[0];
+          }
+        }
+        if (awarded) {
+          earnedChallenges[key] = true;
+          totalChallenge += chPts;
+          if (awardedDay && dayBreakdown[awardedDay]) {
+            dayBreakdown[awardedDay].challenges.push({ name: chName, pts: chPts, actId: awardedActId });
+          }
+          if (awardedActId) {
+            if (!actBreakdown[awardedActId]) actBreakdown[awardedActId] = { challenges: [] };
+            actBreakdown[awardedActId].challenges.push({ name: chName, pts: chPts });
+          }
         }
       }
     }
 
-    if (awarded) {
+    // For daily-scope one-time awards
+    if (awarded && ch.activity_scope === 'daily') {
       earnedChallenges[key] = true;
       totalChallenge += chPts;
-      // Store on the triggering day AND activity
       if (awardedDay && dayBreakdown[awardedDay]) {
         dayBreakdown[awardedDay].challenges.push({ name: chName, pts: chPts, actId: awardedActId });
-      }
-      if (awardedActId) {
-        if (!actBreakdown[awardedActId]) actBreakdown[awardedActId] = { challenges: [] };
-        actBreakdown[awardedActId].challenges.push({ name: chName, pts: chPts });
       }
     }
   }
