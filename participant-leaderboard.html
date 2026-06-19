@@ -271,17 +271,36 @@ function calcPts(athleteId, gender) {
         }
       }
     } else {
-      // single activity scope
+      // single activity scope — full check matching admin leaderboard checkChallenge
       for (var ai = 0; ai < ACTS.length && !awarded; ai++) {
         var a = ACTS[ai];
-        if (String(a.strava_athlete_id) !== String(athleteId)) continue;
+        if (String(a.strava_athlete_id) !== String(athleteId) || a.is_flagged) continue;
+        // date window
+        var actDate = (a.activity_date || '').split('T')[0];
+        if (actDate < ch.start_date || actDate > ch.end_date) continue;
+        // sport
         if (cSports.indexOf(a.sport_type) === -1) continue;
+        // distance
         var aKm = (a.distance_meters || 0) / 1000;
         if (ch.distance_type === 'fixed' || ch.distance_type === 'range') {
-          awarded = aKm >= ch.distance_min - 0.1 && aKm <= ch.distance_max + 0.1;
+          if (aKm < ch.distance_min - 0.1 || aKm > ch.distance_max + 0.1) continue;
         } else {
-          awarded = aKm >= ch.distance_min;
+          if (aKm < ch.distance_min) continue;
         }
+        // elevation
+        if ((ch.elevation_criteria || 0) > 0 && (a.elevation_gain || 0) < ch.elevation_criteria) continue;
+        // time
+        if (ch.start_time_criteria && a.activity_date && a.activity_date.indexOf('T') > -1) {
+          var timeStr = a.activity_date.split('T')[1] || '';
+          if (!timeStr.startsWith('06:30:00')) {
+            var actTime = new Date(a.activity_date);
+            var actMins = actTime.getHours() * 60 + actTime.getMinutes();
+            var parts   = ch.start_time_criteria.split(':');
+            var critMins = parseInt(parts[0]) * 60 + parseInt(parts[1] || 0);
+            if (Math.abs(actMins - critMins) > 30) continue;
+          }
+        }
+        awarded = true;
       }
     }
     if (awarded) {
@@ -459,7 +478,7 @@ async function boot() {
     var results = await Promise.all([
       fetch(SB + '/rest/v1/registration?strava_athlete_id=eq.' + s.athleteId + '&select=*', { headers: HDR }),
       fetchAll(SB + '/rest/v1/registration?select=strava_athlete_id,full_name,gender,shift,leaderboard_team'),
-      fetchAll(SB + '/rest/v1/activities?is_deleted=eq.false&select=strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus'),
+      fetchAll(SB + '/rest/v1/activities?is_deleted=eq.false&select=strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,elevation_gain'),
       fetch(SB + '/rest/v1/leaderboard_config?select=config_key,config_value', { headers: HDR }),
       fetch(SB + '/rest/v1/challenges?is_active=eq.true&select=*', { headers: HDR }),
       fetch(SB + '/rest/v1/special_scoring_days?select=special_date', { headers: HDR })
