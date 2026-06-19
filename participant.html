@@ -594,6 +594,7 @@ async function load() {
   var athleteId = s.athleteId;
 
   try {
+    console.log('Step 1: Starting fetches');
     var [regRes, myActs, allActs, cfgRes, chRes, sdRes, medalRes, allRegRes] = await Promise.all([
       fetch(SUPABASE_URL + '/rest/v1/registration?strava_athlete_id=eq.' + athleteId + '&select=*', {headers: HDR}),
       fetchAll(SUPABASE_URL + '/rest/v1/activities?strava_athlete_id=eq.' + athleteId + '&is_deleted=eq.false&order=activity_date.desc'),
@@ -605,6 +606,7 @@ async function load() {
       fetchAll(SUPABASE_URL + '/rest/v1/registration?select=strava_athlete_id,gender,shift,leaderboard_team')
     ]);
 
+    console.log('Step 2: Fetches done, myActs:', myActs.length, 'allActs:', allActs.length, 'allRegRes:', allRegRes.length);
     var cfgRows = await cfgRes.json();
     if (Array.isArray(cfgRows)) cfgRows.forEach(function(row) {
       if (row.config_key === 'bonus_points') CONFIG_LB.bonus = row.config_value.map(function(b){ return {km:Number(b.km),points:Number(b.points||b.pts||0)}; });
@@ -640,22 +642,17 @@ async function load() {
       return '<span class="tag">' + esc(t) + '</span>';
     }).join('');
 
+    console.log('Step 3: Config parsed, reg:', reg.full_name);
     // Full points calculation — exact match to admin leaderboard
     var fullPts = calcFullPts(myActs, reg.gender);
 
-    // Rank (by total distance of valid acts across all athletes)
-    var totals = {};
-    allActs.forEach(function(a) {
-      totals[a.strava_athlete_id] = (totals[a.strava_athlete_id] || 0) + (a.distance_meters || 0);
-    });
-    var ranked = Object.entries(totals).sort(function(a, b) { return b[1] - a[1]; });
-    var rank = ranked.findIndex(function(x) { return String(x[0]) === String(athleteId); }) + 1;
-
+    console.log('Step 4: calcFullPts done, total:', fullPts.total);
     // ── Stat cards ──────────────────────────────────────────────────────────
     var validCount = myActs.filter(function(a){ return !a.is_flagged; }).length;
     document.getElementById('s-dist').textContent = fullPts.km.toFixed(1);
     document.getElementById('s-acts').textContent = validCount;
 
+    console.log('Step 5: Stat cards set');
     // ── Medal thresholds ─────────────────────────────────────────────────────
     var medalData = await medalRes.json();
     var medals = { gold:{male:300,female:250}, silver:{male:200,female:150}, bronze:{male:125,female:100} };
@@ -678,6 +675,7 @@ async function load() {
     var mc = document.querySelector('.medal-card');
     if (mc) { mc.classList.remove('bronze','silver','gold'); if (medalClass) mc.classList.add(medalClass); }
 
+    console.log('Step 6: Medals done');
     // ── Road to Medal ────────────────────────────────────────────────────────
     var mpWrap = document.getElementById('medal-progress');
     mpWrap.innerHTML = '';
@@ -703,6 +701,7 @@ async function load() {
       mpWrap.appendChild(row);
     });
 
+    console.log('Step 7: Road to medal done');
     // ── Current Standing ─────────────────────────────────────────────────────
     var allReg = allRegRes;  // already resolved from fetchAll
     var myGenderN = (reg.gender||'').toLowerCase();
@@ -751,9 +750,9 @@ async function load() {
 
     function ordinal(n) {
       if (!n) return '—';
-      var s = ['th','st','nd','rd'];
+      var sfx = ['th','st','nd','rd'];
       var v = n % 100;
-      return n + (s[(v-20)%10] || s[v] || s[0]) + ' Place';
+      return n + (sfx[(v-20)%10] || sfx[v] || sfx[0]) + ' Place';
     }
 
     var shiftLabel = isNight
@@ -766,6 +765,7 @@ async function load() {
     document.getElementById('standing-team-label').textContent  = teamLabel;
     document.getElementById('standing-team-rank').textContent   = ordinal(teamRank);
 
+    console.log('Step 8: Standing done');
     // Section title
     var flaggedCount = myActs.filter(function(a) { return a.is_flagged; }).length;
     var uniqueDays = new Set(myActs.filter(function(a){ return !a.is_flagged; })
@@ -777,9 +777,13 @@ async function load() {
     renderActivities(myActs, fullPts.dayBreakdown, fullPts.actBreakdown, reg.gender);
 
   } catch(e) {
-    document.getElementById('act-list').innerHTML =
-      '<div class="empty-state"><div class="icon">⚠️</div><p>Could not load activities.<br>Check your connection and refresh.</p></div>';
-    console.error(e);
+    console.error('Dashboard load error:', e.message || e, e.stack);
+    // Show error in both tabs
+    var errHtml = '<div class="empty-state"><div class="icon">⚠️</div><p>Could not load data.<br>' + (e.message || 'Unknown error') + '</p></div>';
+    var actList = document.getElementById('act-list');
+    var dashTab = document.getElementById('tab-dashboard');
+    if (actList) actList.innerHTML = errHtml;
+    if (dashTab) dashTab.innerHTML = '<div style="padding:32px 20px;text-align:center;color:#6B7280;">⚠️ ' + (e.message || 'Load error') + '</div>';
   }
 }
 
