@@ -48,25 +48,22 @@
     .my-rank-lbl{font-size:9px;text-transform:uppercase;letter-spacing:0.5px;
                   color:rgba(255,255,255,0.4);margin-top:2px;}
 
-    .dropdown-bar{background:var(--white);border-bottom:1px solid var(--border);
-                padding:10px 16px;position:sticky;top:62px;z-index:150;
-                display:flex;align-items:center;gap:10px;}
-    .dropdown-bar label{font-size:11px;font-weight:700;color:var(--muted);
-                         text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;}
-    .board-select{flex:1;padding:9px 12px;border:1.5px solid var(--border);
-                   border-radius:var(--radius-sm);font-family:inherit;font-size:14px;
-                   font-weight:600;color:var(--text);background:var(--bg);
-                   cursor:pointer;appearance:none;-webkit-appearance:none;
-                   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-                   background-repeat:no-repeat;background-position:right 10px center;
-                   padding-right:34px;}
-    .board-select:focus{outline:none;border-color:var(--brand);}
+    .lb-tabs{background:var(--white);border-bottom:1px solid var(--border);
+               display:flex;position:sticky;top:62px;z-index:150;}
+    .lb-tab{flex:1;padding:13px 8px;border:none;border-bottom:2px solid transparent;
+             background:none;font-family:inherit;font-size:13px;font-weight:700;
+             color:var(--muted);cursor:pointer;letter-spacing:0.2px;margin-bottom:-1px;
+             transition:all 0.15s;}
+    .lb-tab.active{color:var(--brand);border-bottom-color:var(--brand);}
 
     .content{flex:1;max-width:640px;width:100%;margin:0 auto;padding:10px 0 80px;}
 
     .lb-row{background:var(--white);margin:0 12px 6px;border-radius:var(--radius-sm);
              box-shadow:var(--shadow);display:flex;align-items:center;padding:12px 14px;gap:12px;}
     .lb-row.is-me{border:2px solid var(--brand);background:#fff8f5;}
+    .lb-row.rank-gold{background:#FFFBEB;border-left:3px solid #F59E0B;}
+    .lb-row.rank-silver{background:#F8FAFC;border-left:3px solid #94A3B8;}
+    .lb-row.rank-bronze{background:#FDF6EE;border-left:3px solid #CD7F32;}
     .rank-col{width:36px;font-size:17px;font-weight:900;text-align:center;flex-shrink:0;color:var(--muted);}
     .rank-col.r1{color:var(--gold);}
     .rank-col.r2{color:var(--silver);}
@@ -139,11 +136,9 @@
   </div>
 </div>
 
-<div class="dropdown-bar">
-  <label>Leaderboard</label>
-  <select class="board-select" id="board-select" onchange="switchTab(this.value)">
-    <!-- options built dynamically after data loads -->
-  </select>
+<div class="lb-tabs">
+  <button class="lb-tab active" id="lb-tab-shift" onclick="switchTab('shift')">My Category</button>
+  <button class="lb-tab"        id="lb-tab-team"  onclick="switchTab('team')">My Team</button>
 </div>
 
 <div class="content">
@@ -185,9 +180,10 @@ var ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI
 var HDR  = { apikey: ANON, Authorization: 'Bearer ' + ANON };
 
 var ME   = null;
-var REG  = [];   // all registrations
-var ACTS = [];   // all activities
+var REG  = [];
+var ACTS = [];
 var currentTab = 'shift';
+var bronzeThresh = 100, silverThresh = 150, goldThresh = 200;
 
 /* ── helpers ── */
 function logout() {
@@ -464,8 +460,16 @@ function renderRows(rows) {
     var rl = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1);
     var meta = [r.p.leaderboard_team, r.p.shift, r.p.gender].filter(Boolean).join(' · ');
 
+    // medal for this participant
+    var mPts = r.pts.total;
+    var rowMedal = '';
+    if (mPts >= goldThresh)        rowMedal = '🥇';
+    else if (mPts >= silverThresh) rowMedal = '🥈';
+    else if (mPts >= bronzeThresh) rowMedal = '🥉';
+
+    var topCls = i === 0 ? ' rank-gold' : i === 1 ? ' rank-silver' : i === 2 ? ' rank-bronze' : '';
     var row = document.createElement('div');
-    row.className = 'lb-row' + (isMe ? ' is-me' : '');
+    row.className = 'lb-row' + topCls + (isMe ? ' is-me' : '');
     row.innerHTML =
       '<div class="rank-col ' + rc + '">' + rl + '</div>' +
       '<div class="info-col">' +
@@ -474,11 +478,11 @@ function renderRows(rows) {
         '<div class="row-meta">' + esc(meta) + '</div>' +
       '</div>' +
       '<div class="pts-col">' +
-        '<div class="lb-pts-main">' + r.pts.total.toFixed(2) + ' <span class="pts-unit">pts</span></div>' +
+        '<div class="lb-pts-main">' + (rowMedal ? rowMedal + ' ' : '') + r.pts.total.toFixed(1) + ' <span class="pts-unit">Points</span></div>' +
         '<div class="lb-pts-sub">' +
           '<span class="lb-pip dist">Dist ' + r.pts.distPts.toFixed(1) + '</span>' +
-          '<span class="lb-pip bonus">⚡ +' + r.pts.bonusPts + '</span>' +
-          '<span class="lb-pip chall">🎯 +' + r.pts.challengePts.toFixed(1) + '</span>' +
+          '<span class="lb-pip bonus">Bonus +' + r.pts.bonusPts + '</span>' +
+          '<span class="lb-pip chall">Challenge +' + r.pts.challengePts.toFixed(1) + '</span>' +
         '</div>' +
       '</div>';
 
@@ -487,47 +491,30 @@ function renderRows(rows) {
 
   if (myRank > 0) document.getElementById('my-rank').textContent = '#' + myRank;
 
-  setTimeout(function() {
-    var el = document.querySelector('.lb-row.is-me');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }, 150);
+
 }
 
 /* ── tab switching ── */
 function switchTab(mode) {
   currentTab = mode;
-  var sel = document.getElementById('board-select');
-  if (sel && sel.value !== mode) sel.value = mode;
+  document.getElementById('lb-tab-shift').classList.toggle('active', mode === 'shift');
+  document.getElementById('lb-tab-team').classList.toggle('active',  mode === 'team');
   renderRows(getRows(mode));
 }
 
 /* ── update tab labels ── */
-function buildDropdown() {
+function buildTabs() {
   if (!ME) return;
   var myGender = norm(ME.gender);
   var myShift  = norm(ME.shift);
   var myTeam   = ME.leaderboard_team || 'My Team';
   var isNight  = myShift.indexOf('night') > -1;
   var isFemale = myGender === 'female' || myGender === 'f';
-
-  // Build options matching admin leaderboard board values
-  var options = [];
-
-  // Shift option — e.g. "Dayshift - Male" or "Nightshift - All"
-  if (isNight) {
-    options.push({ value: 'shift', label: '🌙 Nightshift — All' });
-  } else {
-    options.push({ value: 'shift', label: isFemale ? '👩 Dayshift — Female' : '👨 Dayshift — Male' });
-  }
-
-  // Team option — e.g. "Team Seattle - Male"
-  var gLabel = isFemale ? 'Female' : 'Male';
-  options.push({ value: 'team', label: '🏙️ ' + myTeam + ' — ' + gLabel });
-
-  var sel = document.getElementById('board-select');
-  sel.innerHTML = options.map(function(o) {
-    return '<option value="' + o.value + '"' + (o.value === currentTab ? ' selected' : '') + '>' + o.label + '</option>';
-  }).join('');
+  var gLabel   = isFemale ? 'Female' : 'Male';
+  var shiftLabel = isNight ? '🌙 Nightshift — All' : (isFemale ? '👩 Dayshift — Female' : '👨 Dayshift — Male');
+  var teamLabel  = '🏙️ ' + myTeam + ' — ' + gLabel;
+  document.getElementById('lb-tab-shift').textContent = shiftLabel;
+  document.getElementById('lb-tab-team').textContent  = teamLabel;
 }
 
 /* ── skeletons ── */
@@ -552,7 +539,8 @@ async function boot() {
       fetchAll(SB + '/rest/v1/activities?is_deleted=eq.false&select=strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,elevation_gain'),
       fetch(SB + '/rest/v1/leaderboard_config?select=config_key,config_value', { headers: HDR }),
       fetch(SB + '/rest/v1/challenges?is_active=eq.true&select=*', { headers: HDR }),
-      fetch(SB + '/rest/v1/special_scoring_days?select=special_date', { headers: HDR })
+      fetch(SB + '/rest/v1/special_scoring_days?select=special_date', { headers: HDR }),
+      fetch(SB + '/rest/v1/leaderboard_config?config_key=eq.medals&select=config_value', { headers: HDR })
     ]);
 
     var myRegs = await results[0].json();
@@ -570,6 +558,14 @@ async function boot() {
     CHALLENGES = Array.isArray(chRows) ? chRows : [];
     var sdRows = await results[5].json();
     SPECIAL_DAYS = Array.isArray(sdRows) ? sdRows.map(function(x){ return x.special_date; }) : [];
+    var medalRows = await results[6].json();
+    if (Array.isArray(medalRows) && medalRows.length && medalRows[0].config_value) {
+      var mt = medalRows[0].config_value;
+      var gKey = ((ME.gender||'').toLowerCase() === 'female') ? 'female' : 'male';
+      bronzeThresh = Number(mt.bronze && mt.bronze[gKey] || 100);
+      silverThresh = Number(mt.silver && mt.silver[gKey] || 150);
+      goldThresh   = Number(mt.gold   && mt.gold[gKey]   || 200);
+    }
 
     // Banner
     document.getElementById('my-name').textContent = ME.full_name || s.name || 'Participant';
@@ -581,7 +577,7 @@ async function boot() {
       return '<span class="my-tag">' + esc(t) + '</span>';
     }).join('');
 
-    buildDropdown();
+    buildTabs();
     renderRows(getRows(currentTab));
 
   } catch (e) {
