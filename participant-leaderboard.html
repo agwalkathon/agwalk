@@ -58,30 +58,50 @@
 
     .content{flex:1;max-width:640px;width:100%;margin:0 auto;padding:10px 0 80px;}
 
+    /* ── Leaderboard key (shown once above list) ── */
+    .lb-key{display:flex;gap:10px;padding:6px 14px;font-size:10px;color:var(--muted);
+             font-weight:600;letter-spacing:0.3px;}
+    .lb-key span{display:flex;align-items:center;gap:3px;}
+
+    /* ── Row ── */
     .lb-row{background:var(--white);margin:0 12px 6px;border-radius:var(--radius-sm);
-             box-shadow:var(--shadow);display:flex;align-items:center;padding:12px 14px;gap:12px;}
+             box-shadow:var(--shadow);padding:11px 12px;display:flex;align-items:flex-start;gap:10px;}
     .lb-row.is-me{border:2px solid var(--brand);background:#fff8f5;}
     .lb-row.rank-gold{background:#FFFBEB;border-left:3px solid #F59E0B;}
     .lb-row.rank-silver{background:#F8FAFC;border-left:3px solid #94A3B8;}
     .lb-row.rank-bronze{background:#FDF6EE;border-left:3px solid #CD7F32;}
-    .rank-col{width:36px;font-size:17px;font-weight:900;text-align:center;flex-shrink:0;color:var(--muted);}
+
+    /* rank badge */
+    .rank-col{width:28px;font-size:15px;font-weight:900;text-align:center;
+               flex-shrink:0;color:var(--muted);padding-top:2px;}
     .rank-col.r1{color:var(--gold);}
     .rank-col.r2{color:var(--silver);}
     .rank-col.r3{color:var(--bronze);}
-    .info-col{flex:1;min-width:0;}
-    .row-name{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .row-meta{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+    /* main content */
+    .row-body{flex:1;min-width:0;}
+
+    /* line 1: medal + points on left, name on right */
+    .row-line1{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+    .row-pts-main{font-size:15px;font-weight:800;color:var(--brand);white-space:nowrap;flex-shrink:0;}
+    .row-pts-unit{font-size:10px;font-weight:500;color:var(--muted);}
+    .row-medal-icon{font-size:15px;flex-shrink:0;}
+    .row-name{font-size:14px;font-weight:700;color:var(--text);flex:1;
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;}
     .you-chip{display:inline-block;background:var(--brand);color:white;
-               font-size:9px;font-weight:800;padding:1px 6px;border-radius:20px;
-               vertical-align:middle;margin-left:5px;text-transform:uppercase;}
-    .pts-col{flex-shrink:0;}
-    .lb-pts-strip{display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
-    .lb-pts-main{font-size:16px;font-weight:800;color:var(--brand);}
-    .lb-pts-sub{display:flex;gap:6px;align-items:center;}
-    .lb-pip{font-size:10px;font-weight:700;padding:1px 5px;border-radius:8px;white-space:nowrap;}
-    .lb-pip.dist{background:#EEF2FF;color:#4338CA;}
-    .lb-pip.bonus{background:#FFF7ED;color:#C2410C;}
-    .lb-pip.chall{background:#F0FDF4;color:#15803D;}
+               font-size:8px;font-weight:800;padding:1px 5px;border-radius:10px;
+               vertical-align:middle;margin-left:4px;text-transform:uppercase;}
+
+    /* line 2: team + stats */
+    .row-line2{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+    .row-team{font-size:10px;color:var(--muted);font-weight:600;margin-right:2px;
+               white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;}
+    .row-stat{font-size:10px;font-weight:700;white-space:nowrap;padding:1px 5px;
+               border-radius:6px;}
+    .row-stat.km {background:#F3F4F6;color:#374151;}
+    .row-stat.dist{background:#EEF2FF;color:#4338CA;}
+    .row-stat.bon {background:#FFF7ED;color:#C2410C;}
+    .row-stat.chal{background:#F0FDF4;color:#15803D;}
 
     @keyframes shimmer{0%{background-position:-200px 0}100%{background-position:200px 0}}
     .skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);
@@ -142,7 +162,13 @@
 </div>
 
 <div class="content">
-  <div id="lb-list">
+  <div class="lb-key">
+  <span>📏 km walked</span>
+  <span style="color:#4338CA">Dist = distance pts</span>
+  <span style="color:#C2410C">⚡ = bonus pts</span>
+  <span style="color:#15803D">🎯 = challenge pts</span>
+</div>
+<div id="lb-list">
     <div class="skel-row"><div class="skeleton skel-c"></div><div class="skel-lines"><div class="skeleton skel-l m"></div><div class="skeleton skel-l s"></div></div></div>
     <div class="skel-row"><div class="skeleton skel-c"></div><div class="skel-lines"><div class="skeleton skel-l m"></div><div class="skeleton skel-l s"></div></div></div>
     <div class="skel-row"><div class="skeleton skel-c"></div><div class="skel-lines"><div class="skeleton skel-l m"></div><div class="skeleton skel-l s"></div></div></div>
@@ -470,19 +496,25 @@ function renderRows(rows) {
     var topCls = i === 0 ? ' rank-gold' : i === 1 ? ' rank-silver' : i === 2 ? ' rank-bronze' : '';
     var row = document.createElement('div');
     row.className = 'lb-row' + topCls + (isMe ? ' is-me' : '');
+
+    // Line 1: medal + points (left) | name (right)
+    // Line 2: team | 📏km | dist pts | ⚡bonus | 🎯challenge
+    var kmRaw = r.pts.km.toFixed(1);
+    var teamName = r.p.leaderboard_team || '';
     row.innerHTML =
       '<div class="rank-col ' + rc + '">' + rl + '</div>' +
-      '<div class="info-col">' +
-        '<div class="row-name">' + esc(r.p.full_name || '—') +
-          (isMe ? '<span class="you-chip">You</span>' : '') + '</div>' +
-        '<div class="row-meta">' + esc(meta) + '</div>' +
-      '</div>' +
-      '<div class="pts-col">' +
-        '<div class="lb-pts-main">' + (rowMedal ? rowMedal + ' ' : '') + r.pts.total.toFixed(1) + ' <span class="pts-unit">Points</span></div>' +
-        '<div class="lb-pts-sub">' +
-          '<span class="lb-pip dist">Dist ' + r.pts.distPts.toFixed(1) + '</span>' +
-          '<span class="lb-pip bonus">Bonus +' + r.pts.bonusPts + '</span>' +
-          '<span class="lb-pip chall">Challenge +' + r.pts.challengePts.toFixed(1) + '</span>' +
+      '<div class="row-body">' +
+        '<div class="row-line1">' +
+          (rowMedal ? '<span class="row-medal-icon">' + rowMedal + '</span>' : '') +
+          '<span class="row-pts-main">' + r.pts.total.toFixed(1) + ' <span class="row-pts-unit">pts</span></span>' +
+          '<span class="row-name">' + esc(r.p.full_name || '—') + (isMe ? '<span class="you-chip">You</span>' : '') + '</span>' +
+        '</div>' +
+        '<div class="row-line2">' +
+          (teamName ? '<span class="row-team">' + esc(teamName) + '</span>' : '') +
+          '<span class="row-stat km">📏 ' + kmRaw + ' km</span>' +
+          '<span class="row-stat dist">Dist ' + r.pts.distPts.toFixed(1) + '</span>' +
+          '<span class="row-stat bon">⚡+' + r.pts.bonusPts + '</span>' +
+          (r.pts.challengePts > 0 ? '<span class="row-stat chal">🎯+' + r.pts.challengePts.toFixed(1) + '</span>' : '') +
         '</div>' +
       '</div>';
 
