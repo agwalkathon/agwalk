@@ -70,28 +70,55 @@
     /* ── Content ── */
     .content{flex:1;padding:16px;max-width:640px;width:100%;margin:0 auto;}
 
-    /* ── Activity cards (mobile-first, no horizontal scroll) ── */
+    /* ── Date-group accordion ── */
     .section-title{font-size:13px;font-weight:700;color:var(--muted);
-                   text-transform:uppercase;letter-spacing:0.6px;
-                   margin:4px 0 12px;}
-    #act-list{display:grid;gap:10px;}
-    .act-card{background:var(--white);border-radius:var(--radius);
-              box-shadow:var(--shadow);overflow:hidden;}
-    .act-card-head{padding:12px 14px 10px;border-bottom:1px solid var(--border);
-                   display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
-    .act-name{font-size:14px;font-weight:700;color:var(--text);
-              text-decoration:none;line-height:1.3;flex:1;}
+                   text-transform:uppercase;letter-spacing:0.6px;margin:4px 0 12px;}
+    #act-list{display:grid;gap:8px;}
+
+    /* Date row (tappable header) */
+    .date-group{background:var(--white);border-radius:var(--radius);
+                box-shadow:var(--shadow);overflow:hidden;}
+    .date-row{display:flex;align-items:center;padding:12px 14px;
+              cursor:pointer;gap:10px;-webkit-tap-highlight-color:transparent;
+              user-select:none;}
+    .date-row:active{background:#fafafa;}
+    .date-col{flex:1;}
+    .date-label{font-size:14px;font-weight:700;color:var(--text);}
+    .date-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+    .date-pts-strip{display:flex;gap:5px;align-items:center;flex-shrink:0;}
+    .dpill{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;white-space:nowrap;}
+    .dpill.dist{background:#EEF2FF;color:#4338CA;}
+    .dpill.bonus{background:#FFF7ED;color:#C2410C;}
+    .dpill.chall{background:#F0FDF4;color:#15803D;}
+    .dpill.total{background:var(--dark);color:white;}
+    .date-chevron{font-size:12px;color:var(--muted);transition:transform 0.2s;flex-shrink:0;}
+    .date-group.open .date-chevron{transform:rotate(180deg);}
+
+    /* Activity list inside expanded date */
+    .acts-inner{display:none;border-top:1px solid var(--border);}
+    .date-group.open .acts-inner{display:block;}
+    .act-item{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;
+              align-items:flex-start;gap:10px;}
+    .act-item:last-child{border-bottom:none;}
+    .act-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+    .act-info{flex:1;min-width:0;}
+    .act-name{font-size:13px;font-weight:700;color:var(--text);
+              text-decoration:none;display:block;
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .act-name:hover{color:var(--brand);}
-    .act-badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;
-               flex-shrink:0;margin-top:1px;}
-    .act-grid{display:grid;grid-template-columns:repeat(3,1fr);padding:10px 14px;gap:8px;}
-    .act-stat{text-align:center;}
-    .act-stat .av{font-size:14px;font-weight:700;color:var(--text);}
-    .act-stat .al{font-size:10px;color:var(--muted);margin-top:1px;}
-    .act-footer{padding:8px 14px;background:#FAFBFC;border-top:1px solid var(--border);
-                display:flex;align-items:center;justify-content:space-between;}
-    .act-date{font-size:11px;color:var(--muted);}
-    .act-status-badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;}
+    .act-meta{font-size:11px;color:var(--muted);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap;}
+    .act-right{text-align:right;flex-shrink:0;}
+    .act-dist{font-size:13px;font-weight:700;color:var(--text);}
+    .act-type-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;margin-top:3px;display:inline-block;}
+    .act-status-dot{font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;margin-top:3px;display:inline-block;}
+
+    /* badges */
+    .badge-walk{background:var(--green-bg);color:var(--green);}
+    .badge-run{background:var(--blue-bg);color:var(--blue);}
+    .badge-ride{background:#fff3e0;color:#e65100;}
+    .badge-hike{background:var(--purple-bg);color:var(--purple);}
+    .badge-clean{background:var(--green-bg);color:var(--green);}
+    .badge-flag{background:var(--red-bg);color:var(--red);}
 
     /* badges */
     .badge-walk{background:var(--green-bg);color:var(--green);}
@@ -140,24 +167,9 @@
     .bnav-item:hover{color:var(--brand);}
 
     /* ── Tablet/desktop upgrade ── */
-    /* Points breakdown — compact single row */
-    .act-pts-breakdown{border-top:1px solid var(--border);padding:6px 14px;
-                        background:#FAFBFC;display:flex;align-items:center;
-                        gap:0;overflow:hidden;}
-    .pts-cell{display:flex;flex-direction:column;align-items:center;
-               flex:1;padding:0 6px;border-right:1px solid var(--border);}
-    .pts-cell:last-child{border-right:none;}
-    .pts-cell .pc-lbl{font-size:9px;text-transform:uppercase;letter-spacing:0.4px;
-                       color:var(--muted);margin-bottom:1px;white-space:nowrap;}
-    .pts-cell .pc-val{font-size:13px;font-weight:800;white-space:nowrap;}
-    .pts-cell.dist  .pc-val{color:#4338CA;}
-    .pts-cell.bonus .pc-val{color:#C2410C;}
-    .pts-cell.chall .pc-val{color:#15803D;}
-    .pts-cell.total .pc-val{color:var(--dark);}
-    .pts-cell.total{background:none;}
-    .ch-tag{font-size:9px;color:#15803D;background:#F0FDF4;
-             padding:1px 5px;border-radius:8px;margin-top:1px;
-             max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    /* Challenge tag on date row */
+    .ch-tag{font-size:9px;color:#15803D;background:#F0FDF4;border:1px solid #bbf7d0;
+             padding:1px 6px;border-radius:8px;white-space:nowrap;}
 
     @media(min-width:640px){
       .profile-hero{padding:24px 32px 0;}
@@ -482,99 +494,6 @@ function renderIcon(type) {
   return icons[type] || '⚡';
 }
 
-function renderActivities(acts, dayBreakdown, actBreakdown, gender) {
-  dayBreakdown = dayBreakdown || {};
-  actBreakdown = actBreakdown || {};
-  if (!acts.length) {
-    document.getElementById('act-list').innerHTML =
-      '<div class="empty-state"><div class="icon">🏃</div>' +
-      '<p>No activities yet.<br>Save a walk or run on Strava and it will appear here within 30 seconds.</p></div>';
-    return;
-  }
-  var flaggedCount = acts.filter(function(a){ return a.is_flagged; }).length;
-  if (flaggedCount > 0) document.getElementById('flagged-banner').style.display = 'block';
-
-  var shownDays = {};
-  var html = acts.map(function(a) {
-    var dist = a.distance_meters ? (a.distance_meters / 1000).toFixed(2) + ' km' : '—';
-    var dur = a.moving_time_seconds ? fmtDur(a.moving_time_seconds) : '—';
-    var ps = fmtPS(a.avg_speed, a.sport_type);
-    var elev = a.elevation_gain ? a.elevation_gain.toFixed(0) + ' m' : '—';
-    var actUrl = 'https://www.strava.com/activities/' + a.strava_activity_id;
-    var bc = badgeClass(a.sport_type);
-    var isFlag = a.is_flagged;
-    return '<div class="act-card">' +
-      '<div class="act-card-head">' +
-        '<a class="act-name" href="' + actUrl + '" target="_blank">' +
-          renderIcon(a.sport_type) + ' ' + esc(a.activity_name || 'Activity') + '</a>' +
-        '<span class="act-badge ' + bc + '">' + esc(a.sport_type || '—') + '</span>' +
-      '</div>' +
-      '<div class="act-grid">' +
-        '<div class="act-stat"><div class="av">' + dist + '</div><div class="al">Distance</div></div>' +
-        '<div class="act-stat"><div class="av">' + dur + '</div><div class="al">Duration</div></div>' +
-        '<div class="act-stat"><div class="av">' + ps + '</div><div class="al">' +
-          (a.sport_type === 'Ride' || a.sport_type === 'VirtualRide' ? 'Speed' : 'Pace') + '</div></div>' +
-        '<div class="act-stat"><div class="av">' + elev + '</div><div class="al">Elevation</div></div>' +
-      '</div>' +
-      (function() {
-        if (a.is_flagged) return '';
-        var actDay = (a.activity_date || '').split('T')[0];
-        var db  = dayBreakdown[actDay];
-        var ab  = actBreakdown[a.strava_activity_id] || { challenges: [] };
-        if (!db) return '';
-
-        // Challenge pts for this activity:
-        // 1. single-scope: earned by THIS specific activity
-        // 2. daily-scope: earned by the day this activity belongs to (show on first act of day only)
-        var chPts = 0;
-        var chNames = [];
-
-        // Single-scope challenges on this activity
-        ab.challenges.forEach(function(ch) { chPts += ch.pts; chNames.push(ch.name); });
-
-        // Daily-scope challenges — only on FIRST activity of that day
-        var isDayFirst = !shownDays[actDay];
-        if (isDayFirst) {
-          shownDays[actDay] = true;
-          db.challenges
-            .filter(function(ch){ return !ch.actId; })
-            .forEach(function(ch){ chPts += ch.pts; chNames.push(ch.name); });
-        }
-
-        var dayTotal = db.distPts + db.bonusPts + chPts;
-
-        var chTag = chNames.length
-          ? '<div class="ch-tag" title="' + chNames.map(esc).join(', ') + '">' + chNames.map(esc).join(', ') + '</div>'
-          : '';
-        return '<div class="act-pts-breakdown">' +
-          '<div class="pts-cell dist">' +
-            '<span class="pc-lbl">Dist</span>' +
-            '<span class="pc-val">' + db.distPts.toFixed(2) + '</span>' +
-          '</div>' +
-          '<div class="pts-cell bonus">' +
-            '<span class="pc-lbl">Bonus</span>' +
-            '<span class="pc-val">+' + db.bonusPts + '</span>' +
-          '</div>' +
-          '<div class="pts-cell chall">' +
-            '<span class="pc-lbl">Challenge</span>' +
-            '<span class="pc-val">+' + chPts.toFixed(2) + '</span>' +
-            chTag +
-          '</div>' +
-          '<div class="pts-cell total">' +
-            '<span class="pc-lbl">Total</span>' +
-            '<span class="pc-val">' + dayTotal.toFixed(2) + '</span>' +
-          '</div>' +
-        '</div>';
-      })() +
-      '<div class="act-footer">' +
-        '<span class="act-date">' + fmtDate(a.activity_date) + ' · ' + fmtTime(a.activity_date) + '</span>' +
-        '<span class="act-status-badge ' + (isFlag ? 'badge-flag' : 'badge-clean') + '">' +
-          (isFlag ? '⚑ ' + friendlyFlag(a.flag_reason) : '✓ Valid') + '</span>' +
-      '</div>' +
-    '</div>';
-  }).join('');
-  document.getElementById('act-list').innerHTML = html;
-}
 
 var currentSession = null;
 
@@ -593,6 +512,7 @@ async function load() {
       fetch(SUPABASE_URL + '/rest/v1/challenges?is_active=eq.true&select=*', {headers: HDR}),
       fetch(SUPABASE_URL + '/rest/v1/special_scoring_days?select=special_date', {headers: HDR})
     ]);
+
     var cfgRows = await cfgRes.json();
     if (Array.isArray(cfgRows)) cfgRows.forEach(function(row) {
       if (row.config_key === 'bonus_points') CONFIG_LB.bonus = row.config_value.map(function(b){ return {km:Number(b.km),points:Number(b.points||b.pts||0)}; });
@@ -607,7 +527,7 @@ async function load() {
     var reg = Array.isArray(regs) && regs.length ? regs[0] : {};
     var name = reg.full_name || s.name || 'Participant';
 
-    // Profile
+    // Profile hero
     document.getElementById('p-name').textContent = name;
     var tags = [];
     if (reg.leaderboard_team) tags.push('🏙️ ' + reg.leaderboard_team);
@@ -617,15 +537,10 @@ async function load() {
       return '<span class="tag">' + esc(t) + '</span>';
     }).join('');
 
-    // Stats
-    var valid = myActs.filter(function(a) { return !a.is_flagged; });
-    var dist = valid.reduce(function(sum, a) { return sum + (a.distance_meters || 0); }, 0) / 1000;
-
     // Full points calculation — exact match to admin leaderboard
     var fullPts = calcFullPts(myActs, reg.gender);
-    var totalPts = fullPts.total;
 
-    // Rank calculation
+    // Rank (by total distance of valid acts across all athletes)
     var totals = {};
     allActs.forEach(function(a) {
       totals[a.strava_athlete_id] = (totals[a.strava_athlete_id] || 0) + (a.distance_meters || 0);
@@ -635,21 +550,144 @@ async function load() {
 
     document.getElementById('s-rank').textContent = rank > 0 ? '#' + rank : '—';
     document.getElementById('s-dist').textContent = fullPts.km.toFixed(1);
-    document.getElementById('s-acts').textContent = valid.length;
-    document.getElementById('s-pts').textContent = fullPts.total.toFixed(1);
+    document.getElementById('s-acts').textContent = myActs.filter(function(a){ return !a.is_flagged; }).length;
+    document.getElementById('s-pts').textContent  = fullPts.total.toFixed(1);
 
     // Section title
     var flaggedCount = myActs.filter(function(a) { return a.is_flagged; }).length;
+    var uniqueDays = new Set(myActs.filter(function(a){ return !a.is_flagged; })
+      .map(function(a){ return (a.activity_date||'').split('T')[0]; })).size;
     document.getElementById('act-section-title').textContent =
-      myActs.length + ' Activities' + (flaggedCount ? ' · ' + flaggedCount + ' Flagged' : '');
+      uniqueDays + ' Days · ' + myActs.length + ' Activities' +
+      (flaggedCount ? ' · ' + flaggedCount + ' Flagged' : '');
 
     renderActivities(myActs, fullPts.dayBreakdown, fullPts.actBreakdown, reg.gender);
+
   } catch(e) {
     document.getElementById('act-list').innerHTML =
       '<div class="empty-state"><div class="icon">⚠️</div><p>Could not load activities.<br>Check your connection and refresh.</p></div>';
     console.error(e);
   }
 }
+
+function renderActivities(acts, dayBreakdown, actBreakdown, gender) {
+  dayBreakdown = dayBreakdown || {};
+  actBreakdown = actBreakdown || {};
+
+  if (!acts.length) {
+    document.getElementById('act-list').innerHTML =
+      '<div class="empty-state"><div class="icon">🏃</div>' +
+      '<p>No activities yet.<br>Save a walk or run on Strava and it will appear here.</p></div>';
+    return;
+  }
+
+  var flaggedCount = acts.filter(function(a){ return a.is_flagged; }).length;
+  if (flaggedCount > 0) document.getElementById('flagged-banner').style.display = 'block';
+
+  // ── Group activities by date ─────────────────────────────────────────────
+  var groups = {}; // { 'YYYY-MM-DD': [act, ...] }
+  var dateOrder = [];
+  acts.forEach(function(a) {
+    var d = (a.activity_date || '').split('T')[0];
+    if (!d) d = 'Unknown';
+    if (!groups[d]) { groups[d] = []; dateOrder.push(d); }
+    groups[d].push(a);
+  });
+  // already sorted desc from DB query
+
+  var html = dateOrder.map(function(date, gi) {
+    var dayActs = groups[date];
+    var db = dayBreakdown[date] || { distPts: 0, bonusPts: 0, challenges: [] };
+
+    // total km for this day (raw, before cap) for display
+    var rawKm = dayActs.filter(function(a){ return !a.is_flagged; })
+      .reduce(function(s,a){ return s + (a.distance_meters||0)/1000; }, 0);
+
+    // challenge pts for this day
+    var chPts = db.challenges.reduce(function(s,ch){ return s + ch.pts; }, 0);
+    var chNames = db.challenges.map(function(ch){ return ch.name; });
+
+    // single-scope challenges on any act of this day
+    dayActs.forEach(function(a) {
+      var ab = actBreakdown[a.strava_activity_id] || { challenges: [] };
+      ab.challenges.forEach(function(ch) {
+        chPts += ch.pts;
+        chNames.push(ch.name);
+      });
+    });
+
+    var dayTotal = db.distPts + db.bonusPts + chPts;
+
+    // format date nicely
+    var dateObj = new Date(date + 'T00:00:00');
+    var dateStr = dateObj.toLocaleDateString('en-IN', { weekday:'short', day:'2-digit', month:'short' });
+    var actWord = dayActs.length === 1 ? '1 activity' : dayActs.length + ' activities';
+
+    // challenge tag
+    var chTag = chNames.length
+      ? '<span class="ch-tag">🎯 ' + esc(chNames[0]) + (chNames.length > 1 ? ' +' + (chNames.length-1) : '') + '</span>'
+      : '';
+
+    // ── Activity items inside this date ───────────────────────────────────
+    var innerHtml = dayActs.map(function(a) {
+      var km = a.distance_meters ? (a.distance_meters/1000).toFixed(2) + ' km' : '—';
+      var dur = a.moving_time_seconds ? fmtDur(a.moving_time_seconds) : '—';
+      var ps  = fmtPS(a.avg_speed, a.sport_type);
+      var actUrl = 'https://www.strava.com/activities/' + a.strava_activity_id;
+      var bc = badgeClass(a.sport_type);
+      var isFlag = a.is_flagged;
+      var timeStr = a.activity_date && a.activity_date.indexOf('T') > -1
+        ? fmtTime(a.activity_date) : '';
+
+      return '<div class="act-item">' +
+        '<div class="act-icon">' + renderIcon(a.sport_type) + '</div>' +
+        '<div class="act-info">' +
+          '<a class="act-name" href="' + actUrl + '" target="_blank">' +
+            esc(a.activity_name || 'Activity') + '</a>' +
+          '<div class="act-meta">' +
+            (timeStr ? '<span>' + timeStr + '</span>' : '') +
+            '<span>' + dur + '</span>' +
+            '<span>' + ps + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="act-right">' +
+          '<div class="act-dist">' + km + '</div>' +
+          '<span class="act-type-badge ' + bc + '">' + esc(a.sport_type||'—') + '</span>' +
+          '<br>' +
+          '<span class="act-status-dot ' + (isFlag ? 'badge-flag' : 'badge-clean') + '">' +
+            (isFlag ? '⚑ Flagged' : '✓ Valid') +
+          '</span>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    return '<div class="date-group" id="dg-' + gi + '">' +
+      '<div class="date-row" onclick="toggleDay('dg-' + gi + '')">' +
+        '<div class="date-col">' +
+          '<div class="date-label">' + dateStr + '</div>' +
+          '<div class="date-sub">' + rawKm.toFixed(2) + ' km · ' + actWord + '</div>' +
+        '</div>' +
+        '<div class="date-pts-strip">' +
+          '<span class="dpill dist">' + db.distPts.toFixed(1) + '</span>' +
+          '<span class="dpill bonus">⚡' + db.bonusPts + '</span>' +
+          (chPts > 0 ? '<span class="dpill chall">🎯' + chPts.toFixed(1) + '</span>' : '') +
+          '<span class="dpill total">' + dayTotal.toFixed(1) + '</span>' +
+        '</div>' +
+        '<div class="date-chevron">▼</div>' +
+      '</div>' +
+      '<div class="acts-inner">' + innerHtml + '</div>' +
+    '</div>';
+  }).join('');
+
+  document.getElementById('act-list').innerHTML = html;
+}
+
+function toggleDay(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle('open');
+}
+
 
 function refreshData() {
   var icon = document.getElementById('refresh-icon');
