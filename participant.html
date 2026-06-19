@@ -140,15 +140,19 @@
     .bnav-item:hover{color:var(--brand);}
 
     /* ── Tablet/desktop upgrade ── */
-    /* Points breakdown row on activity cards */
-    .act-pts-row{display:flex;flex-wrap:wrap;gap:6px;padding:8px 14px;background:#FAFBFC;border-top:1px solid var(--border);}
-    .act-pts-row.act-challenge{background:#F0FDF4;border-top:none;padding-top:0;padding-bottom:6px;}
-    .act-pts-row.day-summary{border-top:1px solid var(--border);}
-    .pts-chip{font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;}
-    .pts-chip.dist{background:#EEF2FF;color:#4338CA;}
-    .pts-chip.bonus{background:#FFF7ED;color:#C2410C;}
-    .pts-chip.challenge{background:#F0FDF4;color:#15803D;border:1px solid #bbf7d0;}
-    .pts-chip.total{background:#111827;color:white;}
+    /* Points breakdown table on activity cards */
+    .act-pts-breakdown{border-top:1px solid var(--border);padding:8px 14px;background:#FAFBFC;}
+    .pts-line{display:flex;align-items:center;justify-content:space-between;
+              padding:3px 0;font-size:12px;}
+    .pts-line.total-line{border-top:1px solid var(--border);margin-top:4px;padding-top:6px;}
+    .pts-label{color:var(--muted);flex:1;}
+    .ch-names{font-size:10px;color:#15803D;font-weight:600;
+              background:#F0FDF4;padding:1px 6px;border-radius:10px;margin-left:6px;}
+    .pts-value{font-weight:700;font-size:13px;text-align:right;min-width:48px;}
+    .pts-value.dist{color:#4338CA;}
+    .pts-value.bonus{color:#C2410C;}
+    .pts-value.challenge{color:#15803D;}
+    .pts-value.total{color:var(--dark);font-size:14px;}
 
     @media(min-width:640px){
       .profile-hero{padding:24px 32px 0;}
@@ -514,39 +518,46 @@ function renderActivities(acts, dayBreakdown, actBreakdown, gender) {
         var ab  = actBreakdown[a.strava_activity_id] || { challenges: [] };
         if (!db) return '';
 
-        // ── Per-activity challenge chips (single-activity scope) ──
-        var actChips = ab.challenges.map(function(ch) {
-          return '<span class="pts-chip challenge">🎯 +' + ch.pts + ' ' + esc(ch.name) + '</span>';
-        }).join('');
+        // Challenge pts for this activity:
+        // 1. single-scope: earned by THIS specific activity
+        // 2. daily-scope: earned by the day this activity belongs to (show on first act of day only)
+        var chPts = 0;
+        var chNames = [];
 
-        // ── Per-day summary row: show on FIRST activity of the day (desc order) ──
-        var dayRow = '';
-        if (!shownDays[actDay]) {
+        // Single-scope challenges on this activity
+        ab.challenges.forEach(function(ch) { chPts += ch.pts; chNames.push(ch.name); });
+
+        // Daily-scope challenges — only on FIRST activity of that day
+        var isDayFirst = !shownDays[actDay];
+        if (isDayFirst) {
           shownDays[actDay] = true;
-          // Daily-scope challenge chips (attached to day, not a specific act)
-          var dayChips = db.challenges
-            .filter(function(ch){ return !ch.actId; }) // actId = null means daily scope
-            .map(function(ch){
-              return '<span class="pts-chip challenge">🎯 +' + ch.pts + ' ' + esc(ch.name) + '</span>';
-            }).join('');
-
-          var dayTotal = db.distPts + db.bonusPts +
-            db.challenges.reduce(function(s,ch){ return s + ch.pts; }, 0);
-
-          dayRow = '<div class="act-pts-row day-summary">' +
-            '<span class="pts-chip dist">📏 ' + db.distPts.toFixed(1) + ' dist</span>' +
-            '<span class="pts-chip bonus">⚡ +' + db.bonusPts + ' bonus</span>' +
-            dayChips +
-            '<span class="pts-chip total">= ' + dayTotal.toFixed(1) + ' pts</span>' +
-          '</div>';
+          db.challenges
+            .filter(function(ch){ return !ch.actId; })
+            .forEach(function(ch){ chPts += ch.pts; chNames.push(ch.name); });
         }
 
-        // ── Per-activity challenge row (only if this activity earned one) ──
-        var actRow = actChips
-          ? '<div class="act-pts-row act-challenge">' + actChips + '</div>'
-          : '';
+        var dayTotal = db.distPts + db.bonusPts + chPts;
 
-        return actRow + dayRow;
+        return '<div class="act-pts-breakdown">' +
+          '<div class="pts-line">' +
+            '<span class="pts-label">Dist Points</span>' +
+            '<span class="pts-value dist">' + db.distPts.toFixed(2) + '</span>' +
+          '</div>' +
+          '<div class="pts-line">' +
+            '<span class="pts-label">Bonus Points</span>' +
+            '<span class="pts-value bonus">+' + db.bonusPts + '</span>' +
+          '</div>' +
+          '<div class="pts-line">' +
+            '<span class="pts-label">Challenge Points' +
+              (chNames.length ? ' <span class="ch-names">' + chNames.map(esc).join(', ') + '</span>' : '') +
+            '</span>' +
+            '<span class="pts-value challenge">+' + chPts.toFixed(2) + '</span>' +
+          '</div>' +
+          '<div class="pts-line total-line">' +
+            '<span class="pts-label"><strong>Total Points</strong></span>' +
+            '<span class="pts-value total">' + dayTotal.toFixed(2) + '</span>' +
+          '</div>' +
+        '</div>';
       })() +
       '<div class="act-footer">' +
         '<span class="act-date">' + fmtDate(a.activity_date) + ' · ' + fmtTime(a.activity_date) + '</span>' +
