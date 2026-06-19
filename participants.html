@@ -101,7 +101,7 @@ tr:hover td{background:#FAFAFA}
 .ath:hover{text-decoration:underline}
 
 /* ── Footer ── */
-.site-footer{background:var(--card-bg);border-top:1px solid var(--border);padding:16px 32px;font-size:12px;color:var(--text-muted);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.site-footer{width:100%;background:var(--card-bg);border-top:1px solid var(--border);padding:16px 32px;font-size:12px;font-family:var(--font);color:var(--text-muted);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;box-sizing:border-box}
 .site-footer a{color:var(--brand);text-decoration:none;margin-left:14px}
 .site-footer a:hover{text-decoration:underline}
 
@@ -111,7 +111,7 @@ tr:hover td{background:#FAFAFA}
 /* ── Responsive ── */
 @media(max-width:1100px){.stats-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:768px){
-  .sidebar{width:56px}.main{margin-left:56px}
+  .sidebar{width:56px}.main{margin-left:56px;flex-direction:column}
   .topbar{padding:0 16px;height:54px}
   .content{padding:16px}
   .stats-grid{grid-template-columns:1fr 1fr;gap:10px}
