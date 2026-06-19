@@ -510,15 +510,18 @@
 
     /* ─── Footer ─── */
     .site-footer {
+      width: 100%;
+      box-sizing: border-box;
       background: var(--card-bg);
       border-top: 1px solid var(--border);
       padding: 16px 32px;
       font-size: 12px;
+      font-family: var(--font);
       color: var(--text-muted);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: auto;
+      flex-shrink: 0;
     }
     .site-footer a { color: var(--brand); text-decoration: none; margin-left: 14px; }
     .site-footer a:hover { text-decoration: underline; }
