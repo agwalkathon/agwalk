@@ -283,7 +283,7 @@
 <!-- DASHBOARD TAB -->
 <div class="content" id="tab-dashboard">
 
-  <!-- Stat cards: Distance + Activities -->
+  <!-- Stat cards: Distance + Activities + Avg Pace + Moving Time -->
   <div class="dash-cards">
     <div class="dash-card">
       <div class="dc-icon">📏</div>
@@ -294,6 +294,16 @@
       <div class="dc-icon">🏃</div>
       <div class="dc-val" id="s-acts">—</div>
       <div class="dc-lbl">Activities</div>
+    </div>
+    <div class="dash-card">
+      <div class="dc-icon">⏱️</div>
+      <div class="dc-val" id="s-pace">—</div>
+      <div class="dc-lbl">Avg Pace (min/km)</div>
+    </div>
+    <div class="dash-card">
+      <div class="dc-icon">🕐</div>
+      <div class="dc-val" id="s-movetime">—</div>
+      <div class="dc-lbl">Total Moving Time</div>
     </div>
   </div>
 
@@ -398,6 +408,33 @@
     <div class="dash-section-title">🏅 Challenges</div>
     <div class="standing-card" id="challenges-card">
       <div class="empty-state" style="padding:16px;"><p>Loading...</p></div>
+    </div>
+  </div>
+
+  <!-- Activity Times -->
+  <div class="dash-section">
+    <div class="dash-section-title">🕐 Activity Times</div>
+    <div class="dash-cards">
+      <div class="dash-card">
+        <div class="dc-icon">🌅</div>
+        <div class="dc-val" id="tod-morning">—</div>
+        <div class="dc-lbl">Morning (5–12)</div>
+      </div>
+      <div class="dash-card">
+        <div class="dc-icon">☀️</div>
+        <div class="dc-val" id="tod-afternoon">—</div>
+        <div class="dc-lbl">Afternoon (12–17)</div>
+      </div>
+      <div class="dash-card">
+        <div class="dc-icon">🌆</div>
+        <div class="dc-val" id="tod-evening">—</div>
+        <div class="dc-lbl">Evening (17–21)</div>
+      </div>
+      <div class="dash-card">
+        <div class="dc-icon">🌙</div>
+        <div class="dc-val" id="tod-night">—</div>
+        <div class="dc-lbl">Night (21–5)</div>
+      </div>
     </div>
   </div>
 
@@ -797,6 +834,49 @@ async function load() {
     var validCount = myActs.filter(function(a){ return !a.is_flagged; }).length;
     var el_s_dist=document.getElementById('s-dist'); if(el_s_dist) el_s_dist.textContent=fullPts.km.toFixed(1);
     var el_s_acts=document.getElementById('s-acts'); if(el_s_acts) el_s_acts.textContent=validCount;
+
+    // Avg Pace & Total Moving Time
+    var validActs = myActs.filter(function(a){ return !a.is_flagged; });
+    var totalMovingSec = validActs.reduce(function(s,a){ return s + (a.moving_time_seconds||0); }, 0);
+    var totalDistM = validActs.reduce(function(s,a){ return s + (a.distance_meters||0); }, 0);
+
+    // Avg pace (min/km) across all valid activities
+    var avgPaceStr = '—';
+    if (totalDistM > 0) {
+      var paceSecPerKm = totalMovingSec / (totalDistM / 1000);
+      var paceMin = Math.floor(paceSecPerKm / 60);
+      var paceSec = Math.round(paceSecPerKm % 60);
+      avgPaceStr = paceMin + ':' + (paceSec < 10 ? '0' : '') + paceSec;
+    }
+    var el_pace = document.getElementById('s-pace'); if(el_pace) el_pace.textContent = avgPaceStr;
+
+    // Total moving time formatted
+    var movingTimeStr = '—';
+    if (totalMovingSec > 0) {
+      var mh = Math.floor(totalMovingSec / 3600);
+      var mm = Math.floor((totalMovingSec % 3600) / 60);
+      movingTimeStr = mh > 0 ? mh + 'h ' + mm + 'm' : mm + 'm';
+    }
+    var el_mt = document.getElementById('s-movetime'); if(el_mt) el_mt.textContent = movingTimeStr;
+
+    // Time of Day counts (using IST = UTC+5:30)
+    var tod = { morning:0, afternoon:0, evening:0, night:0 };
+    validActs.forEach(function(a) {
+      if (!a.activity_date || a.activity_date.indexOf('T') === -1) return;
+      // Skip placeholder import times (06:30:00 UTC = imported from Excel)
+      if (a.activity_date.indexOf('T06:30:00') > -1) return;
+      var dt = new Date(a.activity_date);
+      // Convert to IST (UTC+5:30)
+      var istHour = (dt.getUTCHours() + 5 + Math.floor((dt.getUTCMinutes() + 30) / 60)) % 24;
+      if (istHour >= 5  && istHour < 12) tod.morning++;
+      else if (istHour >= 12 && istHour < 17) tod.afternoon++;
+      else if (istHour >= 17 && istHour < 21) tod.evening++;
+      else tod.night++;
+    });
+    var el_tm = document.getElementById('tod-morning');   if(el_tm) el_tm.textContent = tod.morning;
+    var el_ta = document.getElementById('tod-afternoon'); if(el_ta) el_ta.textContent = tod.afternoon;
+    var el_te = document.getElementById('tod-evening');   if(el_te) el_te.textContent = tod.evening;
+    var el_tn = document.getElementById('tod-night');     if(el_tn) el_tn.textContent = tod.night;
 
     // ── Medal thresholds ─────────────────────────────────────────────────────
     var medalData = await medalRes.json();
