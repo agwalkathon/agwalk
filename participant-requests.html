@@ -109,6 +109,7 @@
 <script>
 const SUPABASE_URL  = 'https://jhdgkncpkrttvemvwukc.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoZGdrbmNwa3J0dHZlbXZ3dWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NzgyNjMsImV4cCI6MjA5NzI1NDI2M30.d7mvXOYDq5G4aqs1Mbc6HFNgTBlQk4B6ah0eahE_yZE';
+const BACKEND = 'https://walkathon-backend-hv9j.onrender.com';
 const HDR = { apikey: SUPABASE_ANON, Authorization: 'Bearer '+SUPABASE_ANON, 'Content-Type': 'application/json' };
 function authGuard() { const s=JSON.parse(sessionStorage.getItem('wk_admin')||'{}'); if(!s.loggedIn||s.expires<Date.now()) window.location.href='admin-login.html'; }
 function logout() { sessionStorage.removeItem('wk_admin'); sessionStorage.removeItem('wk_user'); window.location.href='admin-login.html'; }
@@ -150,39 +151,26 @@ async function loadRequests(){
 }
 async function approveRequest(id){
   const r=allRows.find(x=>x.id===id); if(!r) return;
-  const athleteId=prompt('Enter Strava Athlete ID for '+r.full_name+':');
-  if(!athleteId) return alert('Approval cancelled. Strava Athlete ID is required.');
-  const team=prompt('Leaderboard Team (optional):', '') || null;
-  const row={
-    strava_athlete_id: Number(athleteId),
-    full_name: r.full_name,
-    email: r.email,
-    gender: r.gender,
-    event_name: r.event_name || 'walkathon2026',
-    shift: r.shift,
-    project_lead: r.team_lead,
-    tshirt_size: r.tshirt_size,
-    leaderboard_team: team,
-    role: 'user'
-  };
+  if(!confirm('Approve '+r.full_name+'? They will be added to the participant list.')) return;
   try{
-    let ins=await fetch(SUPABASE_URL+'/rest/v1/registration',{method:'POST',headers:Object.assign({},HDR,{Prefer:'resolution=merge-duplicates'}),body:JSON.stringify(row)});
-    if(!ins.ok) throw new Error('Registration insert failed: '+ins.status);
-    let upd=await fetch(SUPABASE_URL+'/rest/v1/registration_requests?id=eq.'+id,{method:'PATCH',headers:HDR,body:JSON.stringify({status:'approved',reviewed_at:new Date().toISOString()})});
-    if(!upd.ok) throw new Error('Request update failed: '+upd.status);
-    alert('Approved. Participant can now connect with Strava.');
-    loadRequests();
-  }catch(e){ alert('Error: '+e.message); }
+    const res=await fetch(BACKEND+'/approve-request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+    const d=await res.json();
+    if(d.success){ alert('✅ Approved! '+r.full_name+' (Athlete ID: '+d.athlete_id+') can now sign in with Strava.'); loadRequests(); }
+    else throw new Error(d.error||'Unknown error');
+  }catch(e){ alert('❌ Error: '+e.message); }
 }
 async function rejectRequest(id){
-  if(!confirm('Reject this request?')) return;
+  const r=allRows.find(x=>x.id===id); if(!r) return;
+  if(!confirm('Reject request from '+r.full_name+'?')) return;
   try{
-    let upd=await fetch(SUPABASE_URL+'/rest/v1/registration_requests?id=eq.'+id,{method:'PATCH',headers:HDR,body:JSON.stringify({status:'rejected',reviewed_at:new Date().toISOString()})});
-    if(!upd.ok) throw new Error('Request update failed: '+upd.status);
-    loadRequests();
-  }catch(e){ alert('Error: '+e.message); }
+    const res=await fetch(BACKEND+'/reject-request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+    const d=await res.json();
+    if(d.success){ loadRequests(); }
+    else throw new Error(d.error||'Unknown error');
+  }catch(e){ alert('❌ Error: '+e.message); }
 }
 loadRequests();
 </script>
 </body>
 </html>
+
