@@ -228,8 +228,8 @@
 <!-- Profile Card -->
 <div class="profile-card" id="profile-card">
   <div class="profile-photo-wrap">
-    <img class="profile-phid="p-photo" src="" alt="" style="display:none;" onload="this.style.display='block';document.getElementById('p-initials').style.display='none';" onerror="this.style.display='none';document.getElementById('p-initials').style.display='flex';">
-    <div class="profile-initials" id="p-initials" style="display:flex;"></div></div>
+    <img class="profile-photo" id="p-photo" src="" alt="" style="display:none;">
+    <div class="profile-initials" id="p-initials"></div></div>
   </div>
   <div class="profile-info">
     <div class="profile-name" id="p-name">Loading...</div>
@@ -594,7 +594,6 @@ async function load() {
   var athleteId = s.athleteId;
 
   try {
-    console.log('Step 1: Starting fetches');
     var [regRes, myActs, allActs, cfgRes, chRes, sdRes, medalRes, allRegRes] = await Promise.all([
       fetch(SUPABASE_URL + '/rest/v1/registration?strava_athlete_id=eq.' + athleteId + '&select=*', {headers: HDR}),
       fetchAll(SUPABASE_URL + '/rest/v1/activities?strava_athlete_id=eq.' + athleteId + '&is_deleted=eq.false&order=activity_date.desc'),
@@ -606,7 +605,6 @@ async function load() {
       fetchAll(SUPABASE_URL + '/rest/v1/registration?select=strava_athlete_id,gender,shift,leaderboard_team')
     ]);
 
-    console.log('Step 2: Fetches done, myActs:', myActs.length, 'allActs:', allActs.length, 'allRegRes:', allRegRes.length);
     var cfgRows = await cfgRes.json();
     if (Array.isArray(cfgRows)) cfgRows.forEach(function(row) {
       if (row.config_key === 'bonus_points') CONFIG_LB.bonus = row.config_value.map(function(b){ return {km:Number(b.km),points:Number(b.points||b.pts||0)}; });
@@ -628,11 +626,15 @@ async function load() {
     document.getElementById('p-initials').textContent = initials;
     // profile photo from session (set during login via Strava)
     var photoUrl = s.profilePhoto || '';
-    if (photoUrl) {
-      document.getElementById('p-photo').src = photoUrl;
+    var photoEl    = document.getElementById('p-photo');
+    var initialsEl = document.getElementById('p-initials');
+    if (photoUrl && photoEl) {
+      photoEl.onload  = function() { photoEl.style.display = 'block'; if (initialsEl) initialsEl.style.display = 'none'; };
+      photoEl.onerror = function() { photoEl.style.display = 'none';  if (initialsEl) initialsEl.style.display = 'flex'; };
+      photoEl.src = photoUrl;
     } else {
-      document.getElementById('p-photo').style.display = 'none';
-      document.getElementById('p-initials').style.display = 'flex';
+      if (photoEl)    photoEl.style.display    = 'none';
+      if (initialsEl) initialsEl.style.display = 'flex';
     }
     var tags = [];
     if (reg.gender) tags.push(reg.gender === 'Female' ? '👩 Female' : '👨 Male');
@@ -642,17 +644,14 @@ async function load() {
       return '<span class="tag">' + esc(t) + '</span>';
     }).join('');
 
-    console.log('Step 3: Config parsed, reg:', reg.full_name);
     // Full points calculation — exact match to admin leaderboard
     var fullPts = calcFullPts(myActs, reg.gender);
 
-    console.log('Step 4: calcFullPts done, total:', fullPts.total);
     // ── Stat cards ──────────────────────────────────────────────────────────
     var validCount = myActs.filter(function(a){ return !a.is_flagged; }).length;
     document.getElementById('s-dist').textContent = fullPts.km.toFixed(1);
     document.getElementById('s-acts').textContent = validCount;
 
-    console.log('Step 5: Stat cards set');
     // ── Medal thresholds ─────────────────────────────────────────────────────
     var medalData = await medalRes.json();
     var medals = { gold:{male:300,female:250}, silver:{male:200,female:150}, bronze:{male:125,female:100} };
@@ -675,7 +674,6 @@ async function load() {
     var mc = document.querySelector('.medal-card');
     if (mc) { mc.classList.remove('bronze','silver','gold'); if (medalClass) mc.classList.add(medalClass); }
 
-    console.log('Step 6: Medals done');
     // ── Road to Medal ────────────────────────────────────────────────────────
     var mpWrap = document.getElementById('medal-progress');
     mpWrap.innerHTML = '';
@@ -701,7 +699,6 @@ async function load() {
       mpWrap.appendChild(row);
     });
 
-    console.log('Step 7: Road to medal done');
     // ── Current Standing ─────────────────────────────────────────────────────
     var allReg = allRegRes;  // already resolved from fetchAll
     var myGenderN = (reg.gender||'').toLowerCase();
@@ -765,7 +762,6 @@ async function load() {
     document.getElementById('standing-team-label').textContent  = teamLabel;
     document.getElementById('standing-team-rank').textContent   = ordinal(teamRank);
 
-    console.log('Step 8: Standing done');
     // Section title
     var flaggedCount = myActs.filter(function(a) { return a.is_flagged; }).length;
     var uniqueDays = new Set(myActs.filter(function(a){ return !a.is_flagged; })
