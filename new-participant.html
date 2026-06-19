@@ -196,6 +196,20 @@
         </div>
       </div>
 
+      <div class="field" id="f-team">
+        <label>Leaderboard Team <span class="req">*</span></label>
+        <select id="leaderboard_team">
+          <option value="">— Select your team —</option>
+          <option value="Team Seattle">Team Seattle</option>
+          <option value="Team San Francisco">Team San Francisco</option>
+          <option value="Team Los Angeles">Team Los Angeles</option>
+          <option value="Team Chicago">Team Chicago</option>
+          <option value="Team Austin">Team Austin</option>
+          <option value="Team New York">Team New York</option>
+        </select>
+        <div class="err-msg">Required</div>
+      </div>
+
       <div class="field" id="f-team-lead">
         <label>Project / Team Lead Name <span class="req">*</span></label>
         <input type="text" id="team_lead" placeholder="Your manager's name" autocomplete="off">
@@ -274,7 +288,8 @@ async function submitForm() {
   var whatsapp    = val('whatsapp');
   var shift       = val('shift');
   var tshirt_size = val('tshirt_size');
-  var team_lead   = val('team_lead');
+  var team_lead         = val('team_lead');
+  var leaderboard_team  = val('leaderboard_team');
   var strava_url  = val('strava_url');
 
   // Validate
@@ -286,6 +301,7 @@ async function submitForm() {
   setError('f-whatsapp',  !whatsapp);    if (!whatsapp)    ok = false;
   setError('f-shift',     !shift);       if (!shift)       ok = false;
   setError('f-tshirt',    !tshirt_size); if (!tshirt_size) ok = false;
+  setError('f-team',      !leaderboard_team); if (!leaderboard_team) ok = false;
   setError('f-team-lead', !team_lead);   if (!team_lead)   ok = false;
   var validStrava = strava_url.startsWith('https://www.strava.com/athletes/');
   setError('f-strava', !validStrava); if (!validStrava) ok = false;
@@ -312,6 +328,7 @@ async function submitForm() {
         whatsapp:    whatsapp,
         shift:       shift,
         tshirt_size: tshirt_size,
+        leaderboard_team: leaderboard_team,
         team_lead:   team_lead,
         strava_url:  strava_url,
         event_name:  'walkathon2026',
