@@ -94,6 +94,52 @@
     .progress-bar-fill{height:100%;border-radius:20px;transition:width 0.6s ease;}
     .medal-row-pct{font-size:11px;color:var(--muted);margin-top:4px;text-align:right;}
     .pts-needed{font-size:10px;color:var(--muted);font-weight:400;}
+
+    /* ── Pace rows ── */
+    .pace-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+    .pace-row:last-child{border-bottom:none;padding-bottom:0;}
+    .pace-icon-wrap{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;
+                    justify-content:center;font-size:14px;flex-shrink:0;}
+    .pace-text-wrap{flex:1;min-width:0;}
+    .pace-main{font-size:11px;font-weight:600;color:var(--text);line-height:1.3;}
+    .pace-sub{font-size:10px;color:var(--muted);margin-top:1px;}
+    .pace-val-right{font-size:12px;font-weight:800;flex-shrink:0;color:var(--brand);}
+
+    /* ── Streak bars ── */
+    .sbar{flex:1;height:5px;border-radius:3px;}
+    .sbar.on{background:var(--brand);}
+    .sbar.dim{background:#fca5a5;}
+    .sbar.off{background:var(--border);}
+    .sbar-lbl{font-size:8px;color:var(--muted);}
+
+    /* ── Rivals ── */
+    .rival-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);}
+    .rival-row:last-child{border-bottom:none;}
+    .rival-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:6px;flex-shrink:0;min-width:32px;text-align:center;}
+    .rb-ahead{background:#fef3c7;color:#92400e;}
+    .rb-you{background:#fff8f5;color:var(--brand);border:1px solid var(--brand);}
+    .rb-behind{background:#dcfce7;color:#166534;}
+    .rival-name{flex:1;font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .rival-gap{font-size:10px;font-weight:700;flex-shrink:0;}
+    .gap-up{color:#ef4444;}
+    .gap-dn{color:#22c55e;}
+    .gap-me{color:var(--brand);}
+
+    /* ── Challenge rows ── */
+    .ch-row{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);}
+    .ch-row:last-child{border-bottom:none;}
+    .ch-dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;
+             justify-content:center;font-size:11px;flex-shrink:0;margin-top:1px;}
+    .ch-dot.won{background:#dcfce7;}
+    .ch-dot.avail{background:#fef9c3;}
+    .ch-dot.missed{background:#f3f4f6;}
+    .ch-body{flex:1;min-width:0;}
+    .ch-title{font-size:11px;font-weight:700;color:var(--text);line-height:1.3;}
+    .ch-sub{font-size:9px;color:var(--muted);margin-top:1px;}
+    .ch-pts{font-size:11px;font-weight:800;flex-shrink:0;}
+    .ch-pts.won{color:#16a34a;}
+    .ch-pts.avail{color:#d97706;}
+    .ch-pts.missed{color:var(--muted);}
     .medal-row.achieved .medal-row-name{color:var(--green);}
     .medal-row.bronze-row .progress-bar-fill{background:#CD7F32;}
     .medal-row.silver-row .progress-bar-fill{background:#94A3B8;}
@@ -278,8 +324,63 @@
   <!-- Road to Medal -->
   <div class="dash-section">
     <div class="dash-section-title">🎯 Road to Medal</div>
-    <div class="medal-progress-wrap" id="medal-progress">
-      <!-- built dynamically -->
+    <div class="medal-progress-wrap" id="medal-progress"></div>
+  </div>
+
+  <!-- Daily Pace & Days Left -->
+  <div class="dash-section">
+    <div class="dash-section-title">📅 Your Pace Goals</div>
+    <div class="standing-card" id="pace-card">
+      <div class="pace-row" id="pace-days-row">
+        <div class="pace-icon-wrap" style="background:#fff7ed;">⏳</div>
+        <div class="pace-text-wrap"><div class="pace-main" id="pace-days-text">—</div><div class="pace-sub">Event ends June 30</div></div>
+        <div class="pace-val-right" id="pace-days-val">—</div>
+      </div>
+      <div class="pace-row" id="pace-silver-row">
+        <div class="pace-icon-wrap" style="background:#f0fdf4;">📈</div>
+        <div class="pace-text-wrap"><div class="pace-main" id="pace-silver-text">—</div><div class="pace-sub" id="pace-silver-sub">—</div></div>
+        <div class="pace-val-right" id="pace-silver-val" style="color:#16a34a;">—</div>
+      </div>
+      <div class="pace-row" id="pace-today-row">
+        <div class="pace-icon-wrap" style="background:#eff6ff;">⚡</div>
+        <div class="pace-text-wrap"><div class="pace-main" id="pace-today-text">—</div><div class="pace-sub" id="pace-today-sub">—</div></div>
+        <div class="pace-val-right" id="pace-today-val" style="color:#2563eb;">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Streak -->
+  <div class="dash-section">
+    <div class="dash-section-title">🔥 Activity Streak</div>
+    <div class="standing-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div id="streak-num" style="font-size:28px;font-weight:800;color:var(--brand);line-height:1;">0</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;">consecutive days</div>
+        </div>
+        <div style="text-align:right;">
+          <div id="streak-best" style="font-size:11px;font-weight:700;color:var(--text);">Best: 0 days</div>
+          <div id="streak-msg" style="font-size:10px;color:var(--muted);margin-top:2px;">—</div>
+        </div>
+      </div>
+      <div id="streak-bars" style="display:flex;gap:4px;margin-top:10px;"></div>
+      <div id="streak-labels" style="display:flex;justify-content:space-between;margin-top:3px;"></div>
+    </div>
+  </div>
+
+  <!-- People Near You -->
+  <div class="dash-section">
+    <div class="dash-section-title">👥 People Near You</div>
+    <div class="standing-card" id="rivals-card">
+      <div class="empty-state" style="padding:16px;"><p>Loading...</p></div>
+    </div>
+  </div>
+
+  <!-- Challenges -->
+  <div class="dash-section">
+    <div class="dash-section-title">🏅 Challenges</div>
+    <div class="standing-card" id="challenges-card">
+      <div class="empty-state" style="padding:16px;"><p>Loading...</p></div>
     </div>
   </div>
 
@@ -789,6 +890,213 @@ async function load() {
     var el_standing_shift_rank=document.getElementById('standing-shift-rank'); if(el_standing_shift_rank) el_standing_shift_rank.textContent=ordinal(shiftRank);
     var el_standing_team_label=document.getElementById('standing-team-label'); if(el_standing_team_label) el_standing_team_label.textContent=teamLabel;
     var el_standing_team_rank=document.getElementById('standing-team-rank'); if(el_standing_team_rank) el_standing_team_rank.textContent=ordinal(teamRank);
+
+    // ── Daily Pace Goals ────────────────────────────────────────────────────
+    var EVENT_END = new Date('2026-06-30T23:59:59');
+    var now = new Date();
+    var daysLeft = Math.max(0, Math.ceil((EVENT_END - now) / (1000 * 60 * 60 * 24)));
+
+    // Today's km
+    var todayStr = now.toISOString().split('T')[0];
+    var todayKm = myActs.filter(function(a){ return !a.is_flagged; })
+      .reduce(function(s,a){
+        return (a.activity_date||'').split('T')[0] === todayStr ? s + (a.distance_meters||0)/1000 : s;
+      }, 0);
+
+    // Next bonus tier today
+    var bonusTiers = [[5,1],[8,2],[10,3],[15,4],[21,7]];
+    var nextTier = null;
+    for (var ti = 0; ti < bonusTiers.length; ti++) {
+      if (todayKm < bonusTiers[ti][0]) { nextTier = bonusTiers[ti]; break; }
+    }
+
+    // Km/day needed for silver
+    var silverKmNeeded = Math.max(0, silverThresh - myPts);
+    var kmPerDayForSilver = daysLeft > 0 ? (silverKmNeeded / daysLeft) : 0;
+
+    var el_pdays = document.getElementById('pace-days-text');
+    var el_pdaysv = document.getElementById('pace-days-val');
+    var el_psilver = document.getElementById('pace-silver-text');
+    var el_psilversub = document.getElementById('pace-silver-sub');
+    var el_psilverv = document.getElementById('pace-silver-val');
+    var el_ptoday = document.getElementById('pace-today-text');
+    var el_ptodaysub = document.getElementById('pace-today-sub');
+    var el_ptodayv = document.getElementById('pace-today-val');
+
+    if (el_pdays) el_pdays.textContent = daysLeft + ' days left in the event';
+    if (el_pdaysv) el_pdaysv.textContent = 'Jun 30';
+    if (myPts >= silverThresh) {
+      if (el_psilver) el_psilver.textContent = 'Silver achieved!';
+      if (el_psilversub) el_psilversub.textContent = 'Keep going for Gold';
+      var goldKmNeeded = Math.max(0, goldThresh - myPts);
+      var kmPerDayForGold = daysLeft > 0 ? (goldKmNeeded / daysLeft) : 0;
+      if (el_psilverv) { el_psilverv.textContent = kmPerDayForGold.toFixed(1) + ' km/day'; el_psilverv.style.color='#d97706'; }
+    } else {
+      if (el_psilver) el_psilver.textContent = 'Walk ' + kmPerDayForSilver.toFixed(1) + ' km/day for Silver';
+      if (el_psilversub) el_psilversub.textContent = 'Need ' + silverKmNeeded.toFixed(1) + ' more pts in ' + daysLeft + ' days';
+      if (el_psilverv) el_psilverv.textContent = kmPerDayForSilver.toFixed(1) + ' km';
+    }
+    if (nextTier) {
+      var kmNeededToday = (nextTier[0] - todayKm).toFixed(1);
+      if (el_ptoday) el_ptoday.textContent = 'Walk ' + kmNeededToday + ' km more today for ⚡ bonus';
+      if (el_ptodaysub) el_ptodaysub.textContent = "Today: " + todayKm.toFixed(1) + " km walked so far";
+      if (el_ptodayv) el_ptodayv.textContent = '+' + nextTier[1] + ' pt';
+    } else {
+      if (el_ptoday) el_ptoday.textContent = 'Max daily bonus earned today!';
+      if (el_ptodaysub) el_ptodaysub.textContent = todayKm.toFixed(1) + ' km today';
+      if (el_ptodayv) { el_ptodayv.textContent = '+7 pts'; el_ptodayv.style.color='#16a34a'; }
+    }
+
+    // ── Streak ───────────────────────────────────────────────────────────────
+    var activeDays = {};
+    myActs.filter(function(a){ return !a.is_flagged; }).forEach(function(a){
+      var d = (a.activity_date||'').split('T')[0];
+      if (d) activeDays[d] = true;
+    });
+
+    // Count current streak (backwards from today)
+    var streak = 0, checkDate = new Date(now);
+    checkDate.setHours(0,0,0,0);
+    while (true) {
+      var ds = checkDate.toISOString().split('T')[0];
+      if (activeDays[ds]) { streak++; checkDate.setDate(checkDate.getDate()-1); }
+      else break;
+    }
+    // Best streak
+    var sortedDays = Object.keys(activeDays).sort();
+    var best = 0, cur = 0, prevD = null;
+    sortedDays.forEach(function(d) {
+      if (prevD) {
+        var diff = (new Date(d) - new Date(prevD)) / 86400000;
+        cur = diff === 1 ? cur + 1 : 1;
+      } else { cur = 1; }
+      best = Math.max(best, cur);
+      prevD = d;
+    });
+
+    var el_snum = document.getElementById('streak-num');
+    var el_sbest = document.getElementById('streak-best');
+    var el_smsg = document.getElementById('streak-msg');
+    var el_sbars = document.getElementById('streak-bars');
+    var el_slbls = document.getElementById('streak-labels');
+
+    if (el_snum) el_snum.textContent = (streak > 0 ? '🔥 ' : '') + streak;
+    if (el_sbest) el_sbest.textContent = 'Best: ' + best + ' days';
+    if (el_smsg) el_smsg.textContent = streak >= 7 ? 'Amazing streak!' : streak >= 3 ? 'Keep it going!' : streak > 0 ? 'Good start!' : 'Start your streak today!';
+
+    // Last 7 days bars
+    var days7 = [], labels7 = [];
+    for (var di = 6; di >= 0; di--) {
+      var dd = new Date(now); dd.setDate(dd.getDate() - di); dd.setHours(0,0,0,0);
+      var dstr = dd.toISOString().split('T')[0];
+      var dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      days7.push({ str: dstr, active: !!activeDays[dstr], isToday: di === 0 });
+      labels7.push(di === 0 ? 'Today' : dayNames[dd.getDay()]);
+    }
+    if (el_sbars) {
+      el_sbars.innerHTML = days7.map(function(d) {
+        var cls = d.isToday ? 'sbar dim' : d.active ? 'sbar on' : 'sbar off';
+        return '<div class="' + cls + '"></div>';
+      }).join('');
+    }
+    if (el_slbls) {
+      el_slbls.innerHTML = labels7.map(function(l) {
+        return '<span class="sbar-lbl">' + l + '</span>';
+      }).join('');
+    }
+
+    // ── People Near You (rivals) ──────────────────────────────────────────────
+    // Build scored list for shift category
+    var rivalActsMap = {};
+    allActs.forEach(function(a) {
+      if (!rivalActsMap[a.strava_athlete_id]) rivalActsMap[a.strava_athlete_id] = [];
+      rivalActsMap[a.strava_athlete_id].push(a);
+    });
+    var shiftPeersScored = allReg.filter(function(p) {
+      var pg = (p.gender||'').toLowerCase();
+      var ps = (p.shift||'').toLowerCase();
+      var pIsNight = ps.indexOf('night') > -1;
+      var pIsFemale = pg === 'female';
+      return pIsNight === isNight && pIsFemale === isFemale;
+    }).map(function(p) {
+      var acts = rivalActsMap[p.strava_athlete_id] || [];
+      var km = 0; acts.forEach(function(a){ km += (a.distance_meters||0)/1000; });
+      return { p: p, km: km };
+    }).sort(function(a,b){ return b.km - a.km; });
+
+    var myRivalIdx = shiftPeersScored.findIndex(function(x){ return String(x.p.strava_athlete_id) === String(athleteId); });
+    var rivalsCard = document.getElementById('rivals-card');
+    if (rivalsCard) {
+      rivalsCard.innerHTML = '';
+      if (myRivalIdx === -1) {
+        rivalsCard.innerHTML = '<p style="font-size:12px;color:var(--muted);padding:8px;">No peers found.</p>';
+      } else {
+        var showFrom = Math.max(0, myRivalIdx - 2);
+        var showTo   = Math.min(shiftPeersScored.length - 1, myRivalIdx + 2);
+        for (var ri = showFrom; ri <= showTo; ri++) {
+          var rp = shiftPeersScored[ri];
+          var isMe = ri === myRivalIdx;
+          var rankNum = ri + 1;
+          var div = document.createElement('div');
+          div.className = 'rival-row';
+          if (isMe) div.style.cssText = 'background:#fff8f5;border-radius:8px;padding:6px 8px;margin:-2px 0;';
+          var badgeCls = ri < myRivalIdx ? 'rb-ahead' : isMe ? 'rb-you' : 'rb-behind';
+          var gapHtml = '';
+          if (!isMe) {
+            var diff = Math.abs(rp.km - shiftPeersScored[myRivalIdx].km).toFixed(1);
+            gapHtml = ri < myRivalIdx
+              ? '<span class="rival-gap gap-up">+' + diff + ' km ahead</span>'
+              : '<span class="rival-gap gap-dn">-' + diff + ' km behind</span>';
+          } else {
+            gapHtml = '<span class="rival-gap gap-me">' + rp.km.toFixed(1) + ' km</span>';
+          }
+          div.innerHTML =
+            '<span class="rival-badge ' + badgeCls + '">#' + rankNum + '</span>' +
+            '<span class="rival-name">' + esc(rp.p.full_name || '—') + (isMe ? ' (You)' : '') + '</span>' +
+            gapHtml;
+          rivalsCard.appendChild(div);
+        }
+      }
+    }
+
+    // ── Challenges ────────────────────────────────────────────────────────────
+    var chCard = document.getElementById('challenges-card');
+    if (chCard && CHALLENGES_LB.length) {
+      chCard.innerHTML = '';
+      CHALLENGES_LB.slice(0, 8).forEach(function(ch) {
+        var chPtsVal = Number(ch.bonus_points) || 0;
+        // Check if earned: look in actBreakdown + dayBreakdown
+        var earned = false;
+        var allDayBreakdowns = fullPts.dayBreakdown || {};
+        for (var day in allDayBreakdowns) {
+          var db = allDayBreakdowns[day];
+          if (db.challenges && db.challenges.some(function(x){ return x.name === ch.name; })) { earned = true; break; }
+        }
+        if (!earned) {
+          var ab = fullPts.actBreakdown || {};
+          for (var actId in ab) {
+            if (ab[actId].challenges && ab[actId].challenges.some(function(x){ return x.name === ch.name; })) { earned = true; break; }
+          }
+        }
+        // Check if missed (end_date passed)
+        var today2 = new Date().toISOString().split('T')[0];
+        var missed = !earned && ch.end_date && ch.end_date < today2;
+        var statusCls = earned ? 'won' : missed ? 'missed' : 'avail';
+        var statusIcon = earned ? '✓' : missed ? '✕' : '!';
+        var div = document.createElement('div');
+        div.className = 'ch-row';
+        div.innerHTML =
+          '<div class="ch-dot ' + statusCls + '">' + statusIcon + '</div>' +
+          '<div class="ch-body">' +
+            '<div class="ch-title">' + esc(ch.name) + '</div>' +
+            '<div class="ch-sub">' + (ch.start_date === ch.end_date ? ch.start_date : ch.start_date + ' – ' + ch.end_date) + '</div>' +
+          '</div>' +
+          '<div class="ch-pts ' + statusCls + '">+' + chPtsVal + ' pts</div>';
+        chCard.appendChild(div);
+      });
+    } else if (chCard) {
+      chCard.innerHTML = '<p style="font-size:12px;color:var(--muted);padding:8px;">No challenges configured.</p>';
+    }
 
     // Section title
     var flaggedCount = myActs.filter(function(a) { return a.is_flagged; }).length;
