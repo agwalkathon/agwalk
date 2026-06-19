@@ -58,13 +58,7 @@
          color:rgba(255,255,255,0.7);font-size:10px;font-weight:500;padding:3px 9px;
          border-radius:20px;}
 
-    /* ── Page tabs ── */
-    .page-tabs{background:var(--white);border-bottom:1px solid var(--border);
-               display:flex;position:sticky;top:62px;z-index:150;}
-    .ptab{flex:1;padding:12px 8px;border:none;border-bottom:2px solid transparent;
-          background:none;font-family:inherit;font-size:13px;font-weight:700;
-          color:var(--muted);cursor:pointer;letter-spacing:0.2px;margin-bottom:-1px;}
-    .ptab.active{color:var(--brand);border-bottom-color:var(--brand);}
+
 
     /* ── Dashboard cards ── */
     .dash-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
@@ -190,7 +184,7 @@
 
     /* ── Footer / bottom nav ── */
     .bottom-nav{background:var(--white);border-top:1px solid var(--border);
-                display:grid;grid-template-columns:1fr 1fr;
+                display:grid;grid-template-columns:1fr 1fr 1fr;
                 padding-bottom:max(12px,env(safe-area-inset-bottom));
                 position:sticky;bottom:0;z-index:100;}
     .bnav-item{display:flex;flex-direction:column;align-items:center;
@@ -242,11 +236,7 @@
   </div>
 </div>
 
-<!-- Page tabs -->
-<div class="page-tabs">
-  <button class="ptab active" id="ptab-dashboard" onclick="showTab('dashboard')">Dashboard</button>
-  <button class="ptab" id="ptab-activities" onclick="showTab('activities')">Activities</button>
-</div>
+
 
 <!-- DASHBOARD TAB -->
 <div class="content" id="tab-dashboard">
@@ -312,13 +302,20 @@
 </div><!-- end tab-activities -->
 
 <nav class="bottom-nav">
-  <a class="bnav-item active" href="participant.html">
+  <a class="bnav-item active" id="bnav-dashboard" href="#" onclick="showTab('dashboard');return false;">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
     </svg>
     Dashboard
   </a>
-  <a class="bnav-item" href="participant-leaderboard.html">
+  <a class="bnav-item" id="bnav-activities" href="#" onclick="showTab('activities');return false;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+    </svg>
+    Activities
+  </a>
+  <a class="bnav-item" id="bnav-leaderboard" href="participant-leaderboard.html">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
       <line x1="6" y1="20" x2="6" y2="14"/>
@@ -906,8 +903,9 @@ function toggleDay(id) {
 function showTab(tab) {
   document.getElementById('tab-dashboard').style.display  = tab === 'dashboard'  ? 'block' : 'none';
   document.getElementById('tab-activities').style.display = tab === 'activities' ? 'block' : 'none';
-  document.getElementById('ptab-dashboard').classList.toggle('active',  tab === 'dashboard');
-  document.getElementById('ptab-activities').classList.toggle('active', tab === 'activities');
+  ['dashboard','activities'].forEach(function(t) {
+    document.getElementById('bnav-' + t).classList.toggle('active', t === tab);
+  });
 }
 
 
