@@ -42,7 +42,7 @@ body{font-family:var(--font);background:var(--page-bg);color:var(--text-primary)
 .sb-signout .sb-label{color:rgba(255,255,255,.3)}
 .sb-signout:hover .sb-label{color:#ff6b6b}
 .main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;display:flex;flex-direction:column}
-.topbar{background:var(--card-bg);border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar{background:var(--card-bg);border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100flex-shrink:0;}
 .topbar-left h1{font-size:17px;font-weight:600;color:var(--text-primary)}
 .topbar-left p{font-size:12px;color:var(--text-muted);margin-top:1px}
 .topbar-right{display:flex;align-items:center;gap:10px}
@@ -128,7 +128,7 @@ tr:hover td{background:#FAFAFA}
 .scroll-top-inner{height:1px}
 .dist-field{display:none}
 .dist-field.show{display:block}
-@media(max-width:768px){.sidebar{width:56px}.main{margin-left:56px}.topbar{padding:0 16px;height:54px}.content{padding:16px}.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.val{font-size:18px}th,td{padding:8px 10px;font-size:12px}.filter-grid{grid-template-columns:1fr 1fr;gap:8px}.site-footer{flex-direction:column;gap:6px;text-align:center}}
+@media(max-width:768px){.sidebar{width:56px}.main{margin-left:56px;flex-direction:column}.topbar{padding:0 16px;height:54pxflex-shrink:0;}.content{padding:16pxflex:1;}.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.val{font-size:18px}th,td{padding:8px 10px;font-size:12px}.filter-grid{grid-template-columns:1fr 1fr;gap:8px}.site-footer{flex-direction:column;gap:6px;text-align:center}}
 @media(max-width:480px){.filter-grid{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr 1fr}}
 
   </style>
@@ -163,6 +163,7 @@ tr:hover td{background:#FAFAFA}
   </div>
 <div class="modal-overlay" id="flag-modal"><div class="modal"><h3>Update Status</h3><p class="sub" id="modal-sub"></p><label>Flag reason</label><select id="modal-flag-reason" onchange="checkModalDist()"><option value="">— Mark as Valid (clear flag) —</option><optgroup label="── Manual Review ──"><option>Manual Review - Distance Issue</option><option>Manual Review - Pace Issue</option></optgroup><optgroup label="── Manual Flags ──"><option>Not Our Participant</option><option>Less than 1 km</option><option>Treadmill</option><option>Workout</option><option>Elapsed Time Issue</option><option>Pace Issue (Bike/Cycle)</option><option>Shared (no proof)</option><option>Indoor Run/Walk</option><option>More than 2 Activities</option><option>Suspicious Activity</option><option>Ride / Cycling</option><option>Distance Cropped - GPS Glitch</option><option>Distance Issue</option><option>GPS Glitch</option></optgroup></select><div class="dist-field" id="modal-dist-field"><label>Corrected distance (meters)</label><input type="number" id="modal-corrected-dist" placeholder="e.g. 3500"></div><div class="modal-actions"><button class="btn-cancel" onclick="closeModal()">Cancel</button><button class="btn-confirm" onclick="confirmStatus()">Save</button></div></div></div>
 <footer class="site-footer"><span>© 2026 Arcgate Walkathon</span><div><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms of Service</a></div></footer>
+</div><!-- /main -->
 <script>
 
 var SUPABASE_URL='https://jhdgkncpkrttvemvwukc.supabase.co';
