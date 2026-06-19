@@ -306,7 +306,8 @@
 <!-- DASHBOARD TAB -->
 <div class="content" id="tab-dashboard">
 
-  <!-- Stat cards: Distance + Activities + Avg Pace + Moving Time -->
+  <!-- Month Summary: Stat cards -->
+  <div class="dash-section-title" style="margin-bottom:6px;">📆 Month Summary</div>
   <div class="dash-cards cols4">
     <div class="dash-card">
       <div class="dc-icon">📏</div>
@@ -330,11 +331,25 @@
     </div>
   </div>
 
-  <!-- MERGED: Current Medal + Road to Medal -->
+  <!-- Current Standing -->
+  <div class="dash-section">
+    <div class="dash-section-title">📊 Current Standing</div>
+    <div class="standing-card" id="standing-card">
+      <div class="standing-row">
+        <span class="standing-cat" id="standing-shift-label">—</span>
+        <span class="standing-rank" id="standing-shift-rank">—</span>
+      </div>
+      <div class="standing-row">
+        <span class="standing-cat" id="standing-team-label">—</span>
+        <span class="standing-rank" id="standing-team-rank">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Road to Medal -->
   <div class="dash-section">
     <div class="dash-section-title">🎯 Road to Medal</div>
     <div class="standing-card">
-      <!-- Compact medal + pts row -->
       <div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0 10px;border-bottom:1px solid var(--border);margin-bottom:10px;">
         <div style="display:flex;align-items:center;gap:8px;">
           <span id="medal-icon" style="font-size:20px;line-height:1;">🏅</span>
@@ -348,12 +363,11 @@
           <div style="font-size:9px;color:var(--muted);">Total Points</div>
         </div>
       </div>
-      <!-- Medal cards -->
       <div class="medal-cards-grid" id="medal-progress"></div>
     </div>
   </div>
 
-  <!-- Daily Pace & Days Left -->
+  <!-- Your Pace Goals -->
   <div class="dash-section">
     <div class="dash-section-title">📅 Your Pace Goals</div>
     <div class="standing-card" id="pace-card">
@@ -392,22 +406,7 @@
     </div>
   </div>
 
-  <!-- Current Standing -->
-  <div class="dash-section">
-    <div class="dash-section-title">📊 Current Standing</div>
-    <div class="standing-card" id="standing-card">
-      <div class="standing-row">
-        <span class="standing-cat" id="standing-shift-label">—</span>
-        <span class="standing-rank" id="standing-shift-rank">—</span>
-      </div>
-      <div class="standing-row">
-        <span class="standing-cat" id="standing-team-label">—</span>
-        <span class="standing-rank" id="standing-team-rank">—</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Streak -->
+  <!-- Activity Streak -->
   <div class="dash-section">
     <div class="dash-section-title">🔥 Activity Streak</div>
     <div class="standing-card">
@@ -426,6 +425,33 @@
     </div>
   </div>
 
+  <!-- Activity Times -->
+  <div class="dash-section">
+    <div class="dash-section-title">🕐 Activity Times</div>
+    <div class="dash-cards cols4">
+      <div class="dash-card">
+        <div class="dc-icon">🌅</div>
+        <div class="dc-val" id="tod-morning">—</div>
+        <div class="dc-lbl">Morning</div>
+      </div>
+      <div class="dash-card">
+        <div class="dc-icon">☀️</div>
+        <div class="dc-val" id="tod-afternoon">—</div>
+        <div class="dc-lbl">Afternoon</div>
+      </div>
+      <div class="dash-card">
+        <div class="dc-icon">🌆</div>
+        <div class="dc-val" id="tod-evening">—</div>
+        <div class="dc-lbl">Evening</div>
+      </div>
+      <div class="dash-card">
+        <div class="dc-icon">🌙</div>
+        <div class="dc-val" id="tod-night">—</div>
+        <div class="dc-lbl">Night</div>
+      </div>
+    </div>
+  </div>
+
   <!-- People Near You -->
   <div class="dash-section">
     <div class="dash-section-title">👥 People Near You</div>
@@ -439,33 +465,6 @@
     <div class="dash-section-title">🏅 Challenges</div>
     <div class="standing-card" id="challenges-card">
       <div class="empty-state" style="padding:16px;"><p>Loading...</p></div>
-    </div>
-  </div>
-
-  <!-- Activity Times -->
-  <div class="dash-section">
-    <div class="dash-section-title">🕐 Activity Times</div>
-    <div class="dash-cards cols4">
-      <div class="dash-card">
-        <div class="dc-icon">🌅</div>
-        <div class="dc-val" id="tod-morning">—</div>
-        <div class="dc-lbl">Morning (5–12)</div>
-      </div>
-      <div class="dash-card">
-        <div class="dc-icon">☀️</div>
-        <div class="dc-val" id="tod-afternoon">—</div>
-        <div class="dc-lbl">Afternoon (12–17)</div>
-      </div>
-      <div class="dash-card">
-        <div class="dc-icon">🌆</div>
-        <div class="dc-val" id="tod-evening">—</div>
-        <div class="dc-lbl">Evening (17–21)</div>
-      </div>
-      <div class="dash-card">
-        <div class="dc-icon">🌙</div>
-        <div class="dc-val" id="tod-night">—</div>
-        <div class="dc-lbl">Night (21–5)</div>
-      </div>
     </div>
   </div>
 
