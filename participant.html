@@ -358,7 +358,7 @@
     <div class="dash-section-title">📅 Your Pace Goals</div>
     <div class="standing-card" id="pace-card">
       <div class="pace-row">
-        <div class="pace-icon-wrap" style="background:#fff7ed;">⏳</div>
+        <div class="pace-icon-wrap" style="background:#fff7ed;">📅</div>
         <div class="pace-text-wrap">
           <div class="pace-main" id="pace-days-text">—</div>
           <div class="pace-sub">Event ends June 30</div>
@@ -366,12 +366,20 @@
         <div class="pace-val-right" id="pace-days-val">—</div>
       </div>
       <div class="pace-row">
-        <div class="pace-icon-wrap" style="background:#f0fdf4;">📈</div>
+        <div class="pace-icon-wrap" style="background:#f0fdf4;">🥈</div>
         <div class="pace-text-wrap">
           <div class="pace-main" id="pace-silver-text">—</div>
           <div class="pace-sub" id="pace-silver-sub">—</div>
         </div>
         <div class="pace-val-right" id="pace-silver-val" style="color:#16a34a;">—</div>
+      </div>
+      <div class="pace-row">
+        <div class="pace-icon-wrap" style="background:#FFFBEB;">🥇</div>
+        <div class="pace-text-wrap">
+          <div class="pace-main" id="pace-gold-text">—</div>
+          <div class="pace-sub" id="pace-gold-sub">—</div>
+        </div>
+        <div class="pace-val-right" id="pace-gold-val" style="color:#d97706;">—</div>
       </div>
       <div class="pace-row">
         <div class="pace-icon-wrap" style="background:#eff6ff;">⚡</div>
@@ -1047,16 +1055,32 @@ async function load() {
 
     if (el_pdays) el_pdays.textContent = daysLeft + ' days left in the event';
     if (el_pdaysv) el_pdaysv.textContent = 'Jun 30';
+    var el_pgold    = document.getElementById('pace-gold-text');
+    var el_pgoldsub = document.getElementById('pace-gold-sub');
+    var el_pgoldv   = document.getElementById('pace-gold-val');
+
+    // Silver row
     if (myPts >= silverThresh) {
-      if (el_psilver) el_psilver.textContent = 'Silver achieved!';
-      if (el_psilversub) el_psilversub.textContent = 'Keep going for Gold';
-      var goldKmNeeded = Math.max(0, goldThresh - myPts);
-      var kmPerDayForGold = daysLeft > 0 ? (goldKmNeeded / daysLeft) : 0;
-      if (el_psilverv) { el_psilverv.textContent = kmPerDayForGold.toFixed(1) + ' km/day'; el_psilverv.style.color='#d97706'; }
+      if (el_psilver) el_psilver.textContent = '🥈 Silver — Achieved!';
+      if (el_psilversub) el_psilversub.textContent = myPts.toFixed(1) + ' / ' + silverThresh + ' pts';
+      if (el_psilverv) { el_psilverv.textContent = '✓'; el_psilverv.style.color='#16a34a'; }
     } else {
-      if (el_psilver) el_psilver.textContent = 'Walk ' + kmPerDayForSilver.toFixed(1) + ' km/day for Silver';
+      if (el_psilver) el_psilver.textContent = '🥈 Walk ' + kmPerDayForSilver.toFixed(1) + ' km/day for Silver';
       if (el_psilversub) el_psilversub.textContent = 'Need ' + silverKmNeeded.toFixed(1) + ' more pts in ' + daysLeft + ' days';
       if (el_psilverv) el_psilverv.textContent = kmPerDayForSilver.toFixed(1) + ' km';
+    }
+
+    // Gold row
+    var goldKmNeeded = Math.max(0, goldThresh - myPts);
+    var kmPerDayForGold = daysLeft > 0 ? (goldKmNeeded / daysLeft) : 0;
+    if (myPts >= goldThresh) {
+      if (el_pgold) el_pgold.textContent = '🥇 Gold — Achieved!';
+      if (el_pgoldsub) el_pgoldsub.textContent = myPts.toFixed(1) + ' / ' + goldThresh + ' pts';
+      if (el_pgoldv) { el_pgoldv.textContent = '✓'; el_pgoldv.style.color='#16a34a'; }
+    } else {
+      if (el_pgold) el_pgold.textContent = '🥇 Walk ' + kmPerDayForGold.toFixed(1) + ' km/day for Gold';
+      if (el_pgoldsub) el_pgoldsub.textContent = 'Need ' + goldKmNeeded.toFixed(1) + ' more pts in ' + daysLeft + ' days';
+      if (el_pgoldv) el_pgoldv.textContent = kmPerDayForGold.toFixed(1) + ' km';
     }
     if (nextTier) {
       var kmNeededToday = (nextTier[0] - todayKm).toFixed(1);
