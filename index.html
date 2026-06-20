@@ -163,33 +163,25 @@ async function doLogin(){
   if(!code){inp.classList.add('err-field');inp.focus();return;}
   showProc('Verifying employee code...');
   try{
-    // Step 1: look up emp_code in registration_requests
-    var url=SUPABASE_URL+'/rest/v1/registration_requests?emp_code=eq.'+encodeURIComponent(code)+'&select=full_name,gender,shift,leaderboard_team,status,strava_url';
-    var res=await fetch(url,{headers:HDR});
-    var rows=await res.json();
-    if(!Array.isArray(rows)||rows.length===0){
-      showErr('⛔ <strong>Employee code not found.</strong><br>Check your code or contact pra@arcgate.com');
+    var res=await fetch(BACKEND+'/emp-login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({emp_code:code})
+    });
+    var d=await res.json();
+    if(!d.success){
+      if(d.error==='not_found') showErr('⛔ <strong>Employee code not found.</strong><br>Check your code or contact pra@arcgate.com');
+      else if(d.error==='not_approved') showErr('⏳ <strong>Registration pending approval.</strong><br>You will be notified once approved.');
+      else if(d.error==='no_strava_id') showErr('⚠️ <strong>Account setup incomplete.</strong><br>Contact pra@arcgate.com for assistance.');
+      else showErr('❌ <strong>Login failed.</strong><br>Please try again.');
       return;
     }
-    var reg=rows[0];
-    if(reg.status&&reg.status!=='approved'&&reg.status!=='active'){
-      showErr('⏳ <strong>Registration pending approval.</strong><br>You will be notified once approved. Contact pra@arcgate.com for help.');
-      return;
-    }
-    // Step 2: extract athlete ID from strava_url
-    var stravaUrl=reg.strava_url||'';
-    var match=stravaUrl.match(/athletes\/([0-9]+)/);
-    if(!match){
-      showErr('⚠️ <strong>Account setup incomplete.</strong><br>Contact pra@arcgate.com for assistance.');
-      return;
-    }
-    var athleteId=match[1];
     showProc('Loading your dashboard...');
     sessionStorage.setItem('wk_user',JSON.stringify({
       loggedIn:true,
       role:'user',
-      athleteId:athleteId,
-      name:reg.full_name||'Participant',
+      athleteId:d.athlete_id,
+      name:d.name||'Participant',
       empCode:code,
       expires:Date.now()+(8*60*60*1000)
     }));
