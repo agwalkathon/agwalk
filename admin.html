@@ -68,6 +68,7 @@
       text-decoration: none;
       gap: 10px;
       flex-shrink: 0;
+      overflow: hidden;
     }
     .sb-logo-icon {
       width: 36px;
@@ -85,17 +86,17 @@
       height: 28px;
       object-fit: contain;
     }
-    .sb-logo-text {
-      font-size: 13px;
-      font-weight: 600;
-      color: #fff;
+    .sb-logo-full {
       opacity: 0;
-      white-space: nowrap;
       transition: opacity 0.18s;
-      line-height: 1.3;
+      flex-shrink: 0;
     }
-    .sb-logo-text span { display: block; font-size: 10px; font-weight: 400; color: rgba(255,255,255,0.45); }
-    .sidebar:hover .sb-logo-text { opacity: 1; }
+    .sb-logo-full img {
+      height: 22px;
+      width: auto;
+      display: block;
+    }
+    .sidebar:hover .sb-logo-full { opacity: 1; }
 
     .sb-section {
       font-size: 9px;
@@ -553,7 +554,7 @@
 <aside class="sidebar" id="sidebar">
   <a class="sb-logo" href="admin.html">
     <div class="sb-logo-icon"><img src="logo-icon.png" alt="AW" style="filter:brightness(0) invert(1);"></div>
-    <div class="sb-logo-text">Walkathon 2026 <span>Admin Panel</span></div>
+    <div class="sb-logo-full"><img src="logo-horizontal.png" alt="Arcgate Walkathon" style="filter:brightness(0) invert(1);"></div>
   </a>
 
   <div class="sb-section">Main</div>
@@ -935,3 +936,4 @@ load();
 </script>
 </body>
 </html>
+
