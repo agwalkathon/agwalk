@@ -747,8 +747,6 @@ async function load() {
     // Streak
     var activeDays={};
     myActs.filter(function(a){return !a.is_flagged;}).forEach(function(a){
-      // activity_date may be "2026-06-20T06:30:00+05:30" or "2026-06-20T01:00:00Z"
-      // split on T always gives correct date part regardless of timezone
       var d=(a.activity_date||'').split('T')[0];
       if(d)activeDays[d]=true;
     });
@@ -761,19 +759,22 @@ async function load() {
       var d=new Date(dateStr+'T12:00:00');d.setDate(d.getDate()+n);return localDateStr(d);
     }
 
-    // Count streak: find most recent active day, then count consecutive days back from there
     var todayLocal=localDateStr(now);
+    var yesterdayLocal=addDays(todayLocal,-1);
     var sortedActiveDays=Object.keys(activeDays).sort();
+
+    // Option C: anchor to most recent active day, walk back from there
     var streak=0;
-    if(sortedActiveDays.length>0){
-      // Start from today or yesterday (allow today not yet logged)
-      var startDay=activeDays[todayLocal]?todayLocal:addDays(todayLocal,-1);
-      // Walk backwards from startDay counting consecutive active days
-      var walkDay=startDay;
+    var lastActiveDay=sortedActiveDays.length>0?sortedActiveDays[sortedActiveDays.length-1]:null;
+    if(lastActiveDay){
+      var walkDay=lastActiveDay;
       while(activeDays[walkDay]){streak++;walkDay=addDays(walkDay,-1);}
     }
 
-    // Best streak from all active days
+    // 🔥 only if last active day is today or yesterday (streak is "live")
+    var streakIsLive=lastActiveDay===todayLocal||lastActiveDay===yesterdayLocal;
+
+    // Best streak
     var best=0,cur=0,prevD=null;
     sortedActiveDays.forEach(function(d){
       if(prevD){var diff=Math.round((new Date(d+'T12:00:00')-new Date(prevD+'T12:00:00'))/86400000);cur=diff===1?cur+1:1;}
@@ -782,9 +783,9 @@ async function load() {
       prevD=d;
     });
 
-    document.getElementById('streak-num').textContent=(streak>0?'🔥':'')+streak;
+    document.getElementById('streak-num').textContent=(streakIsLive&&streak>0?'🔥':'')+streak;
     document.getElementById('streak-best-val').textContent=best;
-    document.getElementById('streak-msg').textContent=streak>=7?'Amazing streak!':streak>=3?'Keep it going!':streak>0?'Good start!':'Start today!';
+    document.getElementById('streak-msg').textContent=streakIsLive?(streak>=7?'Amazing streak!':streak>=3?'Keep it going!':'Good start!'):(lastActiveDay?'Last active '+lastActiveDay:'Start today!');
 
     var days7=[],labels7=[];
     for(var di=6;di>=0;di--){
