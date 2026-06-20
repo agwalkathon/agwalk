@@ -944,7 +944,7 @@ function renderActivities(acts,dayBreakdown,actBreakdown,gender) {
     var actWord=dayActs.length===1?'1 activity':dayActs.length+' activities';
     var group=document.createElement('div'); group.className='date-group'; group.id='dg-'+gi;
     var dateRow=document.createElement('div'); dateRow.className='date-row';
-    dateRow.innerHTML='<div class="date-col"><div class="date-label">'+esc(dateStr)+'</div><div class="date-sub">'+rawKm.toFixed(2)+' km · '+actWord+'</div></div>'+
+    dateRow.innerHTML='<div class="date-col"><div class="date-label">'+esc(dateStr)+'</div><div class="date-sub">'+rawKm.toFixed(2)+' km</div><div class="date-sub">'+actWord+'</div></div>'+
       '<div class="date-pts-strip">'+
         '<span class="dpill dist">'+db.distPts.toFixed(1)+'</span>'+
         '<span class="dpill bonus">⚡'+db.bonusPts+'</span>'+
