@@ -30,13 +30,13 @@
     .wrap{width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;position:relative;z-index:1;}
 
     /* logo badge */
-    .badge{
-      width:68px;height:68px;border-radius:20px;background:#E8622A;
-      display:flex;align-items:center;justify-content:center;
+    .main-logo{
+      width:min(280px,82vw);
+      height:auto;
+      object-fit:contain;
       margin-bottom:22px;
-      box-shadow:0 0 0 1px rgba(232,98,42,0.25),0 8px 28px rgba(232,98,42,0.28);
+      filter:brightness(0) invert(1);
     }
-    .badge img{width:46px;height:46px;object-fit:contain;filter:brightness(0) invert(1);}
 
     .edition{font-size:10px;font-weight:700;letter-spacing:3px;color:#E8622A;text-transform:uppercase;margin-bottom:14px;}
 
@@ -81,7 +81,7 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="badge"><img src="logo-icon.png" alt="AW"></div>
+  <img src="logo-white.png" alt="Arcgate Walkathon" class="main-logo">
   <div class="edition">2026 Edition</div>
   <h1>Healthy Arcgatians.<br><em>Stronger Arcgate.</em></h1>
   <p class="sub">A whole month to move, connect and grow — one kilometre at a time.</p>
