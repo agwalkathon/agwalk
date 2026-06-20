@@ -819,7 +819,7 @@ async function load() {
 
       if(myPts<bronzeThresh){
         var brN=Math.max(0,bronzeThresh-myPts),brK=daysLeft>0?(brN/daysLeft):0;
-        paceCard.appendChild(paceRow('rgba(244,168,74,0.12)','🥉','Walk '+brK.toFixed(1)+' km/day for Bronze','Need '+brN.toFixed(1)+' pts in '+daysLeft+' days',brK.toFixed(1)+' km','#CD7F32'));
+        paceCard.appendChild(paceRow('rgba(244,168,74,0.12)','🥉','Walk '+brK.toFixed(1)+' km/day for Bronze','Need '+brN.toFixed(1)+' pts in '+daysLeft+' days',brK.toFixed(1)+' km','#F4A84A'));
         var siN=Math.max(0,silverThresh-myPts),siK=daysLeft>0?(siN/daysLeft):0;
         paceCard.appendChild(paceRow('rgba(200,216,232,0.12)','🥈','Walk '+siK.toFixed(1)+' km/day for Silver','Need '+siN.toFixed(1)+' pts in '+daysLeft+' days',siK.toFixed(1)+' km','var(--silver)'));
         var goN=Math.max(0,goldThresh-myPts),goK=daysLeft>0?(goN/daysLeft):0;
