@@ -163,7 +163,8 @@ async function doLogin(){
   if(!code){inp.classList.add('err-field');inp.focus();return;}
   showProc('Verifying employee code...');
   try{
-    var url=SUPABASE_URL+'/rest/v1/registration_requests?emp_code=eq.'+encodeURIComponent(code)+'&select=strava_athlete_id,full_name,gender,shift,leaderboard_team,status';
+    // Step 1: look up emp_code in registration_requests
+    var url=SUPABASE_URL+'/rest/v1/registration_requests?emp_code=eq.'+encodeURIComponent(code)+'&select=full_name,gender,shift,leaderboard_team,status,strava_url';
     var res=await fetch(url,{headers:HDR});
     var rows=await res.json();
     if(!Array.isArray(rows)||rows.length===0){
@@ -172,18 +173,22 @@ async function doLogin(){
     }
     var reg=rows[0];
     if(reg.status&&reg.status!=='approved'&&reg.status!=='active'){
-      showErr('⏳ <strong>Registration pending approval.</strong><br>You will be notified once approved.');
+      showErr('⏳ <strong>Registration pending approval.</strong><br>You will be notified once approved. Contact pra@arcgate.com for help.');
       return;
     }
-    if(!reg.strava_athlete_id){
+    // Step 2: extract athlete ID from strava_url
+    var stravaUrl=reg.strava_url||'';
+    var match=stravaUrl.match(/athletes\/([0-9]+)/);
+    if(!match){
       showErr('⚠️ <strong>Account setup incomplete.</strong><br>Contact pra@arcgate.com for assistance.');
       return;
     }
+    var athleteId=match[1];
     showProc('Loading your dashboard...');
     sessionStorage.setItem('wk_user',JSON.stringify({
       loggedIn:true,
       role:'user',
-      athleteId:reg.strava_athlete_id,
+      athleteId:athleteId,
       name:reg.full_name||'Participant',
       empCode:code,
       expires:Date.now()+(8*60*60*1000)
