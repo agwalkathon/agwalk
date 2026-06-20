@@ -540,7 +540,12 @@ function tileClass(t) {
   if(t==='Hike') return 'hike';
   return 'other';
 }
-function renderIcon(t) { var m={'Walk':'🚶','Run':'🏃','VirtualRun':'🏃','Ride':'🚴','VirtualRide':'🚴','MountainBikeRide':'🚵','Hike':'🥾'}; return m[t]||'⚡'; }
+    var icoWalk='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><path d="M12 7v5l-3 3"/><path d="M12 12l3 4"/><path d="M9 17l-2 3"/><path d="M15 16l1 3"/></svg>';
+    var icoRun='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"/><path d="m14.5 9-2 4-3.5 1 2.5 4"/><path d="M9 8.5 7 12l2.5 1"/><path d="M14.5 9 17 8"/></svg>';
+    var icoRide='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="17" r="3"/><circle cx="19" cy="17" r="3"/><path d="M12 17h2l2-5H9l1 3h2"/></svg>';
+    var icoHike='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20l4-10 3 6 2-3 4 7"/><circle cx="9" cy="7" r="2"/></svg>';
+    var icoBolt='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
+    function renderIcon(t){var m={'Walk':icoWalk,'Run':icoRun,'VirtualRun':icoRun,'Ride':icoRide,'VirtualRide':icoRide,'MountainBikeRide':icoRide,'Hike':icoHike};return m[t]||icoBolt;}
 
 function calcBonus(km) {
   var result=0,sorted=CONFIG_LB.bonus.slice().sort(function(a,b){return b.km-a.km;});
