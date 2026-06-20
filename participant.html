@@ -935,7 +935,7 @@ async function load() {
 function renderActivities(acts,dayBreakdown,actBreakdown,gender) {
   dayBreakdown=dayBreakdown||{}; actBreakdown=actBreakdown||{};
   var list=document.getElementById('act-list');
-  if(!acts.length){list.innerHTML='<div class="empty-state"><div class="icon">🏃</div><p>No activities yet.<br>Save a walk or run on Strava — it will appear here.</p></div>';return;}
+  if(!acts.length){list.innerHTML='<div class="empty-state"><div class="icon">'+icoRun+'<p>No activities yet.<br>Save a walk or run on Strava — it will appear here.</p></div>';return;}
   var flaggedCount=acts.filter(function(a){return a.is_flagged;}).length;
   if(flaggedCount>0)document.getElementById('flagged-banner').style.display='block';
   var groups={},dateOrder=[];
