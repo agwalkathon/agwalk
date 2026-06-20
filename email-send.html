@@ -272,7 +272,10 @@ grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1
         </div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
           <button class="btn btn-primary" id="smtp-save-btn" onclick="saveSmtp()">💾 Save SMTP Settings</button>
-          <button class="btn btn-ghost" onclick="testSmtp()">🔌 Send Test Email</button>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="text" id="smtp-test-to" placeholder="Send test to: your@email.com" style="padding:8px 11px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font,Poppins);width:240px">
+            <button class="btn btn-ghost" onclick="testSmtp()">🔌 Send Test Email</button>
+          </div>
           <span id="smtp-status" style="font-size:13px;padding:8px 14px;border-radius:8px;display:none"></span>
         </div>
         <div style="margin-top:20px;padding:14px 16px;background:#f5f5f5;border-radius:8px;font-size:12px;color:#666;line-height:1.8">
@@ -352,6 +355,27 @@ grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1
 
   <!-- ── TAB 3: Templates ── -->
   <div class="tab-pane" id="tab-templates">
+    <!-- Preset Templates -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-head">
+        <div class="card-head-left"><span>⚡</span><h2>Load a Preset Template</h2></div>
+      </div>
+      <div class="card-body">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <select id="preset-sel" style="flex:1;min-width:240px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:var(--font,Poppins)">
+            <option value="">— Choose a preset —</option>
+            <option value="leaderboard_live">🏆 Leaderboard Live</option>
+            <option value="red_flag">🚩 Major Red Flag Activities</option>
+            <option value="disqualified">❌ Disqualified from Event</option>
+            <option value="top3">🥇 You are in Top 3</option>
+            <option value="registration_approved">✅ Registration Approved</option>
+          </select>
+          <button class="btn btn-primary" onclick="loadPreset()">⬇ Load into Editor</button>
+        </div>
+        <p style="font-size:12px;color:#aaa;margin-top:8px">Loads the preset into the editor below — edit as needed, then save.</p>
+      </div>
+    </div>
+
     <!-- New Template -->
     <div class="card">
       <div class="card-head">
@@ -380,6 +404,9 @@ grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1
             <span class="var-chip" onclick="insertVar('{{leaderboard_url}}')">{{leaderboard_url}}</span>
             <span class="var-chip" onclick="insertVar('{{team_name}}')">{{team_name}}</span>
             <span class="var-chip" onclick="insertVar('{{activities_this_week}}')">{{activities_this_week}}</span>
+            <span class="var-chip" onclick="insertVar('{{activity_name}}')">{{activity_name}}</span>
+            <span class="var-chip" onclick="insertVar('{{activity_link}}')">{{activity_link}}</span>
+            <span class="var-chip" onclick="insertVar('{{flag_reason}}')">{{flag_reason}}</span>
           </div>
         </div>
         <div style="display:flex;gap:10px;align-items:center">
@@ -600,22 +627,193 @@ async function saveSmtp() {
 }
 
 async function testSmtp() {
-  setStatus('smtp-status', 'wait', '⏳ Sending test email...');
+  var testTo = document.getElementById('smtp-test-to').value.trim()
+             || document.getElementById('smtp-user').value.trim();
+  if (!testTo) { alert('Enter a "Send test to" email address first.'); return; }
+  setStatus('smtp-status', 'wait', '⏳ Saving & sending test email to ' + testTo + '...');
   await saveSmtp();
   try {
+    var smtpCfg = {
+      host:       document.getElementById('smtp-host').value.trim(),
+      port:       parseInt(document.getElementById('smtp-port').value) || 587,
+      user:       document.getElementById('smtp-user').value.trim(),
+      pass:       document.getElementById('smtp-pass').value,
+      from_name:  document.getElementById('smtp-from_name').value.trim(),
+      from_email: document.getElementById('smtp-from_email').value.trim(),
+      encryption: document.getElementById('smtp-enc').value,
+      reply_to:   document.getElementById('smtp-reply').value.trim()
+    };
     var r = await fetch('https://walkathon-backend-hv9j.onrender.com/test-email', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ to: document.getElementById('smtp-user').value })
+      body: JSON.stringify({ to: testTo, smtp: smtpCfg })
     });
-    var d = await r.json();
+    var txt = await r.text();
+    var d;
+    try { d = JSON.parse(txt); } catch(e) { throw new Error('Backend returned: ' + txt.slice(0,120)); }
     setStatus('smtp-status', d.success ? 'ok' : 'err',
-      d.success ? '✅ Test email sent! Check your inbox.' : '❌ ' + d.error);
+      d.success ? '✅ Test email sent to ' + testTo + '! Check inbox.' : '❌ ' + (d.error || JSON.stringify(d)));
   } catch(e) {
-    setStatus('smtp-status', 'err', '❌ Backend error: ' + e.message);
+    setStatus('smtp-status', 'err', '❌ ' + e.message);
   }
 }
 
 // ── Templates ──────────────────────────────────────────
+function loadPreset() {
+  var key = document.getElementById('preset-sel').value;
+  if (!key) { alert('Select a preset first.'); return; }
+  var PRESETS = {
+    leaderboard_live: {
+      name: 'Leaderboard Live',
+      subject: '🏆 Arcgate Walkathon 2026 — Leaderboard Update',
+      desc: 'Leaderboard update with current rank, km, and points',
+      body: `<!DOCTYPE html><html><body style="margin:0;padding:0;font-family:Poppins,Arial,sans-serif;background:#f5f5f5">
+<div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
+  <div style="background:#E8622A;padding:28px 32px;text-align:center">
+    <h1 style="color:#fff;margin:0;font-size:22px;font-weight:700">🏆 Leaderboard Update</h1>
+    <p style="color:rgba(255,255,255,.85);margin:6px 0 0;font-size:14px">Arcgate Walkathon 2026</p>
+  </div>
+  <div style="padding:28px 32px">
+    <p style="color:#333;font-size:15px">Hi <strong>{{participant_name}}</strong>,</p>
+    <p style="color:#555;font-size:14px;line-height:1.6">Here's your latest leaderboard standing for the Arcgate Walkathon 2026!</p>
+    <div style="background:#fff8f5;border:2px solid #E8622A;border-radius:12px;padding:20px;margin:20px 0;text-align:center">
+      <div style="font-size:32px;font-weight:800;color:#E8622A">{{rank}}</div>
+      <div style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:1px">Your Current Rank</div>
+      <div style="display:flex;justify-content:center;gap:24px;margin-top:16px;flex-wrap:wrap">
+        <div><div style="font-size:20px;font-weight:700;color:#333">{{total_km}} km</div><div style="font-size:11px;color:#888">Distance</div></div>
+        <div><div style="font-size:20px;font-weight:700;color:#333">{{total_points}} pts</div><div style="font-size:11px;color:#888">Points</div></div>
+        <div><div style="font-size:20px;font-weight:700;color:#333">{{medal}}</div><div style="font-size:11px;color:#888">Medal</div></div>
+      </div>
+    </div>
+    <p style="color:#555;font-size:14px">Team: <strong>{{team_name}}</strong></p>
+    <div style="text-align:center;margin:24px 0">
+      <a href="{{leaderboard_url}}" style="background:#E8622A;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">View Full Leaderboard →</a>
+    </div>
+    <p style="color:#888;font-size:12px">Keep walking, keep earning points. Every step counts! 🚶‍♂️</p>
+  </div>
+  <div style="background:#f8f8f8;padding:16px 32px;text-align:center;font-size:11px;color:#aaa">Arcgate Walkathon 2026 · Sent by Admin</div>
+</div></body></html>`
+    },
+    red_flag: {
+      name: 'Red Flag Activities',
+      subject: '🚩 Action Required — Flagged Activity on Your Walkathon Profile',
+      desc: 'Inform participant about a flagged/suspicious activity',
+      body: `<!DOCTYPE html><html><body style="margin:0;padding:0;font-family:Poppins,Arial,sans-serif;background:#f5f5f5">
+<div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
+  <div style="background:#c62828;padding:28px 32px;text-align:center">
+    <h1 style="color:#fff;margin:0;font-size:22px;font-weight:700">🚩 Activity Flagged for Review</h1>
+    <p style="color:rgba(255,255,255,.85);margin:6px 0 0;font-size:14px">Arcgate Walkathon 2026</p>
+  </div>
+  <div style="padding:28px 32px">
+    <p style="color:#333;font-size:15px">Hi <strong>{{participant_name}}</strong>,</p>
+    <p style="color:#555;font-size:14px;line-height:1.6">Our system has flagged one of your recent activities for review. This means the activity will not count toward your score until resolved.</p>
+    <div style="background:#fff8f8;border:2px solid #c62828;border-radius:10px;padding:18px;margin:20px 0">
+      <div style="font-size:13px;color:#888;margin-bottom:4px">Activity</div>
+      <div style="font-size:16px;font-weight:700;color:#333"><a href="{{activity_link}}" style="color:#c62828;text-decoration:none">{{activity_name}}</a></div>
+      <div style="font-size:13px;color:#c62828;margin-top:8px;font-weight:600">Reason: {{flag_reason}}</div>
+    </div>
+    <p style="color:#555;font-size:14px;line-height:1.6">If you believe this is an error, please reach out to the walkathon admin team with your activity details. We'll review and update the status promptly.</p>
+    <p style="color:#888;font-size:12px;margin-top:24px">This is an automated alert. Please do not reply to this email — contact your admin directly.</p>
+  </div>
+  <div style="background:#f8f8f8;padding:16px 32px;text-align:center;font-size:11px;color:#aaa">Arcgate Walkathon 2026 · Sent by Admin</div>
+</div></body></html>`
+    },
+    disqualified: {
+      name: 'Disqualified from Event',
+      subject: '❌ Important — Disqualification Notice | Arcgate Walkathon 2026',
+      desc: 'Notify participant they have been disqualified from the event',
+      body: `<!DOCTYPE html><html><body style="margin:0;padding:0;font-family:Poppins,Arial,sans-serif;background:#f5f5f5">
+<div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
+  <div style="background:#424242;padding:28px 32px;text-align:center">
+    <h1 style="color:#fff;margin:0;font-size:22px;font-weight:700">❌ Disqualification Notice</h1>
+    <p style="color:rgba(255,255,255,.75);margin:6px 0 0;font-size:14px">Arcgate Walkathon 2026</p>
+  </div>
+  <div style="padding:28px 32px">
+    <p style="color:#333;font-size:15px">Dear <strong>{{participant_name}}</strong>,</p>
+    <p style="color:#555;font-size:14px;line-height:1.6">We regret to inform you that after a detailed review, your participation in the <strong>Arcgate Walkathon 2026</strong> has been disqualified.</p>
+    <div style="background:#fafafa;border-left:4px solid #424242;border-radius:0 8px 8px 0;padding:14px 18px;margin:20px 0">
+      <div style="font-size:12px;color:#888;margin-bottom:4px">Reason for disqualification</div>
+      <div style="font-size:14px;color:#333">{{flag_reason}}</div>
+    </div>
+    <p style="color:#555;font-size:14px;line-height:1.6">This decision was made in accordance with the walkathon's fair-play policy. If you have any questions or would like to appeal, please contact the admin team within 48 hours.</p>
+    <p style="color:#888;font-size:12px;margin-top:24px">We appreciate your participation and hope to see you in future events.</p>
+  </div>
+  <div style="background:#f8f8f8;padding:16px 32px;text-align:center;font-size:11px;color:#aaa">Arcgate Walkathon 2026 · Sent by Admin</div>
+</div></body></html>`
+    },
+    top3: {
+      name: 'You Are in Top 3',
+      subject: '🥇 Congratulations! You\'re in the Top 3 — Arcgate Walkathon 2026',
+      desc: 'Celebrate participant reaching top 3 on the leaderboard',
+      body: `<!DOCTYPE html><html><body style="margin:0;padding:0;font-family:Poppins,Arial,sans-serif;background:#f5f5f5">
+<div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
+  <div style="background:linear-gradient(135deg,#E8622A,#f5a623);padding:28px 32px;text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">{{medal}}</div>
+    <h1 style="color:#fff;margin:0;font-size:22px;font-weight:700">You're in the Top 3!</h1>
+    <p style="color:rgba(255,255,255,.9);margin:6px 0 0;font-size:14px">Arcgate Walkathon 2026</p>
+  </div>
+  <div style="padding:28px 32px;text-align:center">
+    <p style="color:#333;font-size:16px;font-weight:600">🎉 Amazing work, <strong>{{participant_name}}</strong>!</p>
+    <p style="color:#555;font-size:14px;line-height:1.6">You've climbed to <strong>Rank {{rank}}</strong> on the leaderboard. You're among the top performers of Arcgate Walkathon 2026!</p>
+    <div style="background:#fff8f5;border:2px solid #E8622A;border-radius:12px;padding:20px;margin:20px 0">
+      <div style="font-size:36px;font-weight:800;color:#E8622A">#{{rank}}</div>
+      <div style="display:flex;justify-content:center;gap:24px;margin-top:12px;flex-wrap:wrap">
+        <div><div style="font-size:18px;font-weight:700;color:#333">{{total_km}} km</div><div style="font-size:11px;color:#888">Distance</div></div>
+        <div><div style="font-size:18px;font-weight:700;color:#333">{{total_points}} pts</div><div style="font-size:11px;color:#888">Points</div></div>
+      </div>
+    </div>
+    <p style="color:#555;font-size:14px">Keep going — every step keeps you at the top! 🏆</p>
+    <div style="margin:24px 0">
+      <a href="{{leaderboard_url}}" style="background:#E8622A;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">View Leaderboard →</a>
+    </div>
+  </div>
+  <div style="background:#f8f8f8;padding:16px 32px;text-align:center;font-size:11px;color:#aaa">Arcgate Walkathon 2026 · Sent by Admin</div>
+</div></body></html>`
+    },
+    registration_approved: {
+      name: 'Registration Approved',
+      subject: '✅ You\'re In! Registration Approved — Arcgate Walkathon 2026',
+      desc: 'Welcome email after registration approval with Strava connect instructions',
+      body: `<!DOCTYPE html><html><body style="margin:0;padding:0;font-family:Poppins,Arial,sans-serif;background:#f5f5f5">
+<div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
+  <div style="background:#E8622A;padding:28px 32px;text-align:center">
+    <h1 style="color:#fff;margin:0;font-size:22px;font-weight:700">✅ Registration Approved!</h1>
+    <p style="color:rgba(255,255,255,.85);margin:6px 0 0;font-size:14px">Arcgate Walkathon 2026 — June 2026</p>
+  </div>
+  <div style="padding:28px 32px">
+    <p style="color:#333;font-size:15px">Hi <strong>{{participant_name}}</strong>,</p>
+    <p style="color:#555;font-size:14px;line-height:1.6">Great news — your registration for <strong>Arcgate Walkathon 2026</strong> has been approved! 🎉</p>
+    <div style="background:#f0fdf4;border:2px solid #22c55e;border-radius:10px;padding:18px;margin:20px 0">
+      <div style="font-size:14px;font-weight:700;color:#166534;margin-bottom:8px">Next Step: Connect Your Strava Account</div>
+      <p style="font-size:13px;color:#166534;margin:0;line-height:1.6">All your activities are tracked via Strava. Please connect your account to start earning points.</p>
+    </div>
+    <ol style="color:#555;font-size:14px;line-height:2;padding-left:20px">
+      <li>Visit the Walkathon portal</li>
+      <li>Click <strong>"Connect with Strava"</strong></li>
+      <li>Authorize the app — your walks, runs, and hikes will sync automatically</li>
+      <li>Track your points on the live leaderboard</li>
+    </ol>
+    <div style="text-align:center;margin:24px 0">
+      <a href="{{leaderboard_url}}" style="background:#E8622A;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">Open Walkathon Portal →</a>
+    </div>
+    <p style="color:#888;font-size:12px;line-height:1.6">The event runs throughout June 2026. Activities recorded on Strava from June 1 onward will count. Walk, run, hike, or ride — every km earns points!</p>
+  </div>
+  <div style="background:#f8f8f8;padding:16px 32px;text-align:center;font-size:11px;color:#aaa">Arcgate Walkathon 2026 · Sent by Admin</div>
+</div></body></html>`
+    }
+  };
+  var p = PRESETS[key];
+  if (!p) return;
+  document.getElementById('tpl-name').value    = p.name;
+  document.getElementById('tpl-subject').value = p.subject;
+  document.getElementById('tpl-desc').value    = p.desc;
+  document.getElementById('tpl-body').value    = p.body;
+  document.getElementById('preset-sel').value  = '';
+  document.getElementById('tpl-name').focus();
+  document.getElementById('tpl-status').style.display='none';
+  // Scroll to the editor
+  document.getElementById('tpl-name').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
 async function loadTemplates() {
   var list = document.getElementById('tpls-list');
   list.innerHTML = '<div style="padding:20px;color:#aaa">Loading...</div>';
