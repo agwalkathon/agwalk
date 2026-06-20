@@ -217,6 +217,31 @@
     .pace-sub{font-size:9.5px;color:var(--muted);margin-top:2px;}
     .pace-val{font-size:16px;font-weight:900;flex-shrink:0;text-align:right;min-width:44px;}
 
+    /* ── Gold achieved card ── */
+    .gold-card{padding:16px;}
+    .gold-top{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+    .gold-emoji{font-size:32px;line-height:1;}
+    .gold-title{font-size:16px;font-weight:900;color:var(--gold);}
+    .gold-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+    .gold-quote{
+      background:linear-gradient(135deg,rgba(232,98,42,0.15),rgba(245,158,11,0.10));
+      border:1px solid rgba(232,98,42,0.25);
+      border-left:3px solid var(--brand);
+      border-radius:var(--radius-xs);
+      padding:12px 14px;
+      margin-bottom:12px;
+    }
+    .gold-quote-text{font-size:14px;font-weight:800;color:#fff;line-height:1.4;font-style:italic;}
+    .gold-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+    .gold-stat{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-xs);padding:10px 12px;}
+    .gold-stat-val{font-size:18px;font-weight:900;color:var(--brand);line-height:1;}
+    .gold-stat-lbl{font-size:9px;font-weight:600;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:0.5px;}
+    .gold-rival{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-xs);padding:10px 12px;}
+    .gold-rival-left{flex:1;}
+    .gold-rival-label{font-size:11px;font-weight:700;color:#fff;}
+    .gold-rival-sub{font-size:9.5px;color:var(--muted);margin-top:2px;}
+    .gold-rival-pts{font-size:16px;font-weight:900;color:var(--green);flex-shrink:0;}
+
     /* ── Streak ── */
     .streak-top{display:flex;align-items:flex-end;justify-content:space-between;padding:14px 16px 10px;}
     .streak-num{font-size:52px;font-weight:900;color:var(--brand);line-height:1;letter-spacing:-2px;}
@@ -404,27 +429,8 @@
   </div>
 
   <div class="sec">Pace Goals</div>
-  <div class="card">
-    <div class="pace-row">
-      <div class="pace-icon" style="background:rgba(245,158,11,0.12)">📅</div>
-      <div class="pace-text"><div class="pace-main" id="pace-days-text">—</div><div class="pace-sub">Event ends June 30</div></div>
-      <div class="pace-val" style="color:var(--muted)" id="pace-days-val">—</div>
-    </div>
-    <div class="pace-row">
-      <div class="pace-icon" style="background:rgba(148,163,184,0.12)">🥈</div>
-      <div class="pace-text"><div class="pace-main" id="pace-silver-text">—</div><div class="pace-sub" id="pace-silver-sub">—</div></div>
-      <div class="pace-val" style="color:var(--silver)" id="pace-silver-val">—</div>
-    </div>
-    <div class="pace-row">
-      <div class="pace-icon" style="background:rgba(245,158,11,0.12)">🥇</div>
-      <div class="pace-text"><div class="pace-main" id="pace-gold-text">—</div><div class="pace-sub" id="pace-gold-sub">—</div></div>
-      <div class="pace-val" style="color:var(--gold)" id="pace-gold-val">—</div>
-    </div>
-    <div class="pace-row">
-      <div class="pace-icon" style="background:rgba(96,165,250,0.12)">⚡</div>
-      <div class="pace-text"><div class="pace-main" id="pace-today-text">—</div><div class="pace-sub" id="pace-today-sub">—</div></div>
-      <div class="pace-val" style="color:var(--blue)" id="pace-today-val">—</div>
-    </div>
+  <div class="card" id="pace-card">
+    <!-- dynamically rendered by JS -->
   </div>
 
   <div class="sec">Stats</div>
@@ -726,23 +732,107 @@ async function load() {
     document.getElementById('standing-team-label').textContent=teamLabel;
     document.getElementById('standing-team-rank').textContent=teamRank?ordinal(teamRank):'—';
 
-    // Pace Goals
-    var EVENT_END=new Date('2026-06-30T23:59:59'),now=new Date();
+    // ── Pace Goals — dynamic based on medal status ────────────────────────────
+    var EVENT_END=new Date('2026-06-30T23:59:59');
     var daysLeft=Math.max(0,Math.ceil((EVENT_END-now)/(1000*60*60*24)));
     var todayStr=now.toISOString().split('T')[0];
     var todayKm=myActs.filter(function(a){return !a.is_flagged;}).reduce(function(s,a){return(a.activity_date||'').split('T')[0]===todayStr?s+(a.distance_meters||0)/1000:s;},0);
     var bonusTiers=[[5,1],[8,2],[10,3],[15,4],[21,7]],nextTier=null;
     for(var ti=0;ti<bonusTiers.length;ti++){if(todayKm<bonusTiers[ti][0]){nextTier=bonusTiers[ti];break;}}
-    document.getElementById('pace-days-text').textContent=daysLeft+' days remaining in the event';
-    document.getElementById('pace-days-val').textContent='Jun 30';
-    var silverKmNeeded=Math.max(0,silverThresh-myPts),kmPerDayForSilver=daysLeft>0?silverKmNeeded/daysLeft:0;
-    if(myPts>=silverThresh){document.getElementById('pace-silver-text').textContent='🥈 Silver — Achieved!';document.getElementById('pace-silver-sub').textContent=myPts.toFixed(1)+' / '+silverThresh+' pts';document.getElementById('pace-silver-val').textContent='✓';}
-    else{document.getElementById('pace-silver-text').textContent='Walk '+kmPerDayForSilver.toFixed(1)+' km/day for Silver';document.getElementById('pace-silver-sub').textContent='Need '+silverKmNeeded.toFixed(1)+' pts in '+daysLeft+' days';document.getElementById('pace-silver-val').textContent=kmPerDayForSilver.toFixed(1)+' km';}
-    var goldKmNeeded=Math.max(0,goldThresh-myPts),kmPerDayForGold=daysLeft>0?goldKmNeeded/daysLeft:0;
-    if(myPts>=goldThresh){document.getElementById('pace-gold-text').textContent='🥇 Gold — Achieved!';document.getElementById('pace-gold-sub').textContent=myPts.toFixed(1)+' / '+goldThresh+' pts';document.getElementById('pace-gold-val').textContent='✓';}
-    else{document.getElementById('pace-gold-text').textContent='Walk '+kmPerDayForGold.toFixed(1)+' km/day for Gold';document.getElementById('pace-gold-sub').textContent='Need '+goldKmNeeded.toFixed(1)+' pts in '+daysLeft+' days';document.getElementById('pace-gold-val').textContent=kmPerDayForGold.toFixed(1)+' km';}
-    if(nextTier){document.getElementById('pace-today-text').textContent='Walk '+(nextTier[0]-todayKm).toFixed(1)+' km more today for bonus';document.getElementById('pace-today-sub').textContent='Today: '+todayKm.toFixed(1)+' km so far';document.getElementById('pace-today-val').textContent='+'+nextTier[1]+' pt';}
-    else{document.getElementById('pace-today-text').textContent='Max daily bonus earned!';document.getElementById('pace-today-sub').textContent=todayKm.toFixed(1)+' km today';document.getElementById('pace-today-val').textContent='+7 pts';}
+
+    var QUOTES={
+      t5:['Unstoppable. Keep the hammer down.','Built different. Prove it every day.','Relentless. That\'s your identity now.'],
+      t10:['You\'re in a different league. Stay there.','Elite pace. Own it.','Almost untouchable. Stay consistent.'],
+      t25:['The top is within reach. Attack it.','You\'re dangerous. Don\'t slow down.','Strong pace. One push to the podium.'],
+      t50:['Stay hungry. The podium isn\'t far.','You\'re ahead of half the field. Finish strong.','Momentum is everything. Don\'t break it.'],
+      b50:['The gap is closeable. Every km counts.','Every step forward counts. Keep moving.','The comeback starts today. Go.']
+    };
+    function pickQuote(tier){var arr=QUOTES[tier];return arr[Math.floor(Math.random()*arr.length)];}
+
+    function paceRow(iconBg,icon,mainText,subText,valText,valColor){
+      var d=document.createElement('div');d.className='pace-row';
+      d.innerHTML='<div class="pace-icon" style="background:'+iconBg+'">'+icon+'</div>'+
+        '<div class="pace-text"><div class="pace-main">'+mainText+'</div><div class="pace-sub">'+subText+'</div></div>'+
+        '<div class="pace-val" style="color:'+valColor+'">'+valText+'</div>';
+      return d;
+    }
+
+    var paceCard=document.getElementById('pace-card');
+    paceCard.innerHTML='';
+
+    if(myPts>=goldThresh){
+      // Gold achieved — performance + rivalry card
+      var daysElapsed=Math.max(1,(now-new Date('2026-06-01'))/86400000);
+      var avgKmDay=fullPts.km/daysElapsed;
+      var goldActsMap={};
+      allActs.forEach(function(a){if(!goldActsMap[a.strava_athlete_id])goldActsMap[a.strava_athlete_id]=[];goldActsMap[a.strava_athlete_id].push(a);});
+      var shiftPeersG=allRegRes.filter(function(p){var pg=(p.gender||'').toLowerCase(),ps=(p.shift||'').toLowerCase();return(ps.indexOf('night')>-1)===isNight&&(pg==='female')===isFemale;});
+      var shiftScoredG=shiftPeersG.map(function(p){var km=0;(goldActsMap[p.strava_athlete_id]||[]).forEach(function(a){km+=(a.distance_meters||0)/1000;});return{id:p.strava_athlete_id,name:p.full_name,km:km};}).sort(function(a,b){return b.km-a.km;});
+      var myRankG=shiftScoredG.findIndex(function(x){return String(x.id)===String(athleteId);})+1;
+      var totalG=shiftScoredG.length;
+      var pctRank=totalG>0?myRankG/totalG:0.5;
+      var quoteTier=pctRank<=0.05?'t5':pctRank<=0.10?'t10':pctRank<=0.25?'t25':pctRank<=0.50?'t50':'b50';
+      var quote=pickQuote(quoteTier);
+      var personAbove=myRankG>1?shiftScoredG[myRankG-2]:null;
+      var projectedPts=(myPts+(avgKmDay*daysLeft)).toFixed(0);
+
+      var div=document.createElement('div');div.className='gold-card';
+      div.innerHTML=
+        '<div class="gold-top">'+
+          '<div class="gold-emoji">🥇</div>'+
+          '<div><div class="gold-title">Gold Achieved!</div>'+
+          '<div class="gold-sub">Rank #'+myRankG+' of '+totalG+' in your category</div></div>'+
+        '</div>'+
+        '<div class="gold-quote"><div class="gold-quote-text">&ldquo;'+quote+'&rdquo;</div></div>'+
+        '<div class="gold-stats">'+
+          '<div class="gold-stat"><div class="gold-stat-val">'+avgKmDay.toFixed(1)+' km</div><div class="gold-stat-lbl">Daily avg</div></div>'+
+          '<div class="gold-stat"><div class="gold-stat-val" style="color:var(--gold)">~'+projectedPts+' pts</div><div class="gold-stat-lbl">Projected finish</div></div>'+
+        '</div>'+
+        (personAbove?
+          '<div class="gold-rival">'+
+            '<div class="gold-rival-left">'+
+              '<div class="gold-rival-label">🎯 Overtake #'+(myRankG-1)+': '+esc(personAbove.name)+'</div>'+
+              '<div class="gold-rival-sub">'+daysLeft+' days left · keep pushing</div>'+
+            '</div>'+
+          '</div>'
+        :
+          '<div class="gold-rival">'+
+            '<div class="gold-rival-left">'+
+              '<div class="gold-rival-label">🏆 You\'re #1 — lead to the finish!</div>'+
+              '<div class="gold-rival-sub">Defend your spot for '+daysLeft+' more days</div>'+
+            '</div>'+
+          '</div>'
+        );
+      paceCard.appendChild(div);
+
+    } else {
+      // Not gold — show only uncompleted medal rows + today bonus
+      paceCard.appendChild(paceRow('rgba(96,165,250,0.12)','📅',daysLeft+' days remaining','Event ends June 30','Jun 30','var(--muted)'));
+
+      if(myPts<bronzeThresh){
+        var brN=Math.max(0,bronzeThresh-myPts),brK=daysLeft>0?(brN/daysLeft):0;
+        paceCard.appendChild(paceRow('rgba(205,127,50,0.12)','🥉','Walk '+brK.toFixed(1)+' km/day for Bronze','Need '+brN.toFixed(1)+' pts in '+daysLeft+' days',brK.toFixed(1)+' km','#CD7F32'));
+        var siN=Math.max(0,silverThresh-myPts),siK=daysLeft>0?(siN/daysLeft):0;
+        paceCard.appendChild(paceRow('rgba(148,163,184,0.12)','🥈','Walk '+siK.toFixed(1)+' km/day for Silver','Need '+siN.toFixed(1)+' pts in '+daysLeft+' days',siK.toFixed(1)+' km','var(--silver)'));
+        var goN=Math.max(0,goldThresh-myPts),goK=daysLeft>0?(goN/daysLeft):0;
+        paceCard.appendChild(paceRow('rgba(245,158,11,0.12)','🥇','Walk '+goK.toFixed(1)+' km/day for Gold','Need '+goN.toFixed(1)+' pts in '+daysLeft+' days',goK.toFixed(1)+' km','var(--gold)'));
+      } else if(myPts<silverThresh){
+        var siN=Math.max(0,silverThresh-myPts),siK=daysLeft>0?(siN/daysLeft):0;
+        paceCard.appendChild(paceRow('rgba(148,163,184,0.12)','🥈','Walk '+siK.toFixed(1)+' km/day for Silver','Need '+siN.toFixed(1)+' pts in '+daysLeft+' days',siK.toFixed(1)+' km','var(--silver)'));
+        var goN=Math.max(0,goldThresh-myPts),goK=daysLeft>0?(goN/daysLeft):0;
+        paceCard.appendChild(paceRow('rgba(245,158,11,0.12)','🥇','Walk '+goK.toFixed(1)+' km/day for Gold','Need '+goN.toFixed(1)+' pts in '+daysLeft+' days',goK.toFixed(1)+' km','var(--gold)'));
+      } else {
+        var goN=Math.max(0,goldThresh-myPts),goK=daysLeft>0?(goN/daysLeft):0;
+        paceCard.appendChild(paceRow('rgba(245,158,11,0.12)','🥇','Walk '+goK.toFixed(1)+' km/day for Gold','Need '+goN.toFixed(1)+' pts in '+daysLeft+' days',goK.toFixed(1)+' km','var(--gold)'));
+      }
+
+      if(nextTier){
+        paceCard.appendChild(paceRow('rgba(96,165,250,0.12)','⚡','Walk '+(nextTier[0]-todayKm).toFixed(1)+' km more today for bonus','Today: '+todayKm.toFixed(1)+' km so far','+'+nextTier[1]+' pt','var(--blue)'));
+      } else {
+        paceCard.appendChild(paceRow('rgba(34,197,94,0.12)','✅','Max daily bonus earned!',todayKm.toFixed(1)+' km today','+7 pts','var(--green)'));
+      }
+    }
+
 
     // Streak
     var activeDays={};
