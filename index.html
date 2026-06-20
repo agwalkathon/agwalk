@@ -4,42 +4,230 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#111827">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0F1117">
   <title>Arcgate Walkathon 2026</title>
   <link rel="icon" type="image/png" href="favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-    body{font-family:'Poppins',-apple-system,sans-serif;background:#111827;color:white;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;-webkit-font-smoothing:antialiased;max-width:480px;margin-left:auto;margin-right:auto;}
-    img.logo{height:44px;max-width:200px;object-fit:contain;margin-bottom:12px;}
-    .edition{font-size:11px;font-weight:700;letter-spacing:2px;color:#E8622A;margin-bottom:24px;text-transform:uppercase;}
-    h1{font-size:30px;font-weight:900;letter-spacing:-0.5px;text-align:center;margin-bottom:12px;line-height:1.15;}
-    h1 em{color:#E8622A;font-style:normal;display:block;}
-    p.sub{font-size:13px;color:rgba(255,255,255,0.45);text-align:center;line-height:1.7;margin-bottom:32px;max-width:280px;}
-    .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;width:100%;max-width:340px;}
-    .stat{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px 10px;text-align:center;}
-    .stat .v{font-size:18px;font-weight:800;color:white;}
-    .stat .v.live{color:#E8622A;}
-    .stat .l{font-size:10px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.5px;margin-top:3px;}
-    .box{width:100%;max-width:360px;}
-    .btn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:18px;background:#E8622A;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;text-decoration:none;cursor:pointer;font-family:inherit;box-shadow:0 4px 20px rgba(232,98,42,0.4);}
-    .btn:active{transform:scale(0.97);}
-    .btn svg{width:22px;height:22px;fill:white;flex-shrink:0;}
-    @keyframes spin{to{transform:rotate(360deg);}}
-    .spinner{width:20px;height:20px;border:2px solid rgba(255,255,255,0.2);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite;}
-    .proc{display:none;align-items:center;justify-content:center;gap:10px;padding:18px;font-size:14px;color:rgba(255,255,255,0.5);}
-    .err{display:none;margin-top:14px;padding:14px;border-radius:10px;font-size:13px;line-height:1.5;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;}
-    .note{margin-top:16px;font-size:11px;color:rgba(255,255,255,0.2);text-align:center;line-height:1.8;}
-    .note a{color:#E8622A;text-decoration:none;opacity:0.8;}
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+    :root {
+      --brand: #E8622A;
+      --brand-glow: rgba(232,98,42,0.35);
+      --dark: #0F1117;
+      --font: 'Poppins', -apple-system, sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background: var(--dark);
+      color: white;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: max(32px, env(safe-area-inset-top)) 24px max(32px, env(safe-area-inset-bottom));
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Background radial glow */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -30%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(232,98,42,0.12) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Logo */
+    .logo-ring {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      background: var(--brand);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 0 0 1px rgba(232,98,42,0.3), 0 8px 32px rgba(232,98,42,0.3);
+    }
+    .logo-ring img {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+      filter: brightness(0) invert(1);
+    }
+
+    .edition {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: var(--brand);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: clamp(24px, 7vw, 32px);
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      text-align: center;
+      line-height: 1.18;
+      margin-bottom: 12px;
+    }
+    h1 em {
+      color: var(--brand);
+      font-style: normal;
+      display: block;
+    }
+
+    .sub {
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      text-align: center;
+      line-height: 1.75;
+      margin-bottom: 32px;
+      max-width: 270px;
+    }
+
+    /* Stats grid */
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 32px;
+      width: 100%;
+    }
+    .stat {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 12px;
+      padding: 14px 12px;
+      text-align: center;
+    }
+    .stat .v {
+      font-size: 20px;
+      font-weight: 800;
+      color: white;
+      line-height: 1;
+    }
+    .stat .v.live { color: var(--brand); }
+    .stat .l {
+      font-size: 10px;
+      color: rgba(255,255,255,0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 5px;
+    }
+
+    /* Auth box */
+    .auth-box { width: 100%; }
+
+    .btn-strava {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      padding: 17px;
+      background: var(--brand);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: var(--font);
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: 0 4px 24px var(--brand-glow);
+      transition: transform 0.12s, box-shadow 0.12s;
+      letter-spacing: 0.01em;
+    }
+    .btn-strava:active { transform: scale(0.97); box-shadow: 0 2px 12px var(--brand-glow); }
+    .btn-strava svg { width: 22px; height: 22px; fill: white; flex-shrink: 0; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .proc {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 17px;
+      font-size: 14px;
+      color: rgba(255,255,255,0.45);
+      font-family: var(--font);
+    }
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid rgba(255,255,255,0.15);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+
+    .err {
+      display: none;
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.6;
+      background: rgba(220,38,38,0.1);
+      color: #fca5a5;
+      border: 1px solid rgba(220,38,38,0.2);
+    }
+
+    .note {
+      margin-top: 20px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.18);
+      text-align: center;
+      line-height: 2;
+    }
+    .note a {
+      color: rgba(232,98,42,0.7);
+      text-decoration: none;
+    }
+    .note a:hover { color: var(--brand); }
+
+    /* Separator dots */
+    .note span { color: rgba(255,255,255,0.1); margin: 0 4px; }
   </style>
 </head>
 <body>
-  <img src="aw_logo_dark.png" class="logo" alt="Arcgate Walkathon">
-  <div class="edition">2026 EDITION</div>
+<div class="wrap">
+  <div class="logo-ring">
+    <img src="favicon.png" alt="AW">
+  </div>
+
+  <div class="edition">2026 Edition</div>
 
   <h1>Healthy Arcgatians.<br><em>Stronger Arcgate.</em></h1>
-  <p class="sub">A whole month to move, connect, and grow — one kilometre at a time.</p>
+  <p class="sub">A whole month to move, connect and grow — one kilometre at a time.</p>
 
   <div class="stats">
     <div class="stat"><div class="v">500+</div><div class="l">Employees Joined</div></div>
@@ -48,24 +236,28 @@
     <div class="stat"><div class="v live">Live</div><div class="l">Leaderboard</div></div>
   </div>
 
-  <div class="box">
-    <a id="btn" href="#" class="btn">
+  <div class="auth-box">
+    <a id="btn" href="#" class="btn-strava">
       <svg viewBox="0 0 24 24"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
       Sign in with Strava
     </a>
     <div class="proc" id="proc"><div class="spinner"></div><span id="proc-text">Connecting...</span></div>
     <div class="err" id="err"></div>
-    <p class="note">Approved participants only · Read-only · Never posts to Strava<br><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="admin-login.html">Admin</a> · <a href="new-participant.html">New Participant</a></p>
+    <p class="note">
+      Approved participants only <span>·</span> Read-only <span>·</span> Never posts to Strava<br>
+      <a href="privacy.html">Privacy</a> <span>·</span>
+      <a href="terms.html">Terms</a> <span>·</span>
+      <a href="admin-login.html">Admin</a> <span>·</span>
+      <a href="new-participant.html">New Participant</a>
+    </p>
   </div>
-
-
+</div>
 
 <script>
 var CLIENT_ID = '29159';
 var BACKEND   = 'https://walkathon-backend-hv9j.onrender.com';
 var EVENT     = 'walkathon2026';
 
-// Build Strava auth URL — redirect_uri is THIS page (index.html)
 var REDIRECT  = window.location.origin + window.location.pathname;
 var AUTH_URL  = 'https://www.strava.com/oauth/authorize'
   + '?client_id='    + CLIENT_ID
@@ -88,7 +280,6 @@ function showProc(text) {
   document.getElementById('proc-text').textContent = text;
 }
 
-// Handle OAuth callback
 var code = new URLSearchParams(window.location.search).get('code');
 if (code) {
   window.history.replaceState({}, '', window.location.pathname);
@@ -101,7 +292,6 @@ if (code) {
   .then(function(r){ return r.json(); })
   .then(function(d) {
     if (d.success) {
-      // Store minimal session + the original code for portal to use
       sessionStorage.setItem('wk_user', JSON.stringify({
         loggedIn: true,
         role: d.role || 'user',
@@ -129,4 +319,3 @@ if (code) {
 </script>
 </body>
 </html>
-
