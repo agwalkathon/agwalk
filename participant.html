@@ -30,21 +30,17 @@
     /* ── Header ── */
     .header{
       position:sticky;top:0;z-index:200;
-      background:var(--bg);
-      border-bottom:1px solid var(--border);
-      padding:max(14px,env(safe-area-inset-top)) 18px 14px;
-      display:flex;align-items:center;justify-content:space-between;
+      background:var(--surface);border-bottom:1px solid var(--border);
+      padding:max(14px,env(safe-area-inset-top)) 16px 12px;
+      display:grid;grid-template-columns:44px 1fr 44px;align-items:center;
     }
-    .header-logo{display:flex;align-items:center;gap:9px;}
-    .header-logo-icon{width:32px;height:32px;border-radius:9px;background:var(--brand);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-    .header-logo-icon img{width:22px;height:22px;object-fit:contain;filter:brightness(0) invert(1);}
-    .header-logo-img{height:20px;width:auto;opacity:0.88;}
-    .hdr-right{display:flex;align-items:center;justify-content:flex-end;}
+    .hdr-left,.hdr-right{display:flex;align-items:center;}
+    .hdr-right{justify-content:flex-end;}
     .hdr-center{text-align:center;}
-    .hdr-wordmark{font-size:18px;font-weight:800;letter-spacing:4px;color:rgba(255,255,255,0.9);text-transform:uppercase;}
-    .icon-btn{background:rgba(255,255,255,0.14);border:1px solid var(--border);cursor:pointer;padding:7px;border-radius:9px;color:var(--muted);display:flex;align-items:center;transition:color 0.15s,background 0.15s;}
-    .icon-btn:active{background:rgba(255,255,255,0.1);color:#fff;}
-    .icon-btn svg{width:17px;height:17px;}
+    .hdr-logo-img{height:28px;width:auto;}
+    .icon-btn{background:none;border:none;cursor:pointer;padding:8px;border-radius:9px;color:var(--muted);display:flex;align-items:center;transition:color 0.15s;}
+    .icon-btn:active{color:#fff;}
+    .icon-btn svg{width:20px;height:20px;}
     @keyframes spin{to{transform:rotate(360deg);}}
     .spinning{animation:spin 1s linear infinite;}
     .sign-out-btn{font-size:13px;color:var(--muted);background:rgba(255,255,255,0.12);border:1px solid var(--border);cursor:pointer;padding:6px 12px;border-radius:20px;font-family:var(--font);font-weight:600;transition:all 0.15s;}
@@ -347,7 +343,7 @@
     </button>
   </div>
   <div class="hdr-center">
-    <div class="hdr-wordmark">WALKATHON</div>
+    <img src="logo-white.png" alt="Arcgate Walkathon" class="hdr-logo-img">
   </div>
   <div class="hdr-right">
     <button class="icon-btn" onclick="logout()" title="Sign out">
