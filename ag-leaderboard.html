@@ -963,6 +963,7 @@ function toggleExpand(athleteId, gender, trEl) {
   }
 
   var g = (gender||'').toLowerCase();
+  try {
   var dayRows = days.map(function(day) {
     var inRangeKmExp  = 0;
     var outRangeKmExp = 0;
@@ -1067,9 +1068,14 @@ function toggleExpand(athleteId, gender, trEl) {
     +'<tbody>'+dayRows+'</tbody>'
     +'</table></div>'
     + buildActivityList(byDay, days);
+  } catch(err) {
+    console.error('Expand build error:', err);
+    expRow.innerHTML = '<div style="padding:14px 20px;color:#c62828;font-size:13px">⚠️ Error building breakdown: ' + err.message + '</div>';
+  }
 }
 
 function buildActivityList(byDay, days) {
+  function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   var MAX_NAME = 32;
   var allActs = [];
   days.forEach(function(d){ byDay[d].forEach(function(a){ allActs.push({day:d, a:a}); }); });
