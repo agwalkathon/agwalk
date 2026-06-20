@@ -520,7 +520,7 @@ async function loadActivities() {
   var baseUrl = SB_URL+'/rest/v1/activities?is_deleted=eq.false'
     +'&activity_date=gte.2026-06-01T00:00:00'
     +'&activity_date=lte.2026-06-30T23:59:59'
-    +'&select=strava_athlete_id,distance_meters,sport_type,activity_date,avg_speed,elevation_gain,strava_activity_id,is_flagged,manual_bonus'
+    +'&select=strava_athlete_id,distance_meters,sport_type,activity_date,avg_speed,elevation_gain,strava_activity_id,is_flagged,manual_bonus,activity_name'
     +'&order=id.asc';
   var allActs = [];
   var pageSize = 1000;
@@ -923,22 +923,25 @@ function toggleExpand(athleteId, gender, trEl) {
   var existing = document.getElementById(expId);
 
   if (existing) {
-    // Toggle visibility
-    if (existing.style.display === 'none') {
-      existing.style.cssText = 'display:block!important;background:#fafafa;border-bottom:2px solid #E8622A';
-    } else {
+    // Toggle using data attribute for reliable state
+    if (existing.getAttribute('data-open') === '1') {
+      existing.setAttribute('data-open', '0');
       existing.style.cssText = 'display:none';
+    } else {
+      existing.setAttribute('data-open', '1');
+      existing.style.cssText = 'display:block!important;background:#fafafa;border-bottom:2px solid #E8622A';
     }
     return;
   }
 
-  // First click — build the expand row, start hidden (will show after build)
+  // First click — build hidden, show after build completes
   var expRow = document.createElement('div');
   expRow.id = expId;
+  expRow.setAttribute('data-open', '0');
   expRow.style.cssText = 'display:none';
   expRow.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:20px;color:#888;font-size:13px"><div style="width:18px;height:18px;border:2px solid #f0f0f0;border-top-color:#E8622A;border-radius:50%;animation:spin 0.8s linear infinite"></div>Loading daily breakdown...</div>';
 
-  // Insert after the clicked row
+  // Insert after the clicked card
   trEl.parentNode.insertBefore(expRow, trEl.nextSibling);
 
   // Build daily data
@@ -1046,22 +1049,22 @@ function toggleExpand(athleteId, gender, trEl) {
     function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
     var sportColors = {Walk:'#e8f5e9|#2e7d32',Run:'#e3f2fd|#1565c0',Hike:'#fff3e0|#e65100',Ride:'#fce4ec|#c62828',VirtualRun:'#e3f2fd|#1565c0',VirtualRide:'#fce4ec|#c62828',MountainBikeRide:'#fce4ec|#c62828'};
     var actSubRows = byDay[day].map(function(a){
-      var name = (a.activity_name||'').trim() || '(no name)';
-      var nameShort = name.length > 28 ? name.slice(0,27)+'…' : name;
+      var name = (a.activity_name||'').trim();
+      var nameShort = name.length > 26 ? name.slice(0,25)+'…' : (name || '—');
       var sc = (sportColors[a.sport_type]||'#f5f5f5|#666').split('|');
-      var badge = '<span style="background:'+sc[0]+';color:'+sc[1]+';padding:1px 6px;border-radius:8px;font-size:10px;font-weight:600;white-space:nowrap">'+esc(a.sport_type||'—')+'</span>';
-      var actLink = a.strava_activity_id
-        ? '<a href="https://www.strava.com/activities/'+a.strava_activity_id+'" target="_blank" title="'+name.replace(/"/g,'&quot;')+'" style="color:#E8622A;text-decoration:none;font-weight:500;font-size:12px">'+esc(nameShort)+'</a>'
+      var badge = '<span style="background:'+sc[0]+';color:'+sc[1]+';padding:1px 6px;border-radius:8px;font-size:10px;font-weight:600;white-space:nowrap;flex-shrink:0">'+esc(a.sport_type||'—')+'</span>';
+      var linkStyle = 'color:#E8622A;text-decoration:none;font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+      var actName = a.strava_activity_id
+        ? '<a href="https://www.strava.com/activities/'+a.strava_activity_id+'" target="_blank" title="'+name.replace(/"/g,'&quot;')+'" style="'+linkStyle+'">'+esc(nameShort)+'</a>'
         : '<span style="font-size:12px;color:#666">'+esc(nameShort)+'</span>';
       var dist = a.distance_meters ? (a.distance_meters/1000).toFixed(2)+' km' : '—';
-      // Columns: DATE(type+name) | #ACTS(empty) | DISTANCE(act dist) | DIST PTS | BONUS PTS | CHALLENGE | TOTAL PTS
-      return '<tr style="background:#fff;border-bottom:1px solid #f5f5f5">'
-        +'<td style="padding:4px 14px 6px 22px;vertical-align:top">'
-        +  '<div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">'+badge+'</div>'
-        +  '<div style="padding-left:2px">'+actLink+'</div>'
+      // DATE col: badge + name on same line | #ACTS: empty | DISTANCE: activity dist | rest empty
+      return '<tr style="background:#fff;border-bottom:1px solid #f0f0f0">'
+        +'<td style="padding:5px 14px 5px 20px">'
+        +  '<div style="display:flex;align-items:center;gap:7px;min-width:0">'+badge+actName+'</div>'
         +'</td>'
-        +'<td style="padding:4px 8px"></td>'
-        +'<td style="padding:4px 14px;font-size:12px;color:#666;white-space:nowrap">'+dist+'</td>'
+        +'<td></td>'
+        +'<td style="padding:5px 14px;font-size:12px;color:#666;white-space:nowrap">'+dist+'</td>'
         +'<td colspan="4"></td>'
         +'</tr>';
     }).join('');
@@ -1092,10 +1095,12 @@ function toggleExpand(athleteId, gender, trEl) {
     +'<tbody>'+dayRows+'</tbody>'
     +'</table></div>';
   expRow.style.cssText = 'display:block!important;background:#fafafa;border-bottom:2px solid #E8622A';
+  expRow.setAttribute('data-open', '1');
   } catch(err) {
     console.error('Expand build error:', err);
     expRow.innerHTML = '<div style="padding:14px 20px;color:#c62828;font-size:13px">⚠️ Error building breakdown: ' + err.message + '</div>';
     expRow.style.cssText = 'display:block!important;background:#fafafa;border-bottom:2px solid #E8622A';
+    expRow.setAttribute('data-open', '1');
   }
 }
 
