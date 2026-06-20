@@ -10,233 +10,88 @@
   <link rel="icon" type="image/png" href="favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-    :root {
-      --brand: #E8622A;
-      --brand-glow: rgba(232,98,42,0.35);
-      --dark: #0F1117;
-      --font: 'Poppins', -apple-system, sans-serif;
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+    html,body{height:100%;font-family:'Poppins',-apple-system,sans-serif;-webkit-font-smoothing:antialiased;}
+    body{
+      background:#0F1117;color:#fff;
+      min-height:100dvh;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      padding:max(32px,env(safe-area-inset-top)) 24px max(32px,env(safe-area-inset-bottom));
     }
 
-    html, body {
-      height: 100%;
-      font-family: var(--font);
-      -webkit-font-smoothing: antialiased;
+    /* subtle top glow */
+    body::before{
+      content:'';position:fixed;top:-160px;left:50%;transform:translateX(-50%);
+      width:520px;height:520px;
+      background:radial-gradient(circle,rgba(232,98,42,0.13) 0%,transparent 65%);
+      pointer-events:none;
     }
 
-    body {
-      background: var(--dark);
-      color: white;
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: max(32px, env(safe-area-inset-top)) 24px max(32px, env(safe-area-inset-bottom));
-      position: relative;
-      overflow: hidden;
-    }
+    .wrap{width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;position:relative;z-index:1;}
 
-    /* Background radial glow */
-    body::before {
-      content: '';
-      position: fixed;
-      top: -30%;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(232,98,42,0.12) 0%, transparent 65%);
-      pointer-events: none;
+    /* logo badge */
+    .badge{
+      width:68px;height:68px;border-radius:20px;background:#E8622A;
+      display:flex;align-items:center;justify-content:center;
+      margin-bottom:22px;
+      box-shadow:0 0 0 1px rgba(232,98,42,0.25),0 8px 28px rgba(232,98,42,0.28);
     }
+    .badge img{width:46px;height:46px;object-fit:contain;filter:brightness(0) invert(1);}
 
-    .wrap {
-      width: 100%;
-      max-width: 380px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0;
-      position: relative;
-      z-index: 1;
-    }
+    .edition{font-size:10px;font-weight:700;letter-spacing:3px;color:#E8622A;text-transform:uppercase;margin-bottom:14px;}
 
-    /* Logo */
-    .logo-ring {
-      width: 72px;
-      height: 72px;
-      border-radius: 20px;
-      background: var(--brand);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 20px;
-      box-shadow: 0 0 0 1px rgba(232,98,42,0.3), 0 8px 32px rgba(232,98,42,0.3);
-    }
-    .logo-ring img {
-      width: 52px;
-      height: 52px;
-      object-fit: contain;
-      filter: brightness(0) invert(1);
-    }
+    h1{font-size:clamp(22px,6.5vw,30px);font-weight:900;text-align:center;line-height:1.18;margin-bottom:10px;letter-spacing:-0.3px;}
+    h1 em{color:#E8622A;font-style:normal;display:block;}
 
-    .edition {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 3px;
-      color: var(--brand);
-      text-transform: uppercase;
-      margin-bottom: 16px;
-    }
+    .sub{font-size:13px;color:rgba(255,255,255,0.38);text-align:center;line-height:1.75;margin-bottom:30px;max-width:260px;}
 
-    h1 {
-      font-size: clamp(24px, 7vw, 32px);
-      font-weight: 900;
-      letter-spacing: -0.5px;
-      text-align: center;
-      line-height: 1.18;
-      margin-bottom: 12px;
-    }
-    h1 em {
-      color: var(--brand);
-      font-style: normal;
-      display: block;
-    }
+    /* stats */
+    .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:30px;width:100%;}
+    .stat{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px 12px;text-align:center;}
+    .stat .v{font-size:19px;font-weight:800;color:#fff;line-height:1;}
+    .stat .v.live{color:#E8622A;}
+    .stat .l{font-size:10px;color:rgba(255,255,255,0.28);text-transform:uppercase;letter-spacing:0.5px;margin-top:5px;}
 
-    .sub {
-      font-size: 13px;
-      color: rgba(255,255,255,0.4);
-      text-align: center;
-      line-height: 1.75;
-      margin-bottom: 32px;
-      max-width: 270px;
+    /* auth box */
+    .auth{width:100%;}
+    .btn-strava{
+      display:flex;align-items:center;justify-content:center;gap:12px;
+      width:100%;padding:16px;
+      background:#E8622A;color:#fff;
+      border:none;border-radius:14px;
+      font-size:15px;font-weight:700;font-family:'Poppins',sans-serif;
+      text-decoration:none;cursor:pointer;
+      box-shadow:0 4px 20px rgba(232,98,42,0.32);
+      transition:transform 0.12s,box-shadow 0.12s;
     }
+    .btn-strava:active{transform:scale(0.97);}
+    .btn-strava svg{width:22px;height:22px;fill:#fff;flex-shrink:0;}
 
-    /* Stats grid */
-    .stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 32px;
-      width: 100%;
-    }
-    .stat {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.09);
-      border-radius: 12px;
-      padding: 14px 12px;
-      text-align: center;
-    }
-    .stat .v {
-      font-size: 20px;
-      font-weight: 800;
-      color: white;
-      line-height: 1;
-    }
-    .stat .v.live { color: var(--brand); }
-    .stat .l {
-      font-size: 10px;
-      color: rgba(255,255,255,0.3);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-top: 5px;
-    }
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .proc{display:none;align-items:center;justify-content:center;gap:10px;padding:16px;font-size:13px;color:rgba(255,255,255,0.4);font-family:'Poppins',sans-serif;}
+    .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.12);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0;}
 
-    /* Auth box */
-    .auth-box { width: 100%; }
+    .err{display:none;margin-top:12px;padding:13px 15px;border-radius:12px;font-size:12px;line-height:1.6;background:rgba(220,38,38,0.1);color:#fca5a5;border:1px solid rgba(220,38,38,0.18);}
 
-    .btn-strava {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      width: 100%;
-      padding: 17px;
-      background: var(--brand);
-      color: white;
-      border: none;
-      border-radius: 14px;
-      font-size: 15px;
-      font-weight: 700;
-      font-family: var(--font);
-      text-decoration: none;
-      cursor: pointer;
-      box-shadow: 0 4px 24px var(--brand-glow);
-      transition: transform 0.12s, box-shadow 0.12s;
-      letter-spacing: 0.01em;
-    }
-    .btn-strava:active { transform: scale(0.97); box-shadow: 0 2px 12px var(--brand-glow); }
-    .btn-strava svg { width: 22px; height: 22px; fill: white; flex-shrink: 0; }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .proc {
-      display: none;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 17px;
-      font-size: 14px;
-      color: rgba(255,255,255,0.45);
-      font-family: var(--font);
-    }
-    .spinner {
-      width: 20px; height: 20px;
-      border: 2px solid rgba(255,255,255,0.15);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      flex-shrink: 0;
-    }
-
-    .err {
-      display: none;
-      margin-top: 14px;
-      padding: 14px 16px;
-      border-radius: 12px;
-      font-size: 13px;
-      line-height: 1.6;
-      background: rgba(220,38,38,0.1);
-      color: #fca5a5;
-      border: 1px solid rgba(220,38,38,0.2);
-    }
-
-    .note {
-      margin-top: 20px;
-      font-size: 11px;
-      color: rgba(255,255,255,0.18);
-      text-align: center;
-      line-height: 2;
-    }
-    .note a {
-      color: rgba(232,98,42,0.7);
-      text-decoration: none;
-    }
-    .note a:hover { color: var(--brand); }
-
-    /* Separator dots */
-    .note span { color: rgba(255,255,255,0.1); margin: 0 4px; }
+    .note{margin-top:18px;font-size:11px;color:rgba(255,255,255,0.16);text-align:center;line-height:2;}
+    .note a{color:rgba(232,98,42,0.65);text-decoration:none;}
+    .note a:hover{color:#E8622A;}
+    .note span{color:rgba(255,255,255,0.1);margin:0 4px;}
   </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="logo-ring">
-    <img src="favicon.png" alt="AW">
-  </div>
-
+  <div class="badge"><img src="favicon.png" alt="AW"></div>
   <div class="edition">2026 Edition</div>
-
   <h1>Healthy Arcgatians.<br><em>Stronger Arcgate.</em></h1>
   <p class="sub">A whole month to move, connect and grow — one kilometre at a time.</p>
-
   <div class="stats">
-    <div class="stat"><div class="v">500+</div><div class="l">Employees Joined</div></div>
+    <div class="stat"><div class="v">500+</div><div class="l">Employees</div></div>
     <div class="stat"><div class="v">June</div><div class="l">Period</div></div>
     <div class="stat"><div class="v">9</div><div class="l">Teams</div></div>
     <div class="stat"><div class="v live">Live</div><div class="l">Leaderboard</div></div>
   </div>
-
-  <div class="auth-box">
+  <div class="auth">
     <a id="btn" href="#" class="btn-strava">
       <svg viewBox="0 0 24 24"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
       Sign in with Strava
@@ -252,69 +107,30 @@
     </p>
   </div>
 </div>
-
 <script>
-var CLIENT_ID = '29159';
-var BACKEND   = 'https://walkathon-backend-hv9j.onrender.com';
-var EVENT     = 'walkathon2026';
-
-var REDIRECT  = window.location.origin + window.location.pathname;
-var AUTH_URL  = 'https://www.strava.com/oauth/authorize'
-  + '?client_id='    + CLIENT_ID
-  + '&redirect_uri=' + encodeURIComponent(REDIRECT)
-  + '&response_type=code'
-  + '&scope=read,activity:read'
-  + '&state='        + EVENT;
-document.getElementById('btn').href = AUTH_URL;
-
-function showErr(msg) {
-  document.getElementById('proc').style.display = 'none';
-  document.getElementById('btn').style.display  = 'flex';
-  var el = document.getElementById('err');
-  el.innerHTML = msg;
-  el.style.display = 'block';
-}
-function showProc(text) {
-  document.getElementById('btn').style.display  = 'none';
-  document.getElementById('proc').style.display = 'flex';
-  document.getElementById('proc-text').textContent = text;
-}
-
-var code = new URLSearchParams(window.location.search).get('code');
-if (code) {
-  window.history.replaceState({}, '', window.location.pathname);
+var CLIENT_ID='29159';
+var BACKEND='https://walkathon-backend-hv9j.onrender.com';
+var EVENT='walkathon2026';
+var REDIRECT=window.location.origin+window.location.pathname;
+var AUTH_URL='https://www.strava.com/oauth/authorize'+'?client_id='+CLIENT_ID+'&redirect_uri='+encodeURIComponent(REDIRECT)+'&response_type=code'+'&scope=read,activity:read'+'&state='+EVENT;
+document.getElementById('btn').href=AUTH_URL;
+function showErr(msg){document.getElementById('proc').style.display='none';document.getElementById('btn').style.display='flex';var el=document.getElementById('err');el.innerHTML=msg;el.style.display='block';}
+function showProc(text){document.getElementById('btn').style.display='none';document.getElementById('proc').style.display='flex';document.getElementById('proc-text').textContent=text;}
+var code=new URLSearchParams(window.location.search).get('code');
+if(code){
+  window.history.replaceState({},'',window.location.pathname);
   showProc('Connecting your account...');
-  fetch(BACKEND + '/register', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ code: code, event_code: EVENT })
+  fetch(BACKEND+'/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code,event_code:EVENT})})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(d.success){
+      sessionStorage.setItem('wk_user',JSON.stringify({loggedIn:true,role:d.role||'user',athleteId:d.athlete_id,name:d.name,stravaCode:code,profilePhoto:d.profile_photo||'',expires:Date.now()+(8*60*60*1000)}));
+      if(d.role==='admin'){sessionStorage.setItem('wk_admin',JSON.stringify({loggedIn:true,role:'admin',expires:Date.now()+(8*60*60*1000)}));window.location.replace('admin.html');}
+      else{showProc('Loading your dashboard...');window.location.replace('portal.html');}
+    } else if(d.error==='not_registered'){showErr('⛔ <strong>Not registered.</strong><br>Your account is not in the participant list. Contact your event admin.');}
+    else{showErr('❌ <strong>Login failed.</strong><br>Please try again.');}
   })
-  .then(function(r){ return r.json(); })
-  .then(function(d) {
-    if (d.success) {
-      sessionStorage.setItem('wk_user', JSON.stringify({
-        loggedIn: true,
-        role: d.role || 'user',
-        athleteId: d.athlete_id,
-        name: d.name,
-        stravaCode: code,
-        profilePhoto: d.profile_photo || '',
-        expires: Date.now() + (8 * 60 * 60 * 1000)
-      }));
-      if (d.role === 'admin') {
-        sessionStorage.setItem('wk_admin', JSON.stringify({loggedIn:true,role:'admin',expires:Date.now()+(8*60*60*1000)}));
-        window.location.replace('admin.html');
-      } else {
-        showProc('Loading your dashboard...');
-        window.location.replace('portal.html');
-      }
-    } else if (d.error === 'not_registered') {
-      showErr('⛔ <strong>Not registered.</strong><br>Your account is not in the participant list. Contact your event admin.');
-    } else {
-      showErr('❌ <strong>Login failed.</strong><br>Please try again.');
-    }
-  })
-  .catch(function(){ showErr('❌ Connection error. Please try again.'); });
+  .catch(function(){showErr('❌ Connection error. Please try again.');});
 }
 </script>
 </body>
