@@ -163,7 +163,7 @@ async function doLogin(){
   if(!code){inp.classList.add('err-field');inp.focus();return;}
   showProc('Verifying employee code...');
   try{
-    var url=SUPABASE_URL+'/rest/v1/registration?emp_code=eq.'+encodeURIComponent(code)+'&select=strava_athlete_id,full_name,gender,shift,leaderboard_team,status';
+    var url=SUPABASE_URL+'/rest/v1/registration_requests?emp_code=eq.'+encodeURIComponent(code)+'&select=strava_athlete_id,full_name,gender,shift,leaderboard_team,status';
     var res=await fetch(url,{headers:HDR});
     var rows=await res.json();
     if(!Array.isArray(rows)||rows.length===0){
