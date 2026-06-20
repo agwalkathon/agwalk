@@ -711,8 +711,8 @@ async function load() {
       var needEl=document.getElementById('ring-need-'+m.id);
       if(fillEl) fillEl.style.strokeDashoffset=done?0:offset;
       if(pctEl){
-        if(done){pctEl.textContent='✓';pctEl.style.fontSize='26px';}
-        else{pctEl.textContent=pct+'%';}
+        if(done){pctEl.textContent='100%';pctEl.style.fontSize='20px';}
+        else{pctEl.textContent=pct+'%';pctEl.style.fontSize='';}
       }
       if(needEl){
         if(done){needEl.textContent='100%';needEl.style.color='var(--text)';}
