@@ -212,7 +212,14 @@ body{font-family:var(--font);background:var(--page-bg);color:var(--text-primary)
           </button>
         </div>
         <div class="card-body">
-          <div class="two-col">
+          <!-- Collapsible format reference -->
+          <div style="margin-bottom:4px">
+            <div onclick="toggleFormatRef()" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:9px 12px;background:#f8f8f8;border:1px solid var(--border);border-radius:8px;user-select:none">
+              <span style="font-size:13px;font-weight:600;color:var(--text-primary)">📋 Template Columns &amp; ⚙️ Auto-conversion Reference</span>
+              <span id="fmt-ref-chevron" style="font-size:12px;color:#888;transition:transform .2s">▼ Show</span>
+            </div>
+            <div id="fmt-ref-body" style="display:none;margin-top:4px;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+          <div class="two-col" style="padding:16px">
             <!-- Template columns -->
             <div>
               <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text-primary)">📋 Template Columns (raw format)</div>
@@ -253,6 +260,8 @@ body{font-family:var(--font);background:var(--page-bg);color:var(--text-primary)
               </div>
             </div>
           </div>
+            </div><!-- /fmt-ref-body -->
+          </div><!-- /collapsible wrapper -->
         </div>
       </div>
 
@@ -437,6 +446,14 @@ var SUPABASE_URL = 'https://jhdgkncpkrttvemvwukc.supabase.co';
 var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoZGdrbmNwa3J0dHZlbXZ3dWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NzgyNjMsImV4cCI6MjA5NzI1NDI2M30.d7mvXOYDq5G4aqs1Mbc6HFNgTBlQk4B6ah0eahE_yZE';
 var HDR = { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + SUPABASE_ANON };
 var BACKEND_URL = 'https://walkathon-backend-hv9j.onrender.com';
+
+function toggleFormatRef() {
+  var body = document.getElementById('fmt-ref-body');
+  var chev = document.getElementById('fmt-ref-chevron');
+  var open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  chev.textContent = open ? '▼ Show' : '▲ Hide';
+}
 
 function authGuard() {
   var s = JSON.parse(sessionStorage.getItem('wk_admin') || '{}');
