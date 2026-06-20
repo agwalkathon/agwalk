@@ -599,9 +599,10 @@ function switchTab(name) {
 // ── SMTP Config ────────────────────────────────────────
 async function loadSmtp() {
   try {
-    var rows = await dbGet('smtp_config', '?select=*&limit=1');
-    if (rows && rows[0]) {
-      var s = rows[0].config || rows[0];
+    var r = await fetch('https://walkathon-backend-hv9j.onrender.com/get-smtp');
+    var d = await r.json();
+    if (d.success && d.data && d.data.config) {
+      var s = d.data.config;
       var fields = ['resend_key','from_name','from_email','reply'];
       fields.forEach(function(k) {
         var el = document.getElementById('smtp-' + k);
@@ -620,16 +621,16 @@ async function saveSmtp() {
   var cfg = {};
   fields.forEach(function(k) {
     var el = document.getElementById('smtp-' + k);
-    if (el) cfg[k] = el.value;
+    if (el) cfg[k] = el.value.trim();
   });
-  var data = { config: cfg };
   try {
-    var existing = await dbGet('smtp_config', '?select=id&limit=1');
-    if (existing && existing.length > 0) {
-      await dbUpdate('smtp_config', '?id=eq.' + existing[0].id, data);
-    } else {
-      await dbInsert('smtp_config', data);
-    }
+    var r = await fetch('https://walkathon-backend-hv9j.onrender.com/save-smtp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ config: cfg })
+    });
+    var d = await r.json();
+    if (!d.success) throw new Error(d.error || 'Save failed');
     setStatus('smtp-status', 'ok', '✅ Settings saved!');
   } catch(e) {
     setStatus('smtp-status', 'err', '❌ Save failed: ' + e.message);
