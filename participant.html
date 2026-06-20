@@ -335,30 +335,32 @@
 <body>
 
 <header class="header">
-  <div class="header-logo">
-    <div class="header-logo-icon"><img src="logo-icon.png" alt="AW"></div>
-    <img src="logo-text-white.png" alt="Arcgate Walkathon" class="header-logo-img">
-  </div>
-  <div class="hdr-right">
+  <div class="hdr-left">
     <button class="icon-btn" id="refresh-btn" onclick="refreshData()" title="Refresh">
-      <svg id="refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <svg id="refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
         <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
       </svg>
     </button>
-    <button class="sign-out-btn" onclick="logout()">Sign out</button>
+  </div>
+  <div class="hdr-center">
+    <div class="hdr-wordmark">WALKATHON</div>
+    <div class="hdr-name" id="p-name">—</div>
+  </div>
+  <div class="hdr-right">
+    <button class="icon-btn" onclick="logout()" title="Sign out">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+    </button>
   </div>
 </header>
 
-<!-- Block 1: Profile -->
+<!-- Block 1: Profile tags -->
 <div class="hero-profile">
-  <div class="hero-top">
-    <div class="avatar" id="p-initials">?</div>
-    <div class="hero-info">
-      <div class="hero-name" id="p-name">Loading...</div>
-      <div class="hero-tags" id="p-tags"></div>
-    </div>
-  </div>
+  <div class="hero-tags" id="p-tags"></div>
 </div>
 
 <!-- Block 2: Medal Rings -->
@@ -661,9 +663,7 @@ async function load() {
     var name=reg.full_name||s.name||'Participant';
 
     // Profile
-    document.getElementById('p-name').textContent=name;
-    var initials=name.split(' ').map(function(w){return w[0]||'';}).slice(0,2).join('').toUpperCase();
-    document.getElementById('p-initials').textContent=initials;
+    document.getElementById('p-name').textContent=name.toUpperCase();
     var tags=[];
     if(reg.gender)tags.push(reg.gender==='Female'?'👩 Female':'👨 Male');
     if(reg.shift)tags.push('⏰ '+reg.shift);
