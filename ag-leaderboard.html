@@ -660,23 +660,29 @@ function calcPoints(acts, athleteId, gender) {
       outRangeKm += actKm;
     });
 
-    // Apply daily cap to out-of-range sum (skip if challenge overrides cap)
+    // Apply 21 km daily cap to combined total (in-range + out-of-range)
     var DAILY_CAP = 21;
     var isSpecialDay = SPECIAL_DAYS.indexOf(day) !== -1;
-    var ignoreCap = rsChallenge && rsChallenge.ignore_daily_cap;
-    outRangeKm = parseFloat(outRangeKm.toFixed(4));
-    if (!ignoreCap && !isSpecialDay && outRangeKm > DAILY_CAP) outRangeKm = DAILY_CAP;
-    outRangeKm = parseFloat(outRangeKm.toFixed(4));
     inRangeKm  = parseFloat(inRangeKm.toFixed(4));
+    outRangeKm = parseFloat(outRangeKm.toFixed(4));
+    var combinedKm = inRangeKm + outRangeKm;
+    if (!isSpecialDay && combinedKm > DAILY_CAP) {
+      // Trim from out-of-range first; if still over, trim in-range
+      var excess = combinedKm - DAILY_CAP;
+      var outTrim = Math.min(excess, outRangeKm);
+      outRangeKm = parseFloat((outRangeKm - outTrim).toFixed(4));
+      excess -= outTrim;
+      if (excess > 0) inRangeKm = parseFloat((inRangeKm - excess).toFixed(4));
+    }
+    inRangeKm  = parseFloat(inRangeKm.toFixed(4));
+    outRangeKm = parseFloat(outRangeKm.toFixed(4));
 
     var base = parseFloat(CONFIG.basePer_km) || 1;
-    // In-range: base pts counted separately (no cap, no bracket)
     totalDistKm  += inRangeKm + outRangeKm;
     totalDistPts += parseFloat(((inRangeKm + outRangeKm) * base).toFixed(2));
     totalBonus   += outRangeKm; // placeholder — exclude_normal_bonus pass below uses outRangeKm
-    byDay[day]._dayKm      = outRangeKm; // used for bonus bracket (out-of-range only)
-    byDay[day]._inRangeKm  = inRangeKm;  // cached for expand row
-    byDay[day]._ignoreCap  = ignoreCap;  // cached for expand row label
+    byDay[day]._dayKm     = outRangeKm; // used for bonus bracket (out-of-range only)
+    byDay[day]._inRangeKm = inRangeKm;  // cached for expand row
   });
 
   // Recalculate bonus correctly — first pass to find which days exclude normal bonus
@@ -980,11 +986,18 @@ function toggleExpand(athleteId, gender, trEl) {
 
     var DAILY_CAP = 21;
     var isSpecialDay = SPECIAL_DAYS.indexOf(day) !== -1;
-    var ignoreCap = rsChallenge && rsChallenge.ignore_daily_cap;
+    inRangeKmExp  = parseFloat(inRangeKmExp.toFixed(4));
     outRangeKmExp = parseFloat(outRangeKmExp.toFixed(4));
-    var capped = !ignoreCap && !isSpecialDay && outRangeKmExp > DAILY_CAP;
-    var dayKm = capped ? DAILY_CAP : outRangeKmExp;
-    dayKm = parseFloat(dayKm.toFixed(2));
+    var combinedKmExp = inRangeKmExp + outRangeKmExp;
+    var capped = !isSpecialDay && combinedKmExp > DAILY_CAP;
+    if (capped) {
+      var excessExp = combinedKmExp - DAILY_CAP;
+      var outTrimExp = Math.min(excessExp, outRangeKmExp);
+      outRangeKmExp = parseFloat((outRangeKmExp - outTrimExp).toFixed(4));
+      excessExp -= outTrimExp;
+      if (excessExp > 0) inRangeKmExp = parseFloat((inRangeKmExp - excessExp).toFixed(4));
+    }
+    var dayKm = outRangeKmExp;
     inRangeKmExp = parseFloat(inRangeKmExp.toFixed(4));
 
     var base = parseFloat(CONFIG.basePer_km)||1;
@@ -1028,7 +1041,6 @@ function toggleExpand(athleteId, gender, trEl) {
     var distLabel = totalDisplayKm.toFixed(2)+' km'
       +(inRangeKmExp>0?' <span style="font-size:10px;color:#1565c0;background:#e3f2fd;padding:1px 5px;border-radius:4px;vertical-align:middle">'+inRangeKmExp.toFixed(2)+' in-range</span>':'')
       +(capped?' <span style="font-size:10px;color:#e65100;background:#fff3e0;padding:1px 5px;border-radius:4px;vertical-align:middle">capped</span>':'')
-      +(ignoreCap&&!isSpecialDay?' <span style="font-size:10px;color:#6a1b9a;background:#f3e5f5;padding:1px 5px;border-radius:4px;vertical-align:middle">no cap</span>':'')
       +(isSpecialDay?' <span style="font-size:10px;color:#2e7d32;background:#e8f5e9;padding:1px 5px;border-radius:4px;vertical-align:middle">★ special</span>':'');
     return '<tr style="background:#fafafa">'
       +'<td style="padding:9px 14px;font-size:12px;color:#666;font-weight:500;white-space:nowrap">'+day+'</td>'
@@ -1107,3 +1119,4 @@ loadAll();
 </script>
 </body>
 </html>
+
