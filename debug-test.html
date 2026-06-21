@@ -13,6 +13,7 @@ button{background:#E8622A;color:#fff;border:none;padding:12px 24px;border-radius
 <body>
 <h2>Debug Test Page</h2>
 <p id="status">Reading session...</p>
+<p id="expiry"></p>
 <pre id="out"></pre>
 <button onclick="testFetch()">Test Supabase Fetch</button>
 <pre id="fetch-out">Fetch result will appear here</pre>
@@ -22,6 +23,16 @@ button{background:#E8622A;color:#fff;border:none;padding:12px 24px;border-radius
 var raw = localStorage.getItem('wk_user') || 'NOT FOUND';
 document.getElementById('status').textContent = 'Session: ' + (raw === 'NOT FOUND' ? 'MISSING' : 'FOUND');
 document.getElementById('out').textContent = raw;
+if (raw !== 'NOT FOUND') {
+  var s = JSON.parse(raw);
+  var now = Date.now();
+  var exp = s.expires || 0;
+  document.getElementById('expiry').textContent = 
+    'loggedIn=' + s.loggedIn + 
+    ' | athleteId=' + s.athleteId +
+    ' | expires in: ' + Math.round((exp - now)/1000/60) + ' min' +
+    ' | GUARD: ' + (!s.loggedIn || exp < now || !s.athleteId ? 'FAIL→redirect' : 'PASS');
+}
 
 // Step 2: Test Supabase fetch
 async function testFetch() {
