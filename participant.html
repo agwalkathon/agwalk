@@ -620,15 +620,6 @@
 </nav>
 
 <script>
-// Global debug step - writes to name field immediately
-var _dbgStep = 0;
-function _dbg(msg) {
-  _dbgStep++;
-  var el = document.getElementById('p-name');
-  if (el) el.textContent = '[' + _dbgStep + '] ' + msg;
-  console.log('[DBG]', _dbgStep, msg);
-}
-_dbg('script-loaded');
 var SUPABASE_URL = 'https://jhdgkncpkrttvemvwukc.supabase.co';
 var CONFIG_LB    = { basePer_km: 1, bonus: [{km:5,points:1},{km:8,points:2},{km:10,points:3},{km:15,points:4},{km:21,points:7}] };
 var CHALLENGES_LB   = [];
@@ -762,16 +753,10 @@ async function fetchAll(url) {
 var currentSession=null;
 
 async function load() {
-  _dbg('load-called');
-  var s=userGuard(); if(!s){_dbg('guard-FAIL-redirecting');return;} currentSession=s; var athleteId=s.athleteId;
-  _dbg('guard-ok-aid='+String(athleteId).slice(0,8));
-  // Step logger - writes to name div so visible on mobile
-  _dbg('load-fn-entered');
-  _dbg('start aid='+String(athleteId).slice(0,8));
+  var s=userGuard(); if(!s) return; currentSession=s; var athleteId=s.athleteId;
   initPushAfterLogin();
   try {
-    _dbg('p1-start');
-    // Phase 1: own data only — renders immediately
+      // Phase 1: own data only — renders immediately
     var [regRes,myActs,cfgRes,chRes,sdRes,medalRes]=await Promise.all([
       fetch(SUPABASE_URL+'/rest/v1/registration?strava_athlete_id=eq.'+athleteId+'&select=*',{headers:HDR}),
       fetchAll(SUPABASE_URL+'/rest/v1/activities?strava_athlete_id=eq.'+athleteId+'&is_deleted=is.false&order=activity_date.desc'),
@@ -780,15 +765,12 @@ async function load() {
       fetch(SUPABASE_URL+'/rest/v1/special_scoring_days?select=special_date',{headers:HDR}),
       fetch(SUPABASE_URL+'/rest/v1/leaderboard_config?config_key=eq.medals&select=config_value',{headers:HDR})
     ]);
-    _dbg('p1-resolved');
-    var allActs=[],allRegRes=[];  // populated by Phase 2
-    _dbg('parsing-json');
-    var cfgRows=await cfgRes.json();
+      var allActs=[],allRegRes=[];  // populated by Phase 2
+      var cfgRows=await cfgRes.json();
     if(Array.isArray(cfgRows))cfgRows.forEach(function(row){if(row.config_key==='bonus_points')CONFIG_LB.bonus=row.config_value.map(function(b){return{km:Number(b.km),points:Number(b.points||b.pts||0)};});if(row.config_key==='base_points_per_km')CONFIG_LB.basePer_km=parseFloat(row.config_value)||1;});
     var chRows=await chRes.json(); CHALLENGES_LB=Array.isArray(chRows)?chRows:[];
     var sdRows=await sdRes.json(); SPECIAL_DAYS_LB=Array.isArray(sdRows)?sdRows.map(function(x){return x.special_date;}):[];
-    _dbg('got-regs');
-    var regs=await regRes.json(); var reg=Array.isArray(regs)&&regs.length?regs[0]:{};
+      var regs=await regRes.json(); var reg=Array.isArray(regs)&&regs.length?regs[0]:{};
     var name=reg.full_name||s.name||'Participant';
 
     // Profile
@@ -1065,8 +1047,8 @@ async function load() {
   } catch(e) {
     console.error('Load error:',e.message||e);
     var msg=e.message||String(e)||'Unknown error';
-    _dbg('ERR='+msg.slice(0,30));
-    document.getElementById('act-list').innerHTML='<div class="empty-state"><p>⚠️ '+msg+'</p></div>';
+    document.getElementById('act-list').innerHTML='<div class="empty-state"><p style="color:var(--muted)">Could not load data. Please refresh.<br><small>'+msg+'</small></p></div>';
+    document.getElementById('p-name').textContent='Error loading';
   }
 }
 
@@ -1180,7 +1162,6 @@ function refreshData(){
 }
 
 (function(){var hash=window.location.hash.replace('#','');if(hash==='activities'||hash==='dashboard')showTab(hash);})();
-_dbg('calling-load');
 load();
 
 // Push notification subscription
