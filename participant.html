@@ -757,6 +757,7 @@ async function load() {
   initPushAfterLogin();
   try {
       // Phase 1: own data only — renders immediately
+    document.getElementById('p-name').textContent='Loading...';
     var [regRes,myActs,cfgRes,chRes,sdRes,medalRes]=await Promise.all([
       fetch(SUPABASE_URL+'/rest/v1/registration?strava_athlete_id=eq.'+athleteId+'&select=*',{headers:HDR}),
       fetchAll(SUPABASE_URL+'/rest/v1/activities?strava_athlete_id=eq.'+athleteId+'&is_deleted=is.false&order=activity_date.desc'),
@@ -771,7 +772,7 @@ async function load() {
     var chRows=await chRes.json(); CHALLENGES_LB=Array.isArray(chRows)?chRows:[];
     var sdRows=await sdRes.json(); SPECIAL_DAYS_LB=Array.isArray(sdRows)?sdRows.map(function(x){return x.special_date;}):[];
       var regs=await regRes.json(); var reg=Array.isArray(regs)&&regs.length?regs[0]:{};
-    var name=reg.full_name||s.name||'Participant';
+    var name=String(reg.full_name||s.name||'Participant');
 
     // Profile
     document.getElementById('p-name').textContent=name.toUpperCase();
