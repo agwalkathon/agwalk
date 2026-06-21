@@ -1,9 +1,24 @@
 // Shared auth guard and nav helper
+const _BACKEND_URL = 'https://walkathon-backend-hv9j.onrender.com';
+
 function authGuard() {
-  const s = JSON.parse(sessionStorage.getItem('wk_admin') || '{}');
-  if (!s.loggedIn || s.expires < Date.now()) window.location.href = 'admin-login.html';
+  const token = sessionStorage.getItem('wk_admin_token');
+  if (!token) { window.location.href = 'admin-login.html'; return; }
+  // Verify token with backend (async — redirect if invalid)
+  fetch(_BACKEND_URL + '/admin-verify', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token }
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    if (!d.success) {
+      sessionStorage.removeItem('wk_admin_token');
+      window.location.href = 'admin-login.html';
+    }
+  }).catch(function() {
+    // Network error — keep session, don't kick out
+  });
 }
 function logout() {
+  sessionStorage.removeItem('wk_admin_token');
   sessionStorage.removeItem('wk_admin');
   window.location.href = 'admin-login.html';
 }
