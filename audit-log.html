@@ -285,9 +285,11 @@ function renderRows(rows) {
   }
   var html = '';
   rows.forEach(function(r) {
-    var cls   = 'action-' + (r.action in ACTION_LABELS ? r.action : 'default');
-    var icon  = ACTION_ICONS[r.action] || 'ti-activity';
-    var label = ACTION_LABELS[r.action] || r.action;
+    if (!r || typeof r !== 'object') return;
+    var action = r.action || '';
+    var cls   = 'action-' + (ACTION_LABELS[action] ? action : 'default');
+    var icon  = ACTION_ICONS[action] || 'ti-activity';
+    var label = ACTION_LABELS[action] || action;
     var details = r.details ? JSON.stringify(r.details) : '—';
     var ip = r.ip ? r.ip.split(',')[0].trim() : '—';
     var dt = r.created_at ? new Date(r.created_at) : null;
