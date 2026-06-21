@@ -2,24 +2,19 @@
 const _BACKEND_URL = 'https://walkathon-backend-hv9j.onrender.com';
 
 function authGuard() {
-  const token = sessionStorage.getItem('wk_admin_token');
+  var token = sessionStorage.getItem('wk_admin_token');
   if (!token) { window.location.href = 'admin-login.html'; return; }
-  // Verify token with backend — only redirect on definitive 401, never on network errors
-  fetch(_BACKEND_URL + '/admin-verify', {
-    method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + token }
-  }).then(function(r) {
-    // Only act on a clear 401 — ignore 502/503/timeouts (Render cold start)
-    if (r.status === 401) {
-      return r.json().then(function(d) {
-        sessionStorage.removeItem('wk_admin_token');
-        window.location.href = 'admin-login.html';
-      });
+  // Check JWT expiry client-side — no backend call needed on every page load
+  try {
+    var payload = JSON.parse(atob(token.split('.')[1]));
+    if (payload.exp && payload.exp * 1000 < Date.now()) {
+      sessionStorage.removeItem('wk_admin_token');
+      window.location.href = 'admin-login.html';
     }
-    // Any other response (200, 502, 503) — stay on page
-  }).catch(function() {
-    // Network error or Render sleeping — keep session, don't kick out
-  });
+  } catch(e) {
+    sessionStorage.removeItem('wk_admin_token');
+    window.location.href = 'admin-login.html';
+  }
 }
 function logout() {
   sessionStorage.removeItem('wk_admin_token');
