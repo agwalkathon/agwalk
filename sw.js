@@ -1,4 +1,4 @@
-const CACHE_NAME = "agwalk-v1";
+const CACHE_NAME = "agwalk-v2";
 const SHELL_URLS = [
   "/agwalk/",
   "/agwalk/portal.html",
