@@ -218,23 +218,14 @@
 
 <script src="_nav.js"></script>
 <script>
-// v2
+/* audit-log v3 */
 authGuard();
 
+var BACKEND = 'https://walkathon-backend-hv9j.onrender.com';
 var allRows = [];
 
-var ACTION_ICONS = {
-  admin_login:           'ti-login',
-  bulk_import:           'ti-upload',
-  participant_approved:  'ti-user-check',
-  participant_rejected:  'ti-user-x'
-};
-var ACTION_LABELS = {
-  admin_login:           'Admin Login',
-  bulk_import:           'Bulk Import',
-  participant_approved:  'Participant Approved',
-  participant_rejected:  'Participant Rejected'
-};
+var ICONS = { admin_login:'ti-login', bulk_import:'ti-upload', participant_approved:'ti-user-check', participant_rejected:'ti-user-x' };
+var LABELS = { admin_login:'Admin Login', bulk_import:'Bulk Import', participant_approved:'Participant Approved', participant_rejected:'Participant Rejected' };
 
 async function loadLog() {
   var tbody = document.getElementById('log-body');
@@ -242,14 +233,10 @@ async function loadLog() {
   var token = sessionStorage.getItem('wk_admin_token');
   if (!token) { window.location.href = 'admin-login.html'; return; }
   try {
-    var res = await fetch(
-      'https://walkathon-backend-hv9j.onrender.com/audit-log',
-      { headers: { 'Authorization': 'Bearer ' + token } }
-    );
+    var res = await fetch(BACKEND + '/audit-log', { headers: { 'Authorization': 'Bearer ' + token } });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    var data = await res.json();
-    // Backend returns {success, rows:[]} — handle both array and object
-    allRows = Array.isArray(data) ? data : (data.rows || []);
+    var body = await res.json();
+    allRows = Array.isArray(body) ? body : (Array.isArray(body.rows) ? body.rows : []);
     applyFilter();
   } catch(e) {
     tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state"><i class="ti ti-alert-circle"></i>Failed to load: ' + e.message + '</div></td></tr>';
@@ -259,14 +246,14 @@ async function loadLog() {
 function applyFilter() {
   var action = document.getElementById('action-filter').value;
   var date   = document.getElementById('date-filter').value;
-  var rows = allRows.filter(function(r) {
+  var filtered = allRows.filter(function(r) {
     if (!r || typeof r !== 'object') return false;
-    var matchAction = !action || r.action === action;
-    var matchDate   = !date   || (r.created_at && r.created_at.startsWith(date));
-    return matchAction && matchDate;
+    if (action && r.action !== action) return false;
+    if (date && r.created_at && !r.created_at.startsWith(date)) return false;
+    return true;
   });
-  document.getElementById('count-label').textContent = rows.length + ' event' + (rows.length !== 1 ? 's' : '');
-  renderRows(rows);
+  document.getElementById('count-label').textContent = filtered.length + ' event' + (filtered.length !== 1 ? 's' : '');
+  renderRows(filtered);
 }
 
 function clearFilters() {
@@ -277,34 +264,31 @@ function clearFilters() {
 
 function renderRows(rows) {
   var tbody = document.getElementById('log-body');
-  if (!rows.length) {
+  if (!rows || !rows.length) {
     tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state"><i class="ti ti-shield"></i>No events found</div></td></tr>';
     return;
   }
   var html = '';
-  rows.forEach(function(r) {
-    try {
-      if (!r || typeof r !== 'object') return;
-      var action  = String(r.action || '');
-      var cls     = 'action-' + (ACTION_LABELS.hasOwnProperty(action) ? action : 'default');
-      var icon    = ACTION_ICONS.hasOwnProperty(action) ? ACTION_ICONS[action] : 'ti-activity';
-      var label   = ACTION_LABELS.hasOwnProperty(action) ? ACTION_LABELS[action] : action;
-      var detObj  = r.details;
-      var details = detObj ? (typeof detObj === 'string' ? detObj : JSON.stringify(detObj)) : '—';
-      var ip      = r.ip ? String(r.ip).split(',')[0].trim() : '—';
-      var dt      = r.created_at ? new Date(r.created_at) : null;
-      var timeStr = dt ? dt.toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', hour12:true }) : '—';
-      html +=
-        '<tr>' +
-        '<td><span class="action-badge ' + cls + '"><i class="ti ' + icon + '"></i>' + label + '</span></td>' +
-        '<td class="details-cell"><div class="details-text" title="' + details.replace(/"/g,'&quot;') + '">' + details + '</div></td>' +
-        '<td><span class="ip-text">' + ip + '</span></td>' +
-        '<td><span class="time-text">' + timeStr + '</span></td>' +
-        '</tr>';
-    } catch(rowErr) {
-      console.warn('Row render error:', rowErr, r);
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i];
+    if (!r) continue;
+    var action  = r.action ? String(r.action) : '';
+    var cls     = LABELS[action] ? 'action-' + action : 'action-default';
+    var icon    = ICONS[action] || 'ti-activity';
+    var label   = LABELS[action] || action || '—';
+    var details = r.details ? (typeof r.details === 'string' ? r.details : JSON.stringify(r.details)) : '—';
+    var ip      = r.ip ? String(r.ip).split(',')[0].trim() : '—';
+    var timeStr = '—';
+    if (r.created_at) {
+      try { timeStr = new Date(r.created_at).toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', hour12:true }); } catch(e2) {}
     }
-  });
+    html += '<tr>';
+    html += '<td><span class="action-badge ' + cls + '"><i class="ti ' + icon + '"></i> ' + label + '</span></td>';
+    html += '<td class="details-cell"><div class="details-text" title="' + details.replace(/"/g, '&quot;') + '">' + details + '</div></td>';
+    html += '<td><span class="ip-text">' + ip + '</span></td>';
+    html += '<td><span class="time-text">' + timeStr + '</span></td>';
+    html += '</tr>';
+  }
   tbody.innerHTML = html;
 }
 
