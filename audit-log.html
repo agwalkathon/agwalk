@@ -260,8 +260,9 @@ function applyFilter() {
   var action = document.getElementById('action-filter').value;
   var date   = document.getElementById('date-filter').value;
   var rows = allRows.filter(function(r) {
+    if (!r || typeof r !== 'object') return false;
     var matchAction = !action || r.action === action;
-    var matchDate   = !date   || r.created_at.startsWith(date);
+    var matchDate   = !date   || (r.created_at && r.created_at.startsWith(date));
     return matchAction && matchDate;
   });
   document.getElementById('count-label').textContent = rows.length + ' event' + (rows.length !== 1 ? 's' : '');
@@ -282,22 +283,27 @@ function renderRows(rows) {
   }
   var html = '';
   rows.forEach(function(r) {
-    if (!r || typeof r !== 'object') return;
-    var action = r.action || '';
-    var cls   = 'action-' + (ACTION_LABELS[action] ? action : 'default');
-    var icon  = ACTION_ICONS[action] || 'ti-activity';
-    var label = ACTION_LABELS[action] || action;
-    var details = r.details ? JSON.stringify(r.details) : '—';
-    var ip = r.ip ? r.ip.split(',')[0].trim() : '—';
-    var dt = r.created_at ? new Date(r.created_at) : null;
-    var timeStr = dt ? dt.toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', hour12:true }) : '—';
-    html +=
-      '<tr>' +
-      '<td><span class="action-badge ' + cls + '"><i class="ti ' + icon + '"></i>' + label + '</span></td>' +
-      '<td class="details-cell"><div class="details-text" title="' + details.replace(/"/g,'&quot;') + '">' + details + '</div></td>' +
-      '<td><span class="ip-text">' + ip + '</span></td>' +
-      '<td><span class="time-text">' + timeStr + '</span></td>' +
-      '</tr>';
+    try {
+      if (!r || typeof r !== 'object') return;
+      var action  = String(r.action || '');
+      var cls     = 'action-' + (ACTION_LABELS.hasOwnProperty(action) ? action : 'default');
+      var icon    = ACTION_ICONS.hasOwnProperty(action) ? ACTION_ICONS[action] : 'ti-activity';
+      var label   = ACTION_LABELS.hasOwnProperty(action) ? ACTION_LABELS[action] : action;
+      var detObj  = r.details;
+      var details = detObj ? (typeof detObj === 'string' ? detObj : JSON.stringify(detObj)) : '—';
+      var ip      = r.ip ? String(r.ip).split(',')[0].trim() : '—';
+      var dt      = r.created_at ? new Date(r.created_at) : null;
+      var timeStr = dt ? dt.toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', hour12:true }) : '—';
+      html +=
+        '<tr>' +
+        '<td><span class="action-badge ' + cls + '"><i class="ti ' + icon + '"></i>' + label + '</span></td>' +
+        '<td class="details-cell"><div class="details-text" title="' + details.replace(/"/g,'&quot;') + '">' + details + '</div></td>' +
+        '<td><span class="ip-text">' + ip + '</span></td>' +
+        '<td><span class="time-text">' + timeStr + '</span></td>' +
+        '</tr>';
+    } catch(rowErr) {
+      console.warn('Row render error:', rowErr, r);
+    }
   });
   tbody.innerHTML = html;
 }
