@@ -109,7 +109,7 @@
       <div class="login-title">Participant Login</div>
       <div class="field-wrap">
         <label>Employee Code</label>
-        <input type="text" id="emp-code" placeholder="EMP-05-00123-PM" autocomplete="off" autocapitalize="characters" spellcheck="false" readonly>
+        <input type="text" id="emp-code" placeholder="EMP-05-00123-PM" autocomplete="off" autocapitalize="characters" spellcheck="false">
         <div class="field-hint">Format: <span class="hint-code">EMP-05-00123-PM</span></div>
       </div>
       <button class="btn-login" id="btn-login" onclick="doLogin()">View My Dashboard</button>
@@ -187,9 +187,6 @@ async function doLogin(){
 }
 
 // Allow Enter key
-document.getElementById('emp-code').addEventListener('focus',function(){
-  this.removeAttribute('readonly');
-});
 document.getElementById('emp-code').addEventListener('keydown',function(e){
   if(e.key==='Enter') doLogin();
 });
