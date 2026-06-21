@@ -1,18 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- v3 -->
   <meta charset="UTF-8">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <!-- PWA -->
-  <link rel="manifest" href="/agwalk/manifest.json">
-  <meta name="theme-color" content="#6366f1">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="AG Walkathon">
-  <link rel="apple-touch-icon" href="/agwalk/icon-192.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -35,7 +24,7 @@
       --radius:18px; --radius-sm:14px; --radius-xs:10px;
       --font:'Inter',-apple-system,sans-serif;
     }
-    html,body{height:100%;overflow-x:hidden;overscroll-behavior-y:contain;}
+    html,body{height:100%;overflow-x:hidden;}
     body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex;flex-direction:column;min-height:100dvh;-webkit-font-smoothing:antialiased;}
 
     /* ── Header ── */
@@ -162,10 +151,10 @@
     .date-group.open .acts-inner{display:block;}
 
     /* ── WHOOP-style act tile ── */
-    .act-tile{display:flex;align-items:stretch;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border);position:relative;overflow:hidden;}
+    .act-tile{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--border);}
     .act-tile:last-child{border-bottom:none;}
     .act-tile-icon{
-      width:52px;height:44px;border-radius:10px;flex-shrink:0;align-self:center;
+      width:44px;height:44px;border-radius:12px;flex-shrink:0;
       display:flex;align-items:center;justify-content:center;
       font-size:16px;font-weight:900;color:#fff;
     }
@@ -175,23 +164,15 @@
     .act-tile-icon.hike{background:#5b21b6;}
     .act-tile-icon.other{background:#374151;}
     .act-tile-body{flex:1;min-width:0;}
-    .act-tile-sport{font-size:11px;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:0.8px;}
-    .act-tile-name{font-size:17px;font-weight:700;color:#fff;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .act-tile-sport{font-size:13px;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:0.5px;}
+    .act-tile-name{font-size:15px;font-weight:700;color:#fff;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .act-tile-meta{font-size:12px;color:var(--muted);margin-top:3px;}
-    .act-tile-time{font-size:12px;color:var(--muted);margin-top:1px;}
-    .act-tile-right{text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;padding-right:10px;}
+    .act-tile-right{text-align:right;flex-shrink:0;}
     .act-tile-dist{font-size:22px;font-weight:900;color:#fff;line-height:1;letter-spacing:-0.3px;}
-    .act-tile-dist-lbl{font-size:11px;font-weight:600;color:var(--label);margin-top:2px;}
-    .act-tile-flag{font-size:8.5px;font-weight:700;padding:2px 6px;border-radius:5px;margin-top:4px;display:inline-block;}
+    .act-tile-dist-lbl{font-size:11px;font-weight:600;color:var(--label);margin-top:1px;}
+    .act-tile-flag{font-size:8.5px;font-weight:700;padding:2px 6px;border-radius:5px;margin-top:3px;display:inline-block;}
     .flag-valid{background:rgba(34,197,94,0.15);color:#22C55E;}
     .flag-bad{background:rgba(239,68,68,0.15);color:#EF4444;}
-    /* right-edge accent bar */
-    .act-tile::after{content:'';position:absolute;right:0;top:10px;bottom:10px;width:3px;border-radius:2px 0 0 2px;}
-    .act-tile.walk-bar::after{background:#22C55E;}
-    .act-tile.run-bar::after{background:#60A5FA;}
-    .act-tile.ride-bar::after{background:#F97316;}
-    .act-tile.hike-bar::after{background:#A78BFA;}
-    .act-tile.other-bar::after{background:#6B7280;}
 
     /* ── Medal progress ── */
     .medal-header-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 12px;border-bottom:1px solid var(--border);}
@@ -348,93 +329,10 @@
 
 
     .points,.distance,.rank,td,th{font-variant-numeric:tabular-nums;}
-    .rank-sup{font-size:0.45em;font-weight:700;vertical-align:super;letter-spacing:0;}
-    /* ── Pace badge in activities ── */
-    .pace-chip{font-size:8px;font-weight:700;padding:2px 6px;border-radius:5px;margin-left:4px;vertical-align:middle;display:inline-block;}
-    .pace-fast{background:rgba(34,197,94,0.15);color:#22C55E;}
-    .pace-mod{background:rgba(96,165,250,0.15);color:#60A5FA;}
-    .pace-slow{background:rgba(255,255,255,0.1);color:var(--muted);}
-    /* ── Mobile responsive ── */
-    @media (max-width: 480px) {
-      /* Ring sizes already use min(100px,28vw) so fine */
-      /* Metric trio: shrink font on very small screens */
-      .metric-val { font-size: 24px; }
-      .metric-lbl { font-size: 10px; }
-
-      /* TOD grid: 2 cols on mobile */
-      .tod-grid { grid-template-columns: repeat(2,1fr); }
-      .tod-val  { font-size: 20px; }
-
-      /* Gold stats: 1 col on very small screens */
-      .gold-stats { grid-template-columns: 1fr; }
-
-      /* Heatmap: 8 cols instead of 10 */
-      .heatmap-grid { grid-template-columns: repeat(8,1fr); }
-
-      /* Date pills: tighter */
-      .dpill { font-size: 12px; padding: 4px 8px; }
-
-      /* Streak number */
-      .streak-num { font-size: 42px; }
-
-      /* Rivals: smaller gap text */
-      .rival-gap { font-size: 13px; }
-
-      /* Acts tile distance */
-      .act-tile-dist { font-size: 18px; }
-      .act-tile-icon { width:46px; height:40px; }
-
-      /* Pace val */
-      .pace-val { font-size: 18px; min-width: 44px; }
-
-      /* Weekly bars taller visible */
-      .week-bars { height: 60px; }
-    }
-
-
   
-
-  
-  /* Pull to Refresh */
-  html, body { overscroll-behavior-y: contain; }
-  #ptr-indicator {
-    position: fixed;
-    top: -64px;
-    left: 0; right: 0;
-    height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #1e2130;
-    z-index: 9999;
-    transition: top 0.2s ease, opacity 0.2s ease;
-    opacity: 0;
-    pointer-events: none;
-  }
-  #ptr-indicator.ptr-visible { top: 0; opacity: 1; }
-  .ptr-spinner {
-    width: 22px; height: 22px;
-    border: 3px solid rgba(99,102,241,0.25);
-    border-top-color: #6366f1;
-    border-radius: 50%;
-    animation: ptr-spin 0.7s linear infinite;
-    display: none;
-  }
-  #ptr-indicator.ptr-loading .ptr-spinner { display: block; }
-  #ptr-indicator.ptr-loading .ptr-arrow { display: none; }
-  .ptr-arrow {
-    font-size: 20px;
-    color: #6366f1;
-    display: inline-block;
-    transition: transform 0.2s ease;
-  }
-  #ptr-indicator.ptr-ready .ptr-arrow { transform: rotate(180deg); }
-  @keyframes ptr-spin { to { transform: rotate(360deg); } }
-
-  </style>
+    .rank-sup{font-size:0.45em;font-weight:700;vertical-align:super;letter-spacing:0;}</style>
 </head>
 <body>
-  <div id="ptr-indicator"><span class="ptr-arrow">↓</span><div class="ptr-spinner"></div></div>
 
 <header class="header">
   <div class="hdr-left">
@@ -442,11 +340,6 @@
       <svg id="refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
         <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
-      </svg>
-    </button>
-    <button class="icon-btn" id="clear-cache-btn" onclick="clearCacheAndReload()" title="Clear Cache">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
-        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
       </svg>
     </button>
   </div>
@@ -588,6 +481,8 @@
   <div class="sec">Challenges</div>
   <div class="card" id="challenges-card"><div class="empty-state" style="padding:18px"><p>Loading...</p></div></div>
 
+</div>
+</div>
 
 <!-- Activities tab -->
 <div class="content" id="tab-activities">
@@ -624,15 +519,15 @@ var SUPABASE_URL = 'https://jhdgkncpkrttvemvwukc.supabase.co';
 var CONFIG_LB    = { basePer_km: 1, bonus: [{km:5,points:1},{km:8,points:2},{km:10,points:3},{km:15,points:4},{km:21,points:7}] };
 var CHALLENGES_LB   = [];
 var SPECIAL_DAYS_LB = [];
-var ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoZGdrbmNwa3J0dHZlbXZ3dWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NzgyNjMsImV4cCI6MjA5NzI1NDI2M30.d7mvXOYDq5G4aqs1Mbc6HFNgTBIQk4B6ah0eahE_yZE';
+var ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoZGdrbmNwa3J0dHZlbXZ3dWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NzgyNjMsImV4cCI6MjA5NzI1NDI2M30.d7mvXOYDq5G4aqs1Mbc6HFNgTBlQk4B6ah0eahE_yZE';
 var HDR = { apikey: ANON, Authorization: 'Bearer ' + ANON };
 
 function userGuard() {
-  var s = JSON.parse(localStorage.getItem('wk_user') || '{}');
+  var s = JSON.parse(sessionStorage.getItem('wk_user') || '{}');
   if (!s.loggedIn || s.expires < Date.now() || !s.athleteId) { window.location.href = 'index.html'; return null; }
   return s;
 }
-function logout() { localStorage.removeItem('wk_user'); sessionStorage.removeItem('wk_admin'); window.location.href = 'index.html'; }
+function logout() { sessionStorage.removeItem('wk_user'); sessionStorage.removeItem('wk_admin'); window.location.href = 'index.html'; }
 function esc(v) { return String(v==null?'':v).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
 function fmtTime(d) { return new Date(d).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}); }
 function fmtDur(s) { var h=Math.floor(s/3600),m=Math.floor((s%3600)/60); return h>0?h+'h '+m+'m':m+'m'; }
@@ -754,25 +649,23 @@ var currentSession=null;
 
 async function load() {
   var s=userGuard(); if(!s) return; currentSession=s; var athleteId=s.athleteId;
-  initPushAfterLogin();
   try {
-      // Phase 1: own data only — renders immediately
-    document.getElementById('p-name').textContent='Loading...';
-    var [regRes,myActs,cfgRes,chRes,sdRes,medalRes]=await Promise.all([
+    var [regRes,myActs,allActs,cfgRes,chRes,sdRes,medalRes,allRegRes]=await Promise.all([
       fetch(SUPABASE_URL+'/rest/v1/registration?strava_athlete_id=eq.'+athleteId+'&select=*',{headers:HDR}),
-      fetchAll(SUPABASE_URL+'/rest/v1/activities?strava_athlete_id=eq.'+athleteId+'&is_deleted=is.false&order=activity_date.desc'),
+      fetchAll(SUPABASE_URL+'/rest/v1/activities?strava_athlete_id=eq.'+athleteId+'&is_deleted=eq.false&order=activity_date.desc'),
+      fetchAll(SUPABASE_URL+'/rest/v1/activities?is_flagged=eq.false&is_deleted=eq.false&select=strava_athlete_id,distance_meters,activity_date'),
       fetch(SUPABASE_URL+'/rest/v1/leaderboard_config?select=config_key,config_value',{headers:HDR}),
-      fetch(SUPABASE_URL+'/rest/v1/challenges?is_active=is.true&select=*',{headers:HDR}),
+      fetch(SUPABASE_URL+'/rest/v1/challenges?is_active=eq.true&select=*',{headers:HDR}),
       fetch(SUPABASE_URL+'/rest/v1/special_scoring_days?select=special_date',{headers:HDR}),
-      fetch(SUPABASE_URL+'/rest/v1/leaderboard_config?config_key=eq.medals&select=config_value',{headers:HDR})
+      fetch(SUPABASE_URL+'/rest/v1/leaderboard_config?config_key=eq.medals&select=config_value',{headers:HDR}),
+      fetchAll(SUPABASE_URL+'/rest/v1/registration?select=strava_athlete_id,full_name,gender,shift,leaderboard_team')
     ]);
-      var allActs=[],allRegRes=[];  // populated by Phase 2
-      var cfgRows=await cfgRes.json();
+    var cfgRows=await cfgRes.json();
     if(Array.isArray(cfgRows))cfgRows.forEach(function(row){if(row.config_key==='bonus_points')CONFIG_LB.bonus=row.config_value.map(function(b){return{km:Number(b.km),points:Number(b.points||b.pts||0)};});if(row.config_key==='base_points_per_km')CONFIG_LB.basePer_km=parseFloat(row.config_value)||1;});
     var chRows=await chRes.json(); CHALLENGES_LB=Array.isArray(chRows)?chRows:[];
     var sdRows=await sdRes.json(); SPECIAL_DAYS_LB=Array.isArray(sdRows)?sdRows.map(function(x){return x.special_date;}):[];
-      var regs=await regRes.json(); var reg=Array.isArray(regs)&&regs.length?regs[0]:{};
-    var name=String(reg.full_name||s.name||'Participant');
+    var regs=await regRes.json(); var reg=Array.isArray(regs)&&regs.length?regs[0]:{};
+    var name=reg.full_name||s.name||'Participant';
 
     // Profile
     document.getElementById('p-name').textContent=name.toUpperCase();
@@ -819,7 +712,7 @@ async function load() {
     // ── Medal rings ───────────────────────────────────────────────────────────
     var CIRC=270.2; // 2 * π * 43
     [{id:'br',thresh:bronzeThresh},{id:'si',thresh:silverThresh},{id:'go',thresh:goldThresh}].forEach(function(m){
-      var pct=done?100:Math.min(99,Math.floor((myPts/m.thresh)*100));
+      var pct=Math.min(100,Math.round((myPts/m.thresh)*100));
       var done=myPts>=m.thresh;
       var needed=Math.max(0,m.thresh-myPts);
       var offset=CIRC-(CIRC*pct/100);
@@ -837,23 +730,12 @@ async function load() {
       }
     });
 
-    // Phase 2: ranking data — runs in background, non-blocking
-    (async function loadRanking(){
-      try{
-        var [allActsRaw,allRegRaw]=await Promise.all([
-          fetchAll(SUPABASE_URL+'/rest/v1/activities?is_flagged=is.false&is_deleted=is.false&select=strava_athlete_id,distance_meters'),
-          fetchAll(SUPABASE_URL+'/rest/v1/registration?select=strava_athlete_id,full_name,gender,shift,leaderboard_team')
-        ]);
-        allActs=allActsRaw; allRegRes=allRegRaw;
-        allKmMap={};
-        allActs.forEach(function(a){var id=a.strava_athlete_id;allKmMap[id]=(allKmMap[id]||0)+(parseFloat(a.distance_meters)||0)/1000;});
-      }catch(e2){console.warn('Ranking load failed:',e2);return;}
-
     // Standing
     var allReg=allRegRes,myGenderN=(reg.gender||'').toLowerCase(),myShiftN=(reg.shift||'').toLowerCase();
     var myTeamN=(reg.leaderboard_team||'').toLowerCase(),isNight=myShiftN.indexOf('night')>-1,isFemale=myGenderN==='female';
-    var allKmMap={};
-    function rankIn(peers){var scored=peers.map(function(p){return{id:p.strava_athlete_id,km:allKmMap[p.strava_athlete_id]||0};}).sort(function(a,b){return b.km-a.km;});var pos=scored.findIndex(function(x){return String(x.id)===String(athleteId);});return pos>=0?pos+1:null;}
+    var allActsMap={};
+    allActs.forEach(function(a){if(!allActsMap[a.strava_athlete_id])allActsMap[a.strava_athlete_id]=[];allActsMap[a.strava_athlete_id].push(a);});
+    function rankIn(peers){var scored=peers.map(function(p){var acts=allActsMap[p.strava_athlete_id]||[],km=0;acts.forEach(function(a){km+=(a.distance_meters||0)/1000;});return{id:p.strava_athlete_id,km:km};}).sort(function(a,b){return b.km-a.km;});var pos=scored.findIndex(function(x){return String(x.id)===String(athleteId);});return pos>=0?pos+1:null;}
     var shiftPeers=allReg.filter(function(p){var pg=(p.gender||'').toLowerCase(),ps=(p.shift||'').toLowerCase();return ps.indexOf('night')>-1===isNight&&(pg==='female')===isFemale;});
     var teamPeers=allReg.filter(function(p){var pg=(p.gender||'').toLowerCase(),pt=(p.leaderboard_team||'').toLowerCase();return pt===myTeamN&&(pg==='female')===isFemale;});
     var shiftRank=rankIn(shiftPeers),teamRank=rankIn(teamPeers);
@@ -898,8 +780,10 @@ async function load() {
       // Gold achieved — performance + rivalry card
       var daysElapsed=Math.max(1,(now-new Date('2026-06-01'))/86400000);
       var avgKmDay=fullPts.km/daysElapsed;
+      var goldActsMap={};
+      allActs.forEach(function(a){if(!goldActsMap[a.strava_athlete_id])goldActsMap[a.strava_athlete_id]=[];goldActsMap[a.strava_athlete_id].push(a);});
       var shiftPeersG=allRegRes.filter(function(p){var pg=(p.gender||'').toLowerCase(),ps=(p.shift||'').toLowerCase();return(ps.indexOf('night')>-1)===isNight&&(pg==='female')===isFemale;});
-      var shiftScoredG=shiftPeersG.map(function(p){return{id:p.strava_athlete_id,name:p.full_name,km:allKmMap[p.strava_athlete_id]||0};}).sort(function(a,b){return b.km-a.km;});
+      var shiftScoredG=shiftPeersG.map(function(p){var km=0;(goldActsMap[p.strava_athlete_id]||[]).forEach(function(a){km+=(a.distance_meters||0)/1000;});return{id:p.strava_athlete_id,name:p.full_name,km:km};}).sort(function(a,b){return b.km-a.km;});
       var myRankG=shiftScoredG.findIndex(function(x){return String(x.id)===String(athleteId);})+1;
       var totalG=shiftScoredG.length;
       var pctRank=totalG>0?myRankG/totalG:0.5;
@@ -1028,7 +912,9 @@ async function load() {
     document.getElementById('streak-labels').innerHTML=labels7.map(function(l){return'<span class="sdlbl">'+l+'</span>';}).join('');
 
     // Rivals
-    var shiftPeersScored=allReg.filter(function(p){var pg=(p.gender||'').toLowerCase(),ps=(p.shift||'').toLowerCase();return ps.indexOf('night')>-1===isNight&&(pg==='female')===isFemale;}).map(function(p){return{p:p,km:allKmMap[p.strava_athlete_id]||0};}).sort(function(a,b){return b.km-a.km;});
+    var rivalActsMap={};
+    allActs.forEach(function(a){if(!rivalActsMap[a.strava_athlete_id])rivalActsMap[a.strava_athlete_id]=[];rivalActsMap[a.strava_athlete_id].push(a);});
+    var shiftPeersScored=allReg.filter(function(p){var pg=(p.gender||'').toLowerCase(),ps=(p.shift||'').toLowerCase();return ps.indexOf('night')>-1===isNight&&(pg==='female')===isFemale;}).map(function(p){var acts=rivalActsMap[p.strava_athlete_id]||[],km=0;acts.forEach(function(a){km+=(a.distance_meters||0)/1000;});return{p:p,km:km};}).sort(function(a,b){return b.km-a.km;});
     var myRivalIdx=shiftPeersScored.findIndex(function(x){return String(x.p.strava_athlete_id)===String(athleteId);});
     var rivalsCard=document.getElementById('rivals-card'); rivalsCard.innerHTML='';
     if(myRivalIdx===-1){rivalsCard.innerHTML='<p style="font-size:12px;color:var(--muted);padding:14px">No peers found.</p>';}
@@ -1039,15 +925,17 @@ async function load() {
     if(chCard&&CHALLENGES_LB.length){chCard.innerHTML='';CHALLENGES_LB.slice(0,8).forEach(function(ch){var chPtsVal=Number(ch.bonus_points)||0,earned=false,allDayBreakdowns=fullPts.dayBreakdown||{};for(var day in allDayBreakdowns){var db=allDayBreakdowns[day];if(db.challenges&&db.challenges.some(function(x){return x.name===ch.name;})){earned=true;break;}}if(!earned){var ab=fullPts.actBreakdown||{};for(var actId in ab){if(ab[actId].challenges&&ab[actId].challenges.some(function(x){return x.name===ch.name;})){earned=true;break;}}}var today2=new Date().toISOString().split('T')[0],missed=!earned&&ch.end_date&&ch.end_date<today2,statusCls=earned?'won':missed?'missed':'avail',statusIcon=earned?'✓':missed?'✕':'!',div=document.createElement('div');div.className='ch-row';div.innerHTML='<div class="ch-dot '+statusCls+'">'+statusIcon+'</div><div class="ch-body"><div class="ch-title">'+esc(ch.name)+'</div><div class="ch-sub">'+(ch.start_date===ch.end_date?ch.start_date:ch.start_date+' – '+ch.end_date)+'</div></div><div class="ch-pts '+statusCls+'">+'+chPtsVal+' pts</div>';chCard.appendChild(div);});}
     else if(chCard)chCard.innerHTML='<p style="font-size:12px;color:var(--muted);padding:14px">No challenges configured.</p>';
 
-    })().catch(function(e){console.warn('Ranking error:',e);});
-
+    // Activities title
+    var flaggedCount=myActs.filter(function(a){return a.is_flagged;}).length;
+    var uniqueDays=new Set(myActs.filter(function(a){return !a.is_flagged;}).map(function(a){return(a.activity_date||'').split('T')[0];})).size;
+    document.getElementById('act-section-title').textContent=uniqueDays+' Days · '+myActs.length+' Activities'+(flaggedCount?' · '+flaggedCount+' Flagged':'');
     renderActivities(myActs,fullPts.dayBreakdown,fullPts.actBreakdown,reg.gender);
 
   } catch(e) {
     console.error('Load error:',e.message||e);
-    var msg=e.message||String(e)||'Unknown error';
-    document.getElementById('act-list').innerHTML='<div class="empty-state"><p style="color:var(--muted)">Could not load data. Please refresh.<br><small>'+msg+'</small></p></div>';
-    document.getElementById('p-name').textContent='Error loading';
+    var err='<div class="empty-state"><div class="icon">⚠️</div><p>Could not load data.<br>'+(e.message||'Unknown error')+'</p></div>';
+    document.getElementById('act-list').innerHTML=err;
+    document.getElementById('tab-dashboard').innerHTML='<div style="padding:40px 20px;text-align:center;color:var(--muted)">⚠️ '+(e.message||'Load error')+'</div>';
   }
 }
 
@@ -1089,21 +977,13 @@ function renderActivities(acts,dayBreakdown,actBreakdown,gender) {
       var actUrl='https://www.strava.com/activities/'+a.strava_activity_id;
       var tc=tileClass(a.sport_type),isFlag=a.is_flagged;
       var timeStr=(a.activity_date&&a.activity_date.indexOf('T')>-1)?fmtTime(a.activity_date):'';
-      var endTimeStr='';
-      if(a.activity_date&&a.activity_date.indexOf('T')>-1&&a.moving_time_seconds){
-        var endD=new Date(new Date(a.activity_date).getTime()+a.moving_time_seconds*1000);
-        endTimeStr=endD.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
-      }
-      var timeRange=timeStr?(endTimeStr?timeStr+' – '+endTimeStr:timeStr):'';
-      var barCls={'Walk':'walk-bar','Run':'run-bar','VirtualRun':'run-bar','Ride':'ride-bar','VirtualRide':'ride-bar','MountainBikeRide':'ride-bar','Hike':'hike-bar'}[a.sport_type]||'other-bar';
-      var item=document.createElement('div'); item.className='act-tile '+barCls;
+      var item=document.createElement('div'); item.className='act-tile';
       item.innerHTML=
         '<div class="act-tile-icon '+tc+'">'+renderIcon(a.sport_type)+'</div>'+
         '<div class="act-tile-body">'+
           '<div class="act-tile-sport">'+(a.sport_type||'Activity')+'</div>'+
           '<a class="act-tile-name" href="'+actUrl+'" target="_blank" style="text-decoration:none;color:#fff">'+esc(a.activity_name||'Activity')+'</a>'+
-          (timeRange?'<div class="act-tile-time">'+timeRange+'</div>':'')+
-          '<div class="act-tile-meta">'+dur+' · '+ps+(function(){if(!a.avg_speed||a.sport_type==='Ride'||a.sport_type==='VirtualRide'||a.sport_type==='MountainBikeRide')return '';var spd=a.avg_speed;if(spd>=2.0)return '<span class="pace-chip pace-fast">Fast</span>';if(spd>=1.2)return '<span class="pace-chip pace-mod">Good</span>';return '<span class="pace-chip pace-slow">Easy</span>';}())+'</div>'+
+          '<div class="act-tile-meta">'+(timeStr?timeStr+' · ':'')+dur+' · '+ps+'</div>'+
         '</div>'+
         '<div class="act-tile-right">'+
           '<div class="act-tile-dist">'+km+'</div>'+
@@ -1129,30 +1009,6 @@ function showTab(tab){
   document.querySelector('.hero-metrics-block').style.display=isDash?'':'none';
 }
 
-
-function clearCacheAndReload() {
-  var btn = document.getElementById('clear-cache-btn');
-  btn.style.opacity = '0.4';
-  btn.style.pointerEvents = 'none';
-  if ('caches' in window) {
-    caches.keys().then(function(names) {
-      return Promise.all(names.map(function(name) { return caches.delete(name); }));
-    }).then(function() {
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(regs) {
-          return Promise.all(regs.map(function(r) { return r.unregister(); }));
-        }).then(function() {
-          window.location.reload(true);
-        });
-      } else {
-        window.location.reload(true);
-      }
-    });
-  } else {
-    window.location.reload(true);
-  }
-}
-
 function refreshData(){
   var icon=document.getElementById('refresh-icon'); icon.classList.add('spinning');
   document.getElementById('act-list').innerHTML='<div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div></div><div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div></div>';
@@ -1162,140 +1018,9 @@ function refreshData(){
 
 (function(){var hash=window.location.hash.replace('#','');if(hash==='activities'||hash==='dashboard')showTab(hash);})();
 load();
-
-// Push notification subscription
-async function registerPush() {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-  var s = JSON.parse(localStorage.getItem('wk_user') || '{}'); var athleteId = s.athleteId;
-  if (!athleteId) return;
-  try {
-    var reg = await navigator.serviceWorker.register('./sw.js');
-    await navigator.serviceWorker.ready;
-    var existing = await reg.pushManager.getSubscription();
-    if (existing) {
-      await fetch('https://walkathon-backend-hv9j.onrender.com/push/subscribe', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscription: existing, athlete_id: athleteId })
-      });
-      return;
-    }
-    var keyRes = await fetch('https://walkathon-backend-hv9j.onrender.com/push/vapid-key');
-    var keyJson = await keyRes.json();
-    var pubKey = keyJson.publicKey;
-    var sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(pubKey)
-    });
-    await fetch('https://walkathon-backend-hv9j.onrender.com/push/subscribe', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ subscription: sub, athlete_id: athleteId })
-    });
-    console.log('Push subscription registered');
-  } catch(e) {
-    console.warn('Push registration skipped:', e.message);
-  }
-}
-
-function urlBase64ToUint8Array(base64String) {
-  var padding = '='.repeat((4 - base64String.length % 4) % 4);
-  var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  var rawData = window.atob(base64);
-  var outputArray = new Uint8Array(rawData.length);
-  for (var i = 0; i < rawData.length; i++) { outputArray[i] = rawData.charCodeAt(i); }
-  return outputArray;
-}
-
-// Call after athlete_id is set (after login)
-function initPushAfterLogin() {
-  if (Notification.permission === 'granted') {
-    registerPush();
-  } else if (Notification.permission !== 'denied') {
-    Notification.requestPermission().then(function(perm) {
-      if (perm === 'granted') registerPush();
-    });
-  }
-}
-
-
 </script>
-
-  <script>
-  /* Pull to Refresh v2 */
-  (function() {
-    var ind = document.getElementById('ptr-indicator');
-    if (!ind) return;
-    var startY = 0, currY = 0, pulling = false, THRESHOLD = 65;
-
-    function getScrollTop() {
-      return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    }
-
-    document.addEventListener('touchstart', function(e) {
-      if (getScrollTop() === 0 && e.touches.length === 1) {
-        startY = e.touches[0].screenY;
-        pulling = true;
-      }
-    }, { passive: true });
-
-    document.addEventListener('touchmove', function(e) {
-      if (!pulling) return;
-      currY = e.touches[0].screenY;
-      var dist = currY - startY;
-      if (dist > 10 && getScrollTop() === 0) {
-        ind.classList.add('ptr-visible');
-        ind.classList.remove('ptr-loading');
-        if (dist >= THRESHOLD) {
-          ind.classList.add('ptr-ready');
-        } else {
-          ind.classList.remove('ptr-ready');
-        }
-      } else if (dist <= 0) {
-        ind.classList.remove('ptr-visible', 'ptr-ready');
-      }
-    }, { passive: true });
-
-    document.addEventListener('touchend', function(e) {
-      if (!pulling) return;
-      pulling = false;
-      var dist = currY - startY;
-      if (dist >= THRESHOLD && getScrollTop() === 0) {
-        ind.classList.remove('ptr-ready');
-        ind.classList.add('ptr-loading', 'ptr-visible');
-        var done = function() {
-          ind.classList.remove('ptr-loading', 'ptr-visible');
-        };
-        (function() {
-        if (typeof fetchAll === 'function') {
-          var p = fetchAll();
-          if (p && typeof p.then === 'function') { p.then(done).catch(done); }
-          else { setTimeout(done, 800); }
-        } else if (typeof refreshData === 'function') {
-          refreshData(); setTimeout(done, 1000);
-        } else { setTimeout(done, 800); }
-      })();
-      } else {
-        ind.classList.remove('ptr-visible', 'ptr-ready');
-      }
-      startY = 0; currY = 0;
-    }, { passive: true });
-  })();
-
-  </script>
-
-  <!-- PWA Service Worker -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/agwalk/sw.js?v=4')
-          .then(function(reg) { console.log('[SW] Registered:', reg.scope); })
-          .catch(function(err) { console.log('[SW] Registration failed:', err); });
-      });
-    }
-  </script>
 </body>
 </html>
-
-
 
 
 
