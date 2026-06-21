@@ -772,9 +772,9 @@ async function boot(){
     var results=await Promise.all([
       fetch(SB+'/rest/v1/registration?strava_athlete_id=eq.'+s.athleteId+'&select=*',{headers:HDR}),
       fetchAll(SB+'/rest/v1/registration?select=strava_athlete_id,full_name,gender,shift,leaderboard_team'),
-      fetchAll(SB+'/rest/v1/activities?is_deleted=eq.false&select=strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,elevation_gain'),
+      fetchAll(SB+'/rest/v1/activities?is_deleted=is.false&select=strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,elevation_gain'),
       fetch(SB+'/rest/v1/leaderboard_config?select=config_key,config_value',{headers:HDR}),
-      fetch(SB+'/rest/v1/challenges?is_active=eq.true&select=*',{headers:HDR}),
+      fetch(SB+'/rest/v1/challenges?is_active=is.true&select=*',{headers:HDR}),
       fetch(SB+'/rest/v1/special_scoring_days?select=special_date',{headers:HDR}),
       fetch(SB+'/rest/v1/leaderboard_config?config_key=eq.medals&select=config_value',{headers:HDR})
     ]);
