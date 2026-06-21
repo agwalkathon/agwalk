@@ -167,6 +167,28 @@ tr:hover td{background:#FAFAFA}
 </div>
 
 <footer class="site-footer"><span>© 2026 Arcgate Walkathon</span><div><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms of Service</a></div></footer>
+
+<div class="section"><div class="section-header" onclick="toggleSection('notifications')"><div class="section-header-left"><span>&#x1F514;</span><div><div class="section-title">Push Notifications</div><div class="section-sub-inline" id="notif-sub">Configure triggers and send broadcasts</div></div></div><span class="section-chevron" id="chev-notifications">&#9660;</span></div><div class="section-body" id="body-notifications">
+<div style="display:flex;gap:12px;margin:16px 24px 0;flex-wrap:wrap">
+  <div style="background:#f0f6ff;border-radius:10px;padding:12px 18px;flex:1;min-width:120px"><div style="font-size:22px;font-weight:700;color:#1565c0" id="notif-sub-count">-</div><div style="font-size:12px;color:#888;margin-top:2px">Subscribed devices</div></div>
+  <div style="background:#f0fdf4;border-radius:10px;padding:12px 18px;flex:1;min-width:120px"><div style="font-size:22px;font-weight:700;color:#15803d" id="notif-enabled-count">-</div><div style="font-size:12px;color:#888;margin-top:2px">Rules enabled</div></div>
+</div>
+<div style="padding:20px 24px 0">
+  <div style="font-size:13px;font-weight:600;color:#333;margin-bottom:14px">Notification Triggers</div>
+  <div id="notif-rules-list" style="display:flex;flex-direction:column;gap:8px">Loading...</div>
+  <div style="margin-top:16px;display:flex;gap:10px;align-items:center"><button class="save-btn" onclick="saveNotifRules()">Save rules</button><span class="saved-msg" id="notif-saved">Saved!</span></div>
+</div>
+<div style="padding:20px 24px;border-top:1px solid #f0f0f0;margin-top:20px">
+  <div style="font-size:13px;font-weight:600;color:#333;margin-bottom:14px">Broadcast Message</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:700px">
+    <div class="field"><label>Title</label><input type="text" id="bc-title" placeholder="e.g. Keep walking!"></div>
+    <div class="field"><label>URL (optional)</label><input type="text" id="bc-url" placeholder="https://agwalkathon.github.io/agwalk/participant.html"></div>
+    <div class="field" style="grid-column:1/-1"><label>Message body</label><textarea id="bc-body" rows="3" style="width:100%;padding:10px 12px;border:1px solid #e8e8e8;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical" placeholder="You're doing great! Check the leaderboard for your latest rank."></textarea></div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:10px;align-items:center"><button class="save-btn" onclick="sendBroadcast()">Send to all subscribers</button><span id="bc-result" style="font-size:13px;color:#555"></span></div>
+</div>
+</div></div>
+
 </div><!-- /main -->
 <script>
 
@@ -210,6 +232,127 @@ async function populateChallengeDropdown(){try{var r=await fetch(SB_URL+'/rest/v
 async function loadManualBonuses(){try{var r=await fetch(SB_URL+'/rest/v1/activities?manual_bonus=gt.0&select=strava_activity_id,activity_name,strava_athlete_id,manual_bonus&order=manual_bonus.desc&limit=50',{headers:HDR}),rows=await r.json();if(!Array.isArray(rows)||rows.length===0){document.getElementById('manual-list').innerHTML='<p style="color:#bbb;font-size:13px">No manual bonuses applied yet.</p>';return}document.getElementById('manual-list').innerHTML='<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:#fafafa"><th style="padding:8px 12px;text-align:left;color:#888;font-size:11px">Activity ID</th><th style="padding:8px 12px;text-align:left;color:#888;font-size:11px">Name</th><th style="padding:8px 12px;text-align:left;color:#888;font-size:11px">Bonus Pts</th><th style="padding:8px 12px;text-align:left;color:#888;font-size:11px">Action</th></tr></thead><tbody>'+rows.map(function(r){return '<tr style="border-bottom:1px solid #f5f5f5"><td style="padding:8px 12px"><a href="https://www.strava.com/activities/'+r.strava_activity_id+'" target="_blank" style="color:#E8622A;text-decoration:none">'+r.strava_activity_id+'</a></td><td style="padding:8px 12px">'+esc(r.activity_name||'—')+'</td><td style="padding:8px 12px;font-weight:700;color:#1565c0">+'+r.manual_bonus+'</td><td style="padding:8px 12px"><button style="padding:4px 10px;background:#ffebee;color:#c62828;border:none;border-radius:6px;font-size:12px;cursor:pointer" onclick="clearManualBonus('+r.strava_activity_id+')">Clear</button></td></tr>'}).join('')+'</tbody></table>'}catch(e){document.getElementById('manual-list').innerHTML='<p style="color:#bbb;font-size:13px">Could not load — add manual_bonus column to activities table first.</p>'}}
 async function clearManualBonus(activityId){if(!confirm('Clear manual bonus for activity '+activityId+'?'))return;var r=await fetch(SB_URL+'/rest/v1/activities?strava_activity_id=eq.'+activityId+'&select=id',{headers:HDR}),rows=await r.json();if(rows&&rows[0]){await fetch(SB_URL+'/rest/v1/activities?id=eq.'+rows[0].id,{method:'PATCH',headers:HDR,body:JSON.stringify({manual_bonus:0})});loadManualBonuses()}}
 loadConfig();loadSpecialDates();loadChallenges();loadManualBonuses();populateChallengeDropdown();
+
+
+var NOTIF_BU = 'https://walkathon-backend-hv9j.onrender.com';
+var NOTIF_RULES_DEFAULT = [
+  { trigger_key: 'activity_synced',       title: 'Activity Synced!',          body: 'Your activity has been recorded - {distance} km!',               enabled: false },
+  { trigger_key: 'activity_flagged',      title: 'Activity Flagged',           body: 'Your activity was flagged for review by the admin.',             enabled: false },
+  { trigger_key: 'activity_cleared',      title: 'Activity Cleared!',          body: 'Your flagged activity has been cleared.',                        enabled: false },
+  { trigger_key: 'medal_bronze',          title: 'Bronze Medal Earned!',       body: 'Congratulations! You earned a Bronze medal. Keep going!',        enabled: true  },
+  { trigger_key: 'medal_silver',          title: 'Silver Medal Earned!',       body: 'Amazing! You upgraded to a Silver medal!',                       enabled: true  },
+  { trigger_key: 'medal_gold',            title: 'Gold Medal Earned!',         body: 'Outstanding! You have earned a Gold medal!',                     enabled: true  },
+  { trigger_key: 'challenge_bonus',       title: 'Challenge Bonus Earned!',    body: 'You earned bonus points for the {name} challenge!',              enabled: true  },
+  { trigger_key: 'rank_improved',         title: 'You Moved Up!',              body: 'You climbed to rank #{rank} on the leaderboard!',                enabled: false },
+  { trigger_key: 'rank_dropped',          title: 'Rank Update',                body: 'You are now ranked #{rank}. Keep walking to climb back up!',     enabled: false },
+  { trigger_key: 'rank_top1',             title: 'You are #1!',                body: 'Incredible! You have reached the top of the leaderboard!',       enabled: true  },
+  { trigger_key: 'broadcast',             title: 'Walkathon Update',           body: 'A message from the Walkathon admin.',                            enabled: true  },
+  { trigger_key: 'registration_approved', title: 'Registration Approved!',     body: 'Welcome! Your Arcgate Walkathon 2026 registration is approved.', enabled: true  },
+  { trigger_key: 'registration_rejected', title: 'Registration Update',        body: 'Your registration could not be approved. Contact the admin.',    enabled: false }
+];
+var notifRulesData = [];
+
+async function loadNotifRules() {
+  document.getElementById('notif-rules-list').innerHTML = 'Loading...';
+  try {
+    var r = await fetch(NOTIF_BU + '/push/rules');
+    var j = await r.json();
+    var saved = (j.success && Array.isArray(j.rules)) ? j.rules : [];
+    var savedMap = {};
+    saved.forEach(function(s) { savedMap[s.trigger_key] = s; });
+    notifRulesData = NOTIF_RULES_DEFAULT.map(function(d) {
+      return savedMap[d.trigger_key] ? Object.assign({}, d, savedMap[d.trigger_key]) : Object.assign({}, d);
+    });
+    renderNotifRules();
+    loadNotifStats();
+  } catch(e) {
+    document.getElementById('notif-rules-list').innerHTML = '<p style="color:#c62828;font-size:13px">Could not load rules. Backend may be starting up.</p>';
+  }
+}
+
+function renderNotifRules() {
+  var enabledCount = notifRulesData.filter(function(r) { return r.enabled; }).length;
+  document.getElementById('notif-enabled-count').textContent = enabledCount;
+  document.getElementById('notif-rules-list').innerHTML = notifRulesData.map(function(rule, i) {
+    return '<div style="border:1px solid #eee;border-radius:10px;padding:14px 16px;background:' + (rule.enabled ? '#f0fdf4' : '#fafafa') + '">' +
+      '<div style="display:flex;align-items:flex-start;gap:12px">' +
+        '<label style="position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0;margin-top:2px">' +
+          '<input type="checkbox" ' + (rule.enabled ? 'checked' : '') + ' onchange="toggleNotifRule(' + i + ',this.checked)" style="opacity:0;width:0;height:0">' +
+          '<span style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:' + (rule.enabled ? '#22c55e' : '#d1d5db') + ';border-radius:22px;transition:.2s">' +
+            '<span style="position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.2s;transform:translateX(' + (rule.enabled ? '18px' : '0') + ')"></span>' +
+          '</span>' +
+        '</label>' +
+        '<div style="flex:1">' +
+          '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
+            '<strong style="font-size:13px">' + rule.title + '</strong>' +
+            '<span style="font-size:11px;color:#888;background:#f0f0f0;padding:2px 8px;border-radius:10px">' + rule.trigger_key + '</span>' +
+          '</div>' +
+          '<div style="margin-top:8px;display:grid;grid-template-columns:1fr 2fr;gap:8px">' +
+            '<div class="field" style="margin:0"><label style="font-size:10px">Title</label><input type="text" id="nr-title-' + i + '" value="' + rule.title.replace(/"/g, '&quot;') + '" style="padding:6px 8px;border:1px solid #e8e8e8;border-radius:6px;font-size:12px;width:100%" oninput="updateNotifRule(' + i + ')"></div>' +
+            '<div class="field" style="margin:0"><label style="font-size:10px">Body</label><input type="text" id="nr-body-' + i + '" value="' + rule.body.replace(/"/g, '&quot;') + '" style="padding:6px 8px;border:1px solid #e8e8e8;border-radius:6px;font-size:12px;width:100%" oninput="updateNotifRule(' + i + ')"></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function toggleNotifRule(i, val) { notifRulesData[i].enabled = val; renderNotifRules(); }
+function updateNotifRule(i) {
+  var t = document.getElementById('nr-title-' + i);
+  var b = document.getElementById('nr-body-' + i);
+  if (t) notifRulesData[i].title = t.value;
+  if (b) notifRulesData[i].body  = b.value;
+}
+
+async function saveNotifRules() {
+  notifRulesData.forEach(function(rule, i) {
+    var t = document.getElementById('nr-title-' + i);
+    var b = document.getElementById('nr-body-' + i);
+    if (t) rule.title = t.value;
+    if (b) rule.body  = b.value;
+  });
+  try {
+    var r = await fetch(NOTIF_BU + '/push/rules', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rules: notifRulesData })
+    });
+    var j = await r.json();
+    if (j.success) {
+      showSaved('notif-saved');
+      document.getElementById('notif-enabled-count').textContent = notifRulesData.filter(function(r) { return r.enabled; }).length;
+    } else { alert('Save failed: ' + (j.error || 'unknown')); }
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function loadNotifStats() {
+  try {
+    var r = await fetch(NOTIF_BU + '/push/stats');
+    var j = await r.json();
+    document.getElementById('notif-sub-count').textContent = j.total || 0;
+  } catch(e) { document.getElementById('notif-sub-count').textContent = '-'; }
+}
+
+async function sendBroadcast() {
+  var title  = document.getElementById('bc-title').value.trim();
+  var body   = document.getElementById('bc-body').value.trim();
+  var url    = document.getElementById('bc-url').value.trim();
+  var result = document.getElementById('bc-result');
+  if (!title || !body) { result.textContent = 'Title and body are required.'; result.style.color = '#c62828'; return; }
+  result.textContent = 'Sending...'; result.style.color = '#555';
+  try {
+    var r = await fetch(NOTIF_BU + '/push/broadcast', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: title, body: body, url: url || undefined })
+    });
+    var j = await r.json();
+    if (j.success) {
+      result.textContent = 'Sent to ' + j.sent + ' / ' + j.total + ' subscribers' + (j.failed ? ' (' + j.failed + ' failed)' : '');
+      result.style.color = '#15803d';
+    } else { result.textContent = 'Failed: ' + (j.error || 'unknown'); result.style.color = '#c62828'; }
+  } catch(e) { result.textContent = 'Error: ' + e.message; result.style.color = '#c62828'; }
+}
+loadNotifRules();
 
 </script>
 </body>
