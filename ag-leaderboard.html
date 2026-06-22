@@ -632,6 +632,7 @@ function filterReg(reg, board) {
 }
 
 function calcPoints(acts, athleteId, gender, shift) {
+  console.log("[TC] calcPoints called for", athleteId);
   // ── Step 1: filter this athlete's valid activities ──────────────
   var myActs = acts.filter(function(a) {
     return a.strava_athlete_id == athleteId && !a.is_flagged;
