@@ -714,6 +714,7 @@ function calcPoints(acts, athleteId, gender, shift) {
       });
     });
 
+  console.log('[TC] tcDays:', JSON.stringify(tcDays), 'tcActMap keys:', JSON.stringify(Object.keys(tcActMap)));
   Object.keys(byDay).forEach(function(day) {
     var dayActs      = byDay[day];
     var isSpecialDay = SPECIAL_DAYS.indexOf(day) !== -1;
