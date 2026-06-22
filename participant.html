@@ -1426,7 +1426,10 @@ async function load() {
     // rankIn uses calcFullPts so standing card rank matches leaderboard rank exactly
     function rankIn(peers){var scored=peers.map(function(p){var acts=allActsMap[p.strava_athlete_id]||[];return{id:p.strava_athlete_id,pts:calcFullPts(acts,p.gender).total};}).filter(function(x){return x.pts>0;}).sort(function(a,b){return b.pts-a.pts;});var pos=scored.findIndex(function(x){return String(x.id)===String(athleteId);});return pos>=0?pos+1:null;}
     var shiftPeers=allReg.filter(function(p){var pg=(p.gender||'').toLowerCase(),ps=(p.shift||'').toLowerCase();return ps.indexOf('night')>-1===isNight&&(pg==='female')===isFemale;});
-    var teamPeers=allReg.filter(function(p){var pg=(p.gender||'').toLowerCase(),pt=(p.leaderboard_team||'').toLowerCase();return pt===myTeamN&&(pg==='female')===isFemale;});
+    // Team peers must exclude top 3 individual performers — same as team leaderboard tab
+    var excl=computeTeamExclusions();
+    var exSet=isFemale?excl.female:excl.male;
+    var teamPeers=allReg.filter(function(p){var pg=(p.gender||'').toLowerCase(),pt=(p.leaderboard_team||'').toLowerCase();return pt===myTeamN&&(pg==='female')===isFemale&&exSet.indexOf(String(p.strava_athlete_id))===-1;});
     var shiftRank=rankIn(shiftPeers),teamRank=rankIn(teamPeers);
     function ordinal(n){if(!n)return'—';var sfx=['th','st','nd','rd'],v=n%100;var s=sfx[(v-20)%10]||sfx[v]||sfx[0];return n+'<span class="rank-sup">'+s+'</span>';}
     var shiftLabel=isNight?'Nightshift · '+(isFemale?'Female':'Male'):'Dayshift · '+(isFemale?'Female':'Male');
