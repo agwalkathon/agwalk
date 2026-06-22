@@ -601,6 +601,9 @@
     <img src="logo-white.png" alt="Arcgate Walkathon" class="hdr-logo-img">
   </div>
   <div class="hdr-right">
+    <button class="icon-btn" onclick="clearPWACache()" title="Clear cache" style="margin-right:2px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+    </button>
     <button class="icon-btn" id="refresh-btn" onclick="refreshData()" title="Refresh" style="margin-right:2px;">
       <svg id="refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
@@ -716,17 +719,6 @@
     <div class="fact-card"><div class="fact-icon">🌱</div><div class="fact-val" id="fact-carbon">—</div><div class="fact-lbl">CO₂ offset (kg)</div></div>
   </div>
 
-  <div class="sec">Milestones</div>
-  <div class="milestones-wrap" id="milestones-wrap">
-    <div class="milestone" id="ms-first"><span class="milestone-ico">🏁</span><span class="milestone-lbl">First Activity</span></div>
-    <div class="milestone" id="ms-50km"><span class="milestone-ico">📍</span><span class="milestone-lbl">50 km</span></div>
-    <div class="milestone" id="ms-100km"><span class="milestone-ico">💯</span><span class="milestone-lbl">100 km</span></div>
-    <div class="milestone" id="ms-200km"><span class="milestone-ico">🚀</span><span class="milestone-lbl">200 km</span></div>
-    <div class="milestone" id="ms-streak7"><span class="milestone-ico">🔥</span><span class="milestone-lbl">7-Day Streak</span></div>
-    <div class="milestone" id="ms-longact"><span class="milestone-ico">⚡</span><span class="milestone-lbl">20km+ Activity</span></div>
-    <div class="milestone" id="ms-earlybird"><span class="milestone-ico">🌅</span><span class="milestone-lbl">Early Bird</span></div>
-  </div>
-
   <div class="sec">Activity Streak</div>
   <div class="card">
     <div class="streak-top">
@@ -752,10 +744,7 @@
     <div class="tod-card"><div class="tod-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(148,163,250,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div><div class="tod-val" id="tod-night">—</div><div class="tod-lbl">Night</div></div>
   </div>
 
-  <div class="sec">People Near You</div>
-  <div class="card" id="rivals-card"><div class="empty-state" style="padding:18px"><p>Loading...</p></div></div>
-
-  <div class="sec">Challenges</div>
+  <div class="sec">CHALLENGES</div>
   <div class="card" id="challenges-card"><div class="empty-state" style="padding:18px"><p>Loading...</p></div></div>
 
 </div>
@@ -767,6 +756,35 @@
   <div class="flagged-info" id="flagged-banner">
     <strong>⚑ Flagged activities</strong> — Some activities were flagged for admin review. They're excluded from your score until reviewed.
   </div>
+  <div class="sec">PERSONAL BESTS</div>
+  <div class="you-cards">
+    <div class="you-card">
+      <div class="you-card-icon" style="background:rgba(255,208,0,0.12);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l4-8 4 4 4-8 4 8"/></svg></div>
+      <div class="you-card-val" id="pb-longest">—</div>
+      <div class="you-card-lbl">Longest</div>
+      <div class="you-card-sub">single activity</div>
+    </div>
+    <div class="you-card">
+      <div class="you-card-icon" style="background:rgba(232,98,42,0.12);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      <div class="you-card-val" id="pb-pace">—</div>
+      <div class="you-card-lbl">Best Pace</div>
+      <div class="you-card-sub">min/km</div>
+    </div>
+    <div class="you-card">
+      <div class="you-card-icon" style="background:rgba(96,165,250,0.12);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+      <div class="you-card-val" id="pb-time">—</div>
+      <div class="you-card-lbl">Longest Session</div>
+      <div class="you-card-sub">single activity</div>
+    </div>
+    <div class="you-card">
+      <div class="you-card-icon" style="background:rgba(34,197,94,0.12);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+      <div class="you-card-val" id="pb-bestday">—</div>
+      <div class="you-card-lbl">Best Day</div>
+      <div class="you-card-sub" id="pb-bestday-date"></div>
+    </div>
+  </div>
+  <div class="sec">ACTIVITY BREAKDOWN</div>
+  <div class="card" id="act-type-breakdown" style="padding:14px 16px;display:flex;gap:8px;flex-wrap:wrap;"></div>
   <div class="sec" id="act-section-title">My Activities</div>
   <div id="act-list">
     <div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div><div class="skeleton skel-line short"></div></div>
@@ -788,7 +806,7 @@
     <button class="lb-tab" id="lb-tab-team" onclick="switchTab('team')">My Team</button>
     <button class="lb-tab" id="lb-tab-hof" onclick="switchTab('hof')">🏆 HOF</button>
   </div>
-  <!-- My Standing (moved from Dashboard) -->
+  <!-- My Standing + Rank Movement -->
   <div style="padding:12px 20px 0;">
     <div class="standing-grid">
       <div class="standing-card">
@@ -800,6 +818,18 @@
         <div class="standing-rank-big" id="standing-team-rank">—</div>
         <div class="standing-cat" id="standing-team-label">—</div>
         <div class="standing-sub">Team</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+      <div class="standing-card" style="text-align:left;padding:12px 14px;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">This Week</div>
+        <div style="font-size:20px;font-weight:800;color:#fff;" id="lb-rank-move">—</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px;">vs last week</div>
+      </div>
+      <div class="standing-card" style="text-align:left;padding:12px 14px;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Next Rank</div>
+        <div style="font-size:14px;font-weight:800;color:var(--blue);" id="lb-next-gap">—</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px;" id="lb-next-name"></div>
       </div>
     </div>
   </div>
@@ -1574,6 +1604,24 @@ async function load() {
     })().catch(function(e){console.warn('Ranking:',e);});
 
     renderActivities(myActs,fullPts.dayBreakdown,fullPts.actBreakdown,reg.gender);
+    (function(){
+      var vA=myActs.filter(function(a){return !a.is_flagged;});
+      if(!vA.length)return;
+      var lng=vA.reduce(function(m,a){return(a.distance_meters||0)>(m.distance_meters||0)?a:m;},vA[0]);
+      var el=document.getElementById('pb-longest');if(el)el.textContent=(lng.distance_meters/1000).toFixed(1)+' km';
+      var pA=vA.filter(function(a){return a.avg_speed>0&&['Walk','Run','Hike','VirtualRun'].indexOf(a.sport_type)>-1;});
+      if(pA.length){var fp=pA.reduce(function(m,a){return a.avg_speed>m.avg_speed?a:m;},pA[0]);var ps=1000/fp.avg_speed,pm=Math.floor(ps/60),psc=Math.round(ps%60);var el2=document.getElementById('pb-pace');if(el2)el2.textContent=pm+':'+(psc<10?'0':'')+psc;}
+      var tA=vA.filter(function(a){return a.moving_time_seconds>0;});
+      if(tA.length){var lt=tA.reduce(function(m,a){return a.moving_time_seconds>m.moving_time_seconds?a:m;},tA[0]);var th=Math.floor(lt.moving_time_seconds/3600),tm2=Math.floor((lt.moving_time_seconds%3600)/60);var el3=document.getElementById('pb-time');if(el3)el3.textContent=th>0?th+'h '+tm2+'m':tm2+'m';}
+      var dK={};vA.forEach(function(a){var d=(a.activity_date||'').split('T')[0];if(d)dK[d]=(dK[d]||0)+(a.distance_meters||0)/1000;});
+      var bd=Object.keys(dK).reduce(function(m,d){return dK[d]>dK[m]?d:m;},Object.keys(dK)[0]);
+      if(bd){var el4=document.getElementById('pb-bestday');if(el4)el4.textContent=Math.round(dK[bd])+' km';var el5=document.getElementById('pb-bestday-date');if(el5){var bdo=new Date(bd+'T12:00:00');el5.textContent=bdo.toLocaleDateString('en-IN',{day:'2-digit',month:'short'});}}
+      var tC={};vA.forEach(function(a){var t=a.sport_type||'Other';tC[t]=(tC[t]||0)+1;});
+      var tCol={Walk:'rgba(34,197,94,0.15)',Run:'rgba(96,165,250,0.15)',Ride:'rgba(255,208,0,0.15)',Hike:'rgba(167,139,250,0.15)',Other:'rgba(255,255,255,0.08)'};
+      var tTxt={Walk:'var(--green)',Run:'var(--blue)',Ride:'var(--gold)',Hike:'var(--purple)',Other:'var(--muted)'};
+      var bd2=document.getElementById('act-type-breakdown');
+      if(bd2){bd2.innerHTML='';Object.keys(tC).sort(function(a,b){return tC[b]-tC[a];}).forEach(function(t){var pill=document.createElement('span');pill.style.cssText='display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:700;background:'+(tCol[t]||tCol.Other)+';color:'+(tTxt[t]||tTxt.Other)+';';pill.textContent=t+' · '+tC[t];bd2.appendChild(pill);});}
+    })();
 
   } catch(e) {
     console.error('Load error:',e.message||e);
@@ -1599,11 +1647,15 @@ function renderActivities(acts,dayBreakdown,actBreakdown,gender) {
     dayActs.forEach(function(a){var ab=actBreakdown[a.strava_activity_id]||{challenges:[]};ab.challenges.forEach(function(ch){chPts+=ch.pts;});});
     var dayTotal=db.distPts+db.bonusPts+chPts;
     var dateObj=new Date(date+'T00:00:00');
-    var dateStr=dateObj.toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short'});
+    var dW=dateObj.toLocaleDateString('en-IN',{weekday:'long'});
+    var dN=dateObj.getDate();
+    var dM=dateObj.toLocaleDateString('en-IN',{month:'long'});
+    var dateStr=dW+', '+dN+' '+dM;
+    var kmLabel=Math.round(rawKm)+' KM';
     var actWord=dayActs.length===1?'1 activity':dayActs.length+' activities';
     var group=document.createElement('div'); group.className='date-group'; group.id='dg-'+gi;
     var dateRow=document.createElement('div'); dateRow.className='date-row';
-    dateRow.innerHTML='<div class="date-col"><div class="date-label">'+esc(dateStr)+'</div><div class="date-sub">'+rawKm.toFixed(2)+' km</div><div class="date-sub">'+actWord+'</div></div>'+
+    dateRow.innerHTML='<div class="date-col"><div class="date-label">'+esc(dateStr)+'<span style="color:var(--muted);font-weight:500;font-size:14px;"> | '+kmLabel+'</span></div><div class="date-sub">'+actWord+'</div></div>'+
       '<div class="date-pts-strip">'+
         '<span class="dpill dist">'+db.distPts.toFixed(1)+'</span>'+
         '<span class="dpill bonus"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>'+db.bonusPts+'</span>'+
@@ -1673,6 +1725,19 @@ var LB_bronzeThresh=100,LB_silverThresh=150,LB_goldThresh=200;
 function norm(s){return String(s||'').trim().toLowerCase();}
 
 (function(){var hash=window.location.hash.replace('#','');if(hash==='activities'||hash==='dashboard'||hash==='you'||hash==='leaderboard')showTab(hash);})();
+function clearPWACache(){
+  if('caches' in window){
+    caches.keys().then(function(names){
+      return Promise.all(names.map(function(n){return caches.delete(n);}));
+    }).then(function(){
+      if('serviceWorker' in navigator){
+        navigator.serviceWorker.getRegistrations().then(function(regs){
+          Promise.all(regs.map(function(r){return r.unregister();})).then(function(){window.location.reload(true);});
+        });
+      } else { window.location.reload(true); }
+    });
+  } else { window.location.reload(true); }
+}
 load();
 </script>
 
@@ -1893,8 +1958,8 @@ function buildTabs(){
   if(!LB_ME)return;
   var myGender=norm(LB_ME.gender),myShift=norm(LB_ME.shift),myTeam=LB_ME.leaderboard_team||'My Team',isNight=myShift.indexOf('night')>-1,isFemale=myGender==='female'||myGender==='f';
   var gLabel=isFemale?'Female':'Male';
-  document.getElementById('lb-tab-shift').textContent=isNight?'🌙 Nightshift — All':(isFemale?'👩 Dayshift — Female':'👨 Dayshift — Male');
-  document.getElementById('lb-tab-team').textContent='🏙️ '+myTeam+' — '+gLabel;
+  document.getElementById('lb-tab-shift').textContent=isNight?'Nightshift':'Dayshift';
+  document.getElementById('lb-tab-team').textContent=myTeam;
 }
 function showSkeletons(){var h='';for(var i=0;i<6;i++)h+='<div class="skel-row"><div class="skeleton skel-c"></div><div class="skel-lines"><div class="skeleton skel-l m"></div><div class="skeleton skel-l s"></div></div></div>';document.getElementById('lb-list').innerHTML=h;}
 
@@ -1909,6 +1974,27 @@ function lbRender(){
     buildTabs(); renderRows(getRows(LB_currentTab));
     var allRows=getRows(LB_currentTab),myRow=allRows.find(function(r){return String(r.p.strava_athlete_id)===String(s.athleteId);});
     document.getElementById('lb-my-pts').textContent=myRow?myRow.pts.total.toFixed(1):'—';
+    (function(){
+      try{
+        var meId=s.athleteId;
+        var curRank=allRows.findIndex(function(r){return String(r.p.strava_athlete_id)===String(meId);})+1;
+        var cutoff=new Date();cutoff.setDate(cutoff.getDate()-7);
+        var cutoffStr=cutoff.toISOString().split('T')[0];
+        var oldActs=LB_ACTS.filter(function(a){return(a.activity_date||'').split('T')[0]<=cutoffStr;});
+        var myGd=norm(LB_ME.gender),myShd=norm(LB_ME.shift),isNd=myShd.indexOf('night')>-1,isFd=myGd==='female'||myGd==='f';
+        var oldRows=LB_REG.filter(function(q){var pg=norm(q.gender),ps=norm(q.shift),pt=norm(q.leaderboard_team),pIsFemale=pg==='female'||pg==='f';if(pIsFemale!==isFd)return false;return LB_currentTab==='team'?pt===norm(LB_ME.leaderboard_team):ps.indexOf('night')>-1===isNd;}).map(function(q){return{id:String(q.strava_athlete_id),pts:calcFullPts(oldActs.filter(function(a){return String(a.strava_athlete_id)===String(q.strava_athlete_id);}),q.gender).total};}).filter(function(r){return r.pts>0;}).sort(function(a,b){return b.pts-a.pts;});
+        var oldRank=oldRows.findIndex(function(r){return r.id===String(meId);})+1;
+        var rmEl=document.getElementById('lb-rank-move');
+        if(rmEl&&curRank>0){
+          if(oldRank<=0||oldRank===curRank){rmEl.textContent='same';rmEl.style.color='var(--muted)';}
+          else if(curRank<oldRank){rmEl.innerHTML='<span style="color:var(--green)">&#8679; '+(oldRank-curRank)+'</span> up';}
+          else{rmEl.innerHTML='<span style="color:#f87171">&#8681; '+(curRank-oldRank)+'</span> down';}
+        }
+        var ngEl=document.getElementById('lb-next-gap'),nnEl=document.getElementById('lb-next-name');
+        if(ngEl&&curRank>1&&allRows.length>=curRank){var above=allRows[curRank-2];var gap=above.pts.total-(myRow?myRow.pts.total:0);ngEl.textContent=gap.toFixed(1)+' pts behind';if(nnEl)nnEl.textContent=esc(above.p.full_name||'');}
+        else if(ngEl&&curRank===1){ngEl.textContent='You are #1!';ngEl.style.color='var(--gold)';if(nnEl)nnEl.textContent='Lead to the finish';}
+      }catch(e2){console.warn('RankMove:',e2);}
+    })();
   }catch(e){
     console.error('lbRender error:',e);
     var el=document.getElementById('lb-list');
