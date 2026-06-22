@@ -1367,12 +1367,7 @@ async function load() {
       });
     })();
 
-    var tod={morning:0,afternoon:0,evening:0,night:0};
-    validActs.forEach(function(a){var n=(a.activity_name||'').toLowerCase();if(n.indexOf('morning')>-1)tod.morning++;else if(n.indexOf('afternoon')>-1)tod.afternoon++;else if(n.indexOf('evening')>-1)tod.evening++;else if(n.indexOf('night')>-1)tod.night++;});
-    document.getElementById('tod-morning').textContent=tod.morning;
-    document.getElementById('tod-afternoon').textContent=tod.afternoon;
-    document.getElementById('tod-evening').textContent=tod.evening;
-    document.getElementById('tod-night').textContent=tod.night;
+
 
     // Medals
     var medalData=await medalRes.json();
