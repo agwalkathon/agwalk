@@ -662,8 +662,6 @@ function calcPoints(acts, athleteId, gender, shift) {
   var rangeSplitChallenges = myChallenges.filter(function(c) {
     return c.range_split;
   });
-  var noBonus = (c.award_type || (c.exclude_normal_bonus ? 'per-act-no-bonus' : c.per_activity_points > 0 ? 'per-act' : 'one-time'));
-
   // Build set of days where bracket bonus is suppressed (per-act-no-bonus)
   var suppressBonusDays = {};
   myChallenges.forEach(function(c) {
