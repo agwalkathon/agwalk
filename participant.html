@@ -76,6 +76,15 @@
     .you-streak-val{font-size:20px;font-weight:800;color:var(--brand);}
     /* Medal prediction card */
     .medal-pred{background:var(--surface);border-radius:var(--radius-sm);padding:16px 14px;display:flex;align-items:center;gap:14px;}
+    .heatmap-wrap{background:var(--surface);border-radius:var(--radius-sm);padding:14px 12px;}
+    .heatmap-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px;}
+    .hm-day{aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(255,255,255,0.35);}
+    .hm-day.active{background:var(--brand);color:#fff;}
+    .hm-day.today{outline:2px solid var(--brand);outline-offset:1px;}
+    .hm-day.future{background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.15);}
+    .hm-day.rest{background:rgba(255,255,255,0.07);}
+    .hm-legend{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:10px;color:var(--muted);}
+    .hm-swatch{width:12px;height:12px;border-radius:3px;}
     .medal-pred-icon{font-size:32px;flex-shrink:0;}
     .medal-pred-title{font-size:15px;font-weight:800;color:#fff;}
     .medal-pred-sub{font-size:12px;color:var(--muted);margin-top:3px;}
@@ -513,8 +522,8 @@
     .last-active-chip.recent{color:var(--green);}
 
     /* ── Hall of Fame ── */
-    .hof-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px 14px;}
-    .hof-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;}
+    .hof-grid{display:grid;grid-template-columns:1fr;gap:8px;padding:10px 12px 14px;}
+    .hof-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;display:flex;align-items:center;gap:16px;}
     .hof-title{font-size:9px;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:6px;}
     .hof-name{font-size:13px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .hof-val{font-size:18px;font-weight:900;color:var(--brand);line-height:1;margin-bottom:2px;}
@@ -872,6 +881,26 @@
     <div>
       <div class="medal-pred-title" id="you-medal-pred-title">Calculating...</div>
       <div class="medal-pred-sub" id="you-medal-pred-sub"></div>
+    </div>
+  </div>
+
+  <!-- June Heatmap -->
+  <div class="sec">June Activity Heatmap</div>
+  <div class="heatmap-wrap">
+    <div id="heatmap-days-label" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:2px;">
+      <div style="text-align:center;font-size:9px;color:var(--muted);font-weight:600;">M</div>
+      <div style="text-align:center;font-size:9px;color:var(--muted);font-weight:600;">T</div>
+      <div style="text-align:center;font-size:9px;color:var(--muted);font-weight:600;">W</div>
+      <div style="text-align:center;font-size:9px;color:var(--muted);font-weight:600;">T</div>
+      <div style="text-align:center;font-size:9px;color:var(--muted);font-weight:600;">F</div>
+      <div style="text-align:center;font-size:9px;color:var(--muted);font-weight:600;">S</div>
+      <div style="text-align:center;font-size:9px;color:var(--muted);font-weight:600;">S</div>
+    </div>
+    <div class="heatmap-grid" id="heatmap-grid"></div>
+    <div class="hm-legend">
+      <div class="hm-swatch" style="background:var(--brand);"></div><span>Active</span>
+      <div class="hm-swatch" style="background:rgba(255,255,255,0.07);"></div><span>Rest</span>
+      <div class="hm-swatch" style="background:rgba(255,255,255,0.04);"></div><span>Upcoming</span>
     </div>
   </div>
 
@@ -1267,13 +1296,52 @@ async function load() {
       var predIco,predTitle,predSub;
       // Get thresholds from DOM (already computed in main load)
       var bT=bronzeThresh||100,sT=silverThresh||150,gT=goldThresh||200;
-      if(projPts>=gT){predIco='🥇';predTitle='On track for Gold';predSub='Projected ~'+Math.round(projPts)+' pts at current pace';}
+      var topMotivation=[
+        'You\'re a legend — can you crack Top 3? 🏆',
+        'Elite level achieved! Eyes on the podium 👀',
+        'Gold secured — now chase the #1 spot! 🥇',
+        'You\'re unstoppable — keep pushing for glory! 💪',
+        'Champion energy! The Top 3 is within reach 🚀',
+        'All medals unlocked — now go for the win! 🔥'
+      ];
+      if(myPtsNow>=gT){predIco='🏆';predTitle='All Medals Achieved!';predSub=topMotivation[Math.floor(Math.random()*topMotivation.length)];}
+      else if(projPts>=gT){predIco='🥇';predTitle='On track for Gold';predSub='Projected ~'+Math.round(projPts)+' pts at current pace';}
       else if(projPts>=sT){predIco='🥈';predTitle='On track for Silver';predSub='Need '+(Math.round(gT-projPts))+' more pts to reach Gold';}
       else if(projPts>=bT){predIco='🥉';predTitle='On track for Bronze';predSub='Walk '+(daysLeft>0?((sT-myPtsNow)/daysLeft).toFixed(1):0)+' km/day to reach Silver';}
       else{predIco='🏃';predTitle='Keep going!';predSub='Walk '+(daysLeft>0?((bT-myPtsNow)/daysLeft).toFixed(1):0)+' km/day to reach Bronze';}
       var pico=document.getElementById('you-medal-pred-ico');if(pico)pico.textContent=predIco;
       var ptit=document.getElementById('you-medal-pred-title');if(ptit)ptit.textContent=predTitle;
       var psub=document.getElementById('you-medal-pred-sub');if(psub)psub.textContent=predSub;
+
+      // ── June Activity Heatmap ─────────────────────────────────────────
+      (function(){
+        var grid=document.getElementById('heatmap-grid');
+        if(!grid)return;
+        // Build set of active dates for this participant
+        var activeDates={};
+        validA.forEach(function(a){
+          var d=(a.activity_date||'').split('T')[0];
+          if(d)activeDates[d]=true;
+        });
+        var todayStr=new Date().toISOString().split('T')[0];
+        grid.innerHTML='';
+        // June 1 2026 is a Monday (day index 0 in Mon-start week) — perfect alignment
+        // June has 30 days, fill exactly 30 cells + 2 padding cells for Mon start (Jun 1 = Mon)
+        // Jun 1 = Monday so no leading empty cells needed
+        for(var d=1;d<=30;d++){
+          var ds='2026-06-'+(d<10?'0':'')+d;
+          var cell=document.createElement('div');
+          cell.className='hm-day';
+          cell.title=ds;
+          cell.textContent=d;
+          if(ds>todayStr){cell.classList.add('future');}
+          else if(activeDates[ds]){cell.classList.add('active');}
+          else{cell.classList.add('rest');}
+          if(ds===todayStr)cell.classList.add('today');
+          grid.appendChild(cell);
+        }
+      })();
+      // ─────────────────────────────────────────────────────────────────
 
       // Strava sync
       var synced=document.getElementById('you-synced-acts');if(synced)synced.textContent=myActs.length;
@@ -1656,7 +1724,7 @@ async function load() {
 
     // Challenges
     var chCard=document.getElementById('challenges-card');
-    if(chCard&&CHALLENGES_LB.length){chCard.innerHTML='';CHALLENGES_LB.slice(0,8).forEach(function(ch,ci2){
+    if(chCard&&CHALLENGES_LB.length){chCard.innerHTML='';var sortedChallenges=CHALLENGES_LB.slice().sort(function(a,b){return (b.start_date||'').localeCompare(a.start_date||'');});sortedChallenges.slice(0,8).forEach(function(ch,ci2){
         var key='ch_'+(ch.id||ci2);
         var ep=fullPts.earnedPts||{};
         var ec=fullPts.earnedChallenges||{};
@@ -1941,7 +2009,7 @@ function renderRows(rows, prevRanks) {
         '</div>'+
         '<div class="row-right" style="display:flex;align-items:center;gap:6px;">'+
           '<div class="row-pts">'+
-            '<span class="row-pts-num">'+r.pts.total.toFixed(1)+'</span>'+
+            '<span class="row-pts-num">'+r.pts.total.toFixed(2)+'</span>'+
             '<span class="row-pts-unit"> pts</span>'+
             (rowMedal?'<span class="row-medal">'+rowMedal+'</span>':'')+
           '</div>'+
@@ -1963,7 +2031,7 @@ function renderRows(rows, prevRanks) {
         '<div class="detail-cell"><div class="detail-cell-lbl">⭐ Dist Pts</div><div class="detail-cell-val brand">'+r.pts.distPts.toFixed(1)+'</div></div>'+
         '<div class="detail-cell"><div class="detail-cell-lbl">⚡ Bonus</div><div class="detail-cell-val gold">'+r.pts.bonusPts+'</div></div>'+
         (chalHtml||'<div class="detail-cell"><div class="detail-cell-lbl">🎯 Challenge</div><div class="detail-cell-val" style="color:var(--label)">—</div></div>')+
-        '<div class="detail-cell" style="grid-column:span '+(r.pts.challengePts>0?'2':'3')+'"><div class="detail-cell-lbl">🏆 Total</div><div class="detail-cell-val brand" style="font-size:18px;">'+r.pts.total.toFixed(1)+'</div></div>'+
+        '<div class="detail-cell" style="grid-column:span '+(r.pts.challengePts>0?'2':'3')+'"><div class="detail-cell-lbl">🏆 Total</div><div class="detail-cell-val brand" style="font-size:18px;">'+r.pts.total.toFixed(2)+'</div></div>'+
       '</div>'+
       '<div class="detail-meta">'+
         '<span class="last-active-chip'+(laInfo.recent?' recent':'')+'">'+laInfo.text+'</span>'+
@@ -2011,7 +2079,14 @@ function renderHallOfFame() {
   var byCount = allScored.slice().sort(function(a,b){return b.actCount-a.actCount;});
 
   function hofCard(title, icon, name, val) {
-    return '<div class="hof-card"><div class="hof-title">'+icon+' '+title+'</div><div class="hof-val">'+val+'</div><div class="hof-name">'+esc(name)+'</div></div>';
+    return '<div class="hof-card">'+
+      '<div style="font-size:28px;flex-shrink:0;">'+icon+'</div>'+
+      '<div style="flex:1;min-width:0;">'+
+        '<div class="hof-title">'+title+'</div>'+
+        '<div class="hof-val">'+val+'</div>'+
+        '<div class="hof-name">'+esc(name)+'</div>'+
+      '</div>'+
+    '</div>';
   }
 
   list.innerHTML = '<div class="hof-grid">'+
@@ -2085,7 +2160,7 @@ function lbRender(){
     document.getElementById('lb-my-tags').innerHTML=tags.map(function(t){return'<span class="my-tag">'+esc(t)+'</span>';}).join('');
     buildTabs(); renderRows(getRows(LB_currentTab));
     var allRows=getRows(LB_currentTab),myRow=allRows.find(function(r){return String(r.p.strava_athlete_id)===String(s.athleteId);});
-    document.getElementById('lb-my-pts').textContent=myRow?myRow.pts.total.toFixed(1):'—';
+    document.getElementById('lb-my-pts').textContent=myRow?myRow.pts.total.toFixed(2):'—';
     (function(){
       try{
         var meId=s.athleteId;
