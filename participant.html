@@ -729,11 +729,23 @@ async function load() {
       }
     });
 
+    // Phase 2: ranking data in background
+    (async function loadRanking(){
+      try{
+        var [allActsRaw,allRegRaw]=await Promise.all([
+          fetchAll(SUPABASE_URL+'/rest/v1/activities?is_flagged=is.false&is_deleted=is.false&select=strava_athlete_id,distance_meters'),
+          fetchAll(SUPABASE_URL+'/rest/v1/registration?select=strava_athlete_id,full_name,gender,shift,leaderboard_team')
+        ]);
+        allActs=allActsRaw; allRegRes=allRegRaw;
+      }catch(e2){console.warn('Ranking load failed:',e2);return;}
+
     // Standing
     var allReg=allRegRes,myGenderN=(reg.gender||'').toLowerCase(),myShiftN=(reg.shift||'').toLowerCase();
     var myTeamN=(reg.leaderboard_team||'').toLowerCase(),isNight=myShiftN.indexOf('night')>-1,isFemale=myGenderN==='female';
     var allActsMap={};
     allActs.forEach(function(a){if(!allActsMap[a.strava_athlete_id])allActsMap[a.strava_athlete_id]=[];allActsMap[a.strava_athlete_id].push(a);});
+    var allKmMap={};
+    allActs.forEach(function(a){var id=a.strava_athlete_id;allKmMap[id]=(allKmMap[id]||0)+(parseFloat(a.distance_meters)||0)/1000;});
     function rankIn(peers){var scored=peers.map(function(p){var acts=allActsMap[p.strava_athlete_id]||[],km=0;acts.forEach(function(a){km+=(a.distance_meters||0)/1000;});return{id:p.strava_athlete_id,km:km};}).sort(function(a,b){return b.km-a.km;});var pos=scored.findIndex(function(x){return String(x.id)===String(athleteId);});return pos>=0?pos+1:null;}
     var shiftPeers=allReg.filter(function(p){var pg=(p.gender||'').toLowerCase(),ps=(p.shift||'').toLowerCase();return ps.indexOf('night')>-1===isNight&&(pg==='female')===isFemale;});
     var teamPeers=allReg.filter(function(p){var pg=(p.gender||'').toLowerCase(),pt=(p.leaderboard_team||'').toLowerCase();return pt===myTeamN&&(pg==='female')===isFemale;});
@@ -928,6 +940,8 @@ async function load() {
     var flaggedCount=myActs.filter(function(a){return a.is_flagged;}).length;
     var uniqueDays=new Set(myActs.filter(function(a){return !a.is_flagged;}).map(function(a){return(a.activity_date||'').split('T')[0];})).size;
     document.getElementById('act-section-title').textContent=uniqueDays+' Days · '+myActs.length+' Activities'+(flaggedCount?' · '+flaggedCount+' Flagged':'');
+    })().catch(function(e){console.warn('Ranking:',e);});
+
     renderActivities(myActs,fullPts.dayBreakdown,fullPts.actBreakdown,reg.gender);
 
   } catch(e) {
