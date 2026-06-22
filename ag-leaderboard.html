@@ -570,12 +570,14 @@ function checkChallenge(act, challenge) {
   var sportTypes = challenge.sport_types || ['Walk','Run','Hike','Ride'];
   if (!sportTypes.includes(act.sport_type)) return false;
   var km = (act.distance_meters||0) / 1000;
+  var dMin = parseFloat(challenge.distance_min) || 0;
+  var dMax = parseFloat(challenge.distance_max) || 0;
   if (challenge.distance_type === 'fixed') {
-    if (km < challenge.distance_min - 0.1  || km > challenge.distance_max + 0.1 ) return false;
+    if (km < dMin - 0.1 || km > dMax + 0.1) return false;
   } else if (challenge.distance_type === 'range') {
-    if (km < challenge.distance_min || km > challenge.distance_max) return false;
+    if (km < dMin || km > dMax) return false;
   } else { // extended
-    if (km < challenge.distance_min) return false;
+    if (km < dMin) return false;
   }
   if (challenge.elevation_criteria > 0 && (act.elevation_gain||0) < challenge.elevation_criteria) return false;
   // Note: start_time check skipped for imported activities (time data not available)
@@ -655,8 +657,8 @@ function calcPoints(acts, athleteId, gender, shift) {
         var cST = Array.isArray(rsChallenge.sport_types) && rsChallenge.sport_types.length
           ? rsChallenge.sport_types : ['Walk','Run','Hike','Ride'];
         var inRange = cST.includes(a.sport_type)
-          && actKm >= (rsChallenge.distance_min - 0.1)
-          && actKm <= rsChallenge.distance_max;
+          && actKm >= (parseFloat(rsChallenge.distance_min) - 0.1)
+          && actKm <= parseFloat(rsChallenge.distance_max);
         if (inRange) { inRangeKm += actKm; return; }
       }
       outRangeKm += actKm;
@@ -736,7 +738,7 @@ function calcPoints(acts, athleteId, gender, shift) {
         if (raDate < c.start_date || raDate > c.end_date) continue;
         if (!cSportTypesRS.includes(ra.sport_type)) continue;
         var raKm = (ra.distance_meters || 0) / 1000;
-        if (raKm >= (c.distance_min - 0.1) && raKm <= c.distance_max) {  // strict upper bound: no +0.1 tolerance
+        if (raKm >= (parseFloat(c.distance_min) - 0.1) && raKm <= parseFloat(c.distance_max)) {  // strict upper bound: no +0.1 tolerance
           inRangePts += Number(c.bonus_points) || 0;
           inRangeCount++;
         }
@@ -792,9 +794,9 @@ function calcPoints(acts, athleteId, gender, shift) {
         });
         var qualifies = false;
         if (c.distance_type === 'fixed' || c.distance_type === 'range') {
-          qualifies = dayTotalKm >= c.distance_min - 0.1 && dayTotalKm <= c.distance_max + 0.1;
+          qualifies = dayTotalKm >= parseFloat(c.distance_min) - 0.1 && dayTotalKm <= parseFloat(c.distance_max) + 0.1;
         } else {
-          qualifies = dayTotalKm >= c.distance_min;
+          qualifies = dayTotalKm >= parseFloat(c.distance_min);
         }
         if (qualifies) { awarded = true; }
       }
@@ -1015,8 +1017,8 @@ function toggleExpand(athleteId, gender, trEl) {
         var cST = Array.isArray(rsChallenge.sport_types) && rsChallenge.sport_types.length
           ? rsChallenge.sport_types : ['Walk','Run','Hike','Ride'];
         var inRange = cST.includes(a.sport_type)
-          && actKm >= (rsChallenge.distance_min - 0.1)
-          && actKm <= rsChallenge.distance_max;
+          && actKm >= (parseFloat(rsChallenge.distance_min) - 0.1)
+          && actKm <= parseFloat(rsChallenge.distance_max);
         if (inRange) { inRangeKmExp += actKm; return; }
       }
       outRangeKmExp += actKm;
