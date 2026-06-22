@@ -1703,17 +1703,21 @@ function renderActivities(acts,dayBreakdown,actBreakdown,gender) {
   acts.forEach(function(a){var d=(a.activity_date||'').split('T')[0]||'Unknown';if(!groups[d]){groups[d]=[];dateOrder.push(d);}groups[d].push(a);});
   list.innerHTML='';
   dateOrder.forEach(function(date,gi){
-    var dayActs=groups[date],db=dayBreakdown[date]||{distPts:0,bonusPts:0,challenges:[]};
+    var dayActs=groups[date],db=dayBreakdown[date]||{km:0,distPts:0,bonusPts:0,challenges:[]};
+    // Use scored km (capped, range-split adjusted) not raw sum
+    var scoredKm=db.km||0;
     var rawKm=dayActs.filter(function(a){return !a.is_flagged;}).reduce(function(s,a){return s+(a.distance_meters||0)/1000;},0);
-    var chPts=db.challenges.reduce(function(s,ch){return s+ch.pts;},0);
-    dayActs.forEach(function(a){var ab=actBreakdown[a.strava_activity_id]||{challenges:[]};ab.challenges.forEach(function(ch){chPts+=ch.pts;});});
-    var dayTotal=db.distPts+db.bonusPts+chPts;
+    // Challenge pts: use dayBreakdown only (actBreakdown challenges are already included there)
+    var chPts=parseFloat((db.challenges||[]).reduce(function(s,ch){return s+(ch.pts||0);},0).toFixed(2));
+    var dayTotal=parseFloat((db.distPts+db.bonusPts+chPts).toFixed(2));
     var dateObj=new Date(date+'T00:00:00');
     var dW=dateObj.toLocaleDateString('en-IN',{weekday:'long'});
     var dN=dateObj.getDate();
     var dM=dateObj.toLocaleDateString('en-IN',{month:'long'});
     var dateStr=dW+', '+dN+' '+dM;
-    var kmLabel=Math.round(rawKm)+' KM';
+    // Show scored km (capped) with raw in parens if different
+    var kmDiff=Math.abs(rawKm-scoredKm)>0.05;
+    var kmLabel=Math.round(scoredKm)+' KM'+(kmDiff?' ('+Math.round(rawKm)+' raw)':'');
     var actWord=dayActs.length===1?'1 activity':dayActs.length+' activities';
     var group=document.createElement('div'); group.className='date-group'; group.id='dg-'+gi;
     var dateRow=document.createElement('div'); dateRow.className='date-row';
