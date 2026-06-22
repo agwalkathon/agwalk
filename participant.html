@@ -1053,8 +1053,10 @@ async function load() {
     // ── Medal rings ───────────────────────────────────────────────────────────
     var CIRC=270.2; // 2 * π * 43
     [{id:'br',thresh:bronzeThresh},{id:'si',thresh:silverThresh},{id:'go',thresh:goldThresh}].forEach(function(m){
-      var pct=Math.min(100,Math.round((myPts/m.thresh)*100));
       var done=myPts>=m.thresh;
+      var rawPct=(myPts/m.thresh)*100;
+      // Cap at 99 when not done — prevents rounding artifacts showing 100% with pts remaining
+      var pct=done?100:Math.min(99,Math.floor(rawPct));
       var needed=Math.max(0,m.thresh-myPts);
       var offset=CIRC-(CIRC*pct/100);
       var fillEl=document.getElementById('ring-fill-'+m.id);
@@ -1066,7 +1068,7 @@ async function load() {
         else{pctEl.textContent=pct+'%';pctEl.style.fontSize='';}
       }
       if(needEl){
-        if(done){needEl.textContent='100%';needEl.style.color='var(--text)';}
+        if(done){needEl.textContent='✓ Achieved';needEl.style.color='var(--green)';}
         else{needEl.textContent='Need '+needed.toFixed(0)+' pts';}
       }
     });
