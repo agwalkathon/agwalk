@@ -68,15 +68,10 @@
       text-align:center;
     }
     .hero-rings-block{
-      background:var(--surface);
-      border-bottom:none;
-      padding:22px 20px 20px;
-      overflow-x:hidden;
+      padding:8px 0 16px;
     }
     .hero-metrics-block{
-      background:var(--bg);
-      border-bottom:none;
-      padding:14px 20px 20px;
+      padding:0 0 16px;
     }
     .hero-top{display:flex;align-items:center;gap:12px;}
     .avatar{
@@ -604,57 +599,57 @@
 })();
 </script>
 
-<!-- Block 2: Medal Rings -->
-<div class="hero-rings-block">
-  <div class="rings-row" id="medal-rings">
-    <div class="ring-box">
-      <div class="ring-svg-wrap">
-        <svg viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="43"/><circle class="ring-fill br" id="ring-fill-br" cx="50" cy="50" r="43" stroke-dasharray="270.2" stroke-dashoffset="270.2"/></svg>
-        <div class="ring-inner"><span class="ring-pct" id="ring-pct-br">—</span></div>
-      </div>
-      <div class="ring-name br">Bronze</div>
-      <div class="ring-need" id="ring-need-br">—</div>
-    </div>
-    <div class="ring-box">
-      <div class="ring-svg-wrap">
-        <svg viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="43"/><circle class="ring-fill si" id="ring-fill-si" cx="50" cy="50" r="43" stroke-dasharray="270.2" stroke-dashoffset="270.2"/></svg>
-        <div class="ring-inner"><span class="ring-pct" id="ring-pct-si">—</span></div>
-      </div>
-      <div class="ring-name si">Silver</div>
-      <div class="ring-need" id="ring-need-si">—</div>
-    </div>
-    <div class="ring-box">
-      <div class="ring-svg-wrap">
-        <svg viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="43"/><circle class="ring-fill go" id="ring-fill-go" cx="50" cy="50" r="43" stroke-dasharray="270.2" stroke-dashoffset="270.2"/></svg>
-        <div class="ring-inner"><span class="ring-pct" id="ring-pct-go">—</span></div>
-      </div>
-      <div class="ring-name go">Gold</div>
-      <div class="ring-need" id="ring-need-go">—</div>
-    </div>
-  </div>
-</div>
-
-<!-- Block 3: Metrics -->
-<div class="hero-metrics-block">
-  <div class="metric-trio">
-    <div class="metric-box">
-      <div class="metric-val orange" id="s-pts-display">—</div>
-      <div class="metric-lbl">Points</div>
-    </div>
-    <div class="metric-box">
-      <div class="metric-val green" id="s-dist">—</div>
-      <div class="metric-lbl">km walked</div>
-    </div>
-    <div class="metric-box">
-      <div class="metric-val blue" id="s-acts">—</div>
-      <div class="metric-lbl">Activities</div>
-    </div>
-  </div>
-</div>
-
 <!-- Dashboard tab -->
 <div class="content active" id="tab-dashboard">
 <div class="max-w">
+
+  <!-- Medal Rings -->
+  <div class="hero-rings-block">
+    <div class="rings-row" id="medal-rings">
+      <div class="ring-box">
+        <div class="ring-svg-wrap">
+          <svg viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="43"/><circle class="ring-fill br" id="ring-fill-br" cx="50" cy="50" r="43" stroke-dasharray="270.2" stroke-dashoffset="270.2"/></svg>
+          <div class="ring-inner"><span class="ring-pct" id="ring-pct-br">—</span></div>
+        </div>
+        <div class="ring-name br">Bronze</div>
+        <div class="ring-need" id="ring-need-br">—</div>
+      </div>
+      <div class="ring-box">
+        <div class="ring-svg-wrap">
+          <svg viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="43"/><circle class="ring-fill si" id="ring-fill-si" cx="50" cy="50" r="43" stroke-dasharray="270.2" stroke-dashoffset="270.2"/></svg>
+          <div class="ring-inner"><span class="ring-pct" id="ring-pct-si">—</span></div>
+        </div>
+        <div class="ring-name si">Silver</div>
+        <div class="ring-need" id="ring-need-si">—</div>
+      </div>
+      <div class="ring-box">
+        <div class="ring-svg-wrap">
+          <svg viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="43"/><circle class="ring-fill go" id="ring-fill-go" cx="50" cy="50" r="43" stroke-dasharray="270.2" stroke-dashoffset="270.2"/></svg>
+          <div class="ring-inner"><span class="ring-pct" id="ring-pct-go">—</span></div>
+        </div>
+        <div class="ring-name go">Gold</div>
+        <div class="ring-need" id="ring-need-go">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Metrics -->
+  <div class="hero-metrics-block">
+    <div class="metric-trio">
+      <div class="metric-box">
+        <div class="metric-val orange" id="s-pts-display">—</div>
+        <div class="metric-lbl">Points</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-val green" id="s-dist">—</div>
+        <div class="metric-lbl">km walked</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-val blue" id="s-acts">—</div>
+        <div class="metric-lbl">Activities</div>
+      </div>
+    </div>
+  </div>
 
   <div class="sec">My Standing</div>
   <div class="standing-grid">
@@ -1371,9 +1366,7 @@ function showTab(tab){
   document.getElementById('bnav-activities').classList.toggle('active',tab==='activities');
   document.getElementById('bnav-leaderboard').classList.toggle('active',tab==='leaderboard');
   document.getElementById('bnav-you').classList.toggle('active',tab==='you');
-  var isDash=tab==='dashboard';
-  document.querySelector('.hero-rings-block').style.display=isDash?'':'none';
-  document.querySelector('.hero-metrics-block').style.display=isDash?'':'none';
+  // rings + metrics now inside dashboard tab — no separate show/hide needed
   if(tab==='leaderboard'&&!_lbLoaded){
     _lbLoaded=true;
     if(_lbReady){lbRender();}  // data already loaded — instant render
