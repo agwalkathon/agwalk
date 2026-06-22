@@ -497,8 +497,9 @@ async function loadConfig() {
 
 async function loadChallenges() {
   try {
-    var r = await fetch(SB_URL+'/rest/v1/challenges?is_active=eq.true&select=*', {headers:HDR});
-    CHALLENGES = await r.json();
+    var r = await fetch(SB_URL+'/rest/v1/challenges?is_active=is.true&select=*', {headers:HDR});
+    var raw = await r.json();
+    CHALLENGES = Array.isArray(raw) ? raw : [];
     // challenge chip removed
   } catch(e) { CHALLENGES = []; }
 }
