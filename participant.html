@@ -59,6 +59,26 @@
     .tab-you-detail-row:last-child{border-bottom:none;}
     .tab-you-detail-lbl{font-size:13px;color:var(--muted);font-weight:500;}
     .tab-you-detail-val{font-size:14px;font-weight:700;color:var(--text);}
+    /* You tab insight cards */
+    .you-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:0;}
+    .you-card{background:var(--surface);border-radius:var(--radius-sm);padding:14px 14px;}
+    .you-card-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+    .you-card-val{font-size:22px;font-weight:800;color:#fff;line-height:1;letter-spacing:-0.3px;}
+    .you-card-lbl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-top:5px;}
+    .you-card-sub{font-size:11px;color:var(--label);margin-top:3px;}
+    /* Consistency bar */
+    .you-consist-bar{height:6px;background:rgba(255,255,255,0.1);border-radius:3px;margin-top:10px;overflow:hidden;}
+    .you-consist-fill{height:100%;border-radius:3px;background:var(--green);transition:width 0.8s ease;}
+    /* Streak comparison */
+    .you-streak-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);}
+    .you-streak-row:last-child{border-bottom:none;}
+    .you-streak-lbl{font-size:13px;color:var(--muted);font-weight:500;}
+    .you-streak-val{font-size:20px;font-weight:800;color:var(--brand);}
+    /* Medal prediction card */
+    .medal-pred{background:var(--surface);border-radius:var(--radius-sm);padding:16px 14px;display:flex;align-items:center;gap:14px;}
+    .medal-pred-icon{font-size:32px;flex-shrink:0;}
+    .medal-pred-title{font-size:15px;font-weight:800;color:#fff;}
+    .medal-pred-sub{font-size:12px;color:var(--muted);margin-top:3px;}
 
     /* ── Hero profile strip ── */
     .hero-profile{
@@ -841,6 +861,72 @@
     </div>
   </div>
 
+  <!-- Card 1: Event Progress -->
+  <div class="sec">Event Progress</div>
+  <div class="you-cards">
+    <div class="you-card">
+      <div class="you-card-icon" style="background:rgba(232,98,42,0.12);">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div class="you-card-val" id="you-active-days">—</div>
+      <div class="you-card-lbl">Days Active</div>
+      <div class="you-card-sub" id="you-event-days">of — event days</div>
+    </div>
+    <div class="you-card">
+      <div class="you-card-icon" style="background:rgba(34,197,94,0.12);">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div class="you-card-val" id="you-consistency">—%</div>
+      <div class="you-card-lbl">Consistency</div>
+      <div class="you-card-sub">days active / event days</div>
+      <div class="you-consist-bar"><div class="you-consist-fill" id="you-consist-fill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- Card 2: Streak comparison -->
+  <div class="sec">Streaks</div>
+  <div class="card">
+    <div class="you-streak-row">
+      <span class="you-streak-lbl">🔥 Current Streak</span>
+      <span class="you-streak-val" id="you-cur-streak">—</span>
+    </div>
+    <div class="you-streak-row">
+      <span class="you-streak-lbl">⚡ Best Streak</span>
+      <span class="you-streak-val" id="you-best-streak" style="color:var(--gold)">—</span>
+    </div>
+  </div>
+
+  <!-- Card 3: Medal Prediction -->
+  <div class="sec">Medal Prediction</div>
+  <div class="medal-pred" id="you-medal-pred">
+    <div class="medal-pred-icon" id="you-medal-pred-ico">🏅</div>
+    <div>
+      <div class="medal-pred-title" id="you-medal-pred-title">Calculating...</div>
+      <div class="medal-pred-sub" id="you-medal-pred-sub"></div>
+    </div>
+  </div>
+
+  <!-- Card 4: Strava Sync -->
+  <div class="sec">Strava Sync</div>
+  <div class="you-cards">
+    <div class="you-card">
+      <div class="you-card-icon" style="background:rgba(232,98,42,0.12);">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
+      <div class="you-card-val" id="you-synced-acts">—</div>
+      <div class="you-card-lbl">Synced</div>
+      <div class="you-card-sub">activities from Strava</div>
+    </div>
+    <div class="you-card">
+      <div class="you-card-icon" style="background:rgba(96,165,250,0.12);">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="you-card-val" id="you-last-sync">—</div>
+      <div class="you-card-lbl">Last Activity</div>
+      <div class="you-card-sub" id="you-last-sync-date"></div>
+    </div>
+  </div>
+
   <div style="margin-top:24px;padding:0 4px;">
     <button onclick="logout()" style="width:100%;padding:14px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--muted);font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;letter-spacing:0.3px;">Sign Out</button>
   </div>
@@ -1046,6 +1132,70 @@ async function load() {
     if(reg.leaderboard_team)tags.push(icoTeam+' '+reg.leaderboard_team);
     var tagHtml=tags.map(function(t){var sp=t.indexOf('</svg>');return sp>=0?'<span class="hero-tag">'+t.substring(0,sp+6)+' '+esc(t.substring(sp+6).trim())+'</span>':'<span class="hero-tag">'+esc(t)+'</span>';}).join('');
     var youTagsEl=document.getElementById('you-tags');if(youTagsEl)youTagsEl.innerHTML=tagHtml;
+
+    // ── You tab insight cards (all from myActs — zero extra calls) ──
+    (function(){
+      var validA=myActs.filter(function(a){return !a.is_flagged;});
+      var EVENT_START=new Date('2026-06-01T00:00:00');
+      var EVENT_END=new Date('2026-06-30T23:59:59');
+      var nowD=new Date();
+      var totalEventDays=Math.round((Math.min(nowD,EVENT_END)-EVENT_START)/86400000)+1;
+      // Days active
+      var activeDaysSet={};
+      validA.forEach(function(a){var d=(a.activity_date||'').split('T')[0];if(d)activeDaysSet[d]=true;});
+      var activeDayCount=Object.keys(activeDaysSet).length;
+      var consistPct=totalEventDays>0?Math.round((activeDayCount/totalEventDays)*100):0;
+      var ade=document.getElementById('you-active-days');if(ade)ade.textContent=activeDayCount;
+      var ede=document.getElementById('you-event-days');if(ede)ede.textContent='of '+totalEventDays+' event days';
+      var cpe=document.getElementById('you-consistency');if(cpe)cpe.textContent=consistPct+'%';
+      var cfe=document.getElementById('you-consist-fill');if(cfe)setTimeout(function(){cfe.style.width=consistPct+'%';},100);
+
+      // Streak — mirror from dashboard (read from DOM after streak calc runs)
+      // We defer this slightly so streak DOM is populated first
+      setTimeout(function(){
+        var curS=document.getElementById('streak-num');
+        var bestS=document.getElementById('streak-best-val');
+        var ycs=document.getElementById('you-cur-streak');
+        var ybs=document.getElementById('you-best-streak');
+        if(ycs&&curS)ycs.textContent=(curS.textContent||'0').replace('🔥','')+'d';
+        if(ybs&&bestS)ybs.textContent=(bestS.textContent||'0')+'d';
+      },500);
+
+      // Medal prediction
+      var fullP=calcFullPts(validA,reg.gender);
+      var myPtsNow=fullP.total;
+      var daysElapsed=Math.max(1,(nowD-EVENT_START)/86400000);
+      var daysLeft=Math.max(0,Math.ceil((EVENT_END-nowD)/86400000));
+      var avgPtDay=myPtsNow/daysElapsed;
+      var projPts=myPtsNow+(avgPtDay*daysLeft);
+      var predIco,predTitle,predSub;
+      // Get thresholds from DOM (already computed in main load)
+      var bT=bronzeThresh||100,sT=silverThresh||150,gT=goldThresh||200;
+      if(projPts>=gT){predIco='🥇';predTitle='On track for Gold';predSub='Projected ~'+Math.round(projPts)+' pts at current pace';}
+      else if(projPts>=sT){predIco='🥈';predTitle='On track for Silver';predSub='Need '+(Math.round(gT-projPts))+' more pts to reach Gold';}
+      else if(projPts>=bT){predIco='🥉';predTitle='On track for Bronze';predSub='Walk '+(daysLeft>0?((sT-myPtsNow)/daysLeft).toFixed(1):0)+' km/day to reach Silver';}
+      else{predIco='🏃';predTitle='Keep going!';predSub='Walk '+(daysLeft>0?((bT-myPtsNow)/daysLeft).toFixed(1):0)+' km/day to reach Bronze';}
+      var pico=document.getElementById('you-medal-pred-ico');if(pico)pico.textContent=predIco;
+      var ptit=document.getElementById('you-medal-pred-title');if(ptit)ptit.textContent=predTitle;
+      var psub=document.getElementById('you-medal-pred-sub');if(psub)psub.textContent=predSub;
+
+      // Strava sync
+      var synced=document.getElementById('you-synced-acts');if(synced)synced.textContent=myActs.length;
+      // Last activity date
+      var sortedActs=validA.slice().sort(function(a,b){return (b.activity_date||'').localeCompare(a.activity_date||'');});
+      var lastAct=sortedActs.length?sortedActs[0]:null;
+      var ylse=document.getElementById('you-last-sync');
+      var ylsd=document.getElementById('you-last-sync-date');
+      if(lastAct){
+        var ld=new Date(lastAct.activity_date);
+        var diffD=Math.floor((nowD-ld)/86400000);
+        var diffLabel=diffD===0?'Today':diffD===1?'Yesterday':diffD+' days ago';
+        if(ylse)ylse.textContent=diffLabel;
+        if(ylsd)ylsd.textContent=ld.toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
+      } else {
+        if(ylse)ylse.textContent='—';
+      }
+    })();
 
     var fullPts=calcFullPts(myActs,reg.gender);
     var validCount=myActs.filter(function(a){return !a.is_flagged;}).length;
