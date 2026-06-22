@@ -143,7 +143,7 @@
     .lrow-left{flex:1;}
     .lrow-label{font-size:15px;font-weight:600;color:var(--text);}
     .lrow-sub{font-size:12px;color:var(--label);margin-top:2px;}
-    .lrow-val{font-size:20px;font-weight:800;color:var(--brand);flex-shrink:0;}
+    .lrow-val{font-size:16px;font-weight:700;color:var(--brand);flex-shrink:0;}
 
     /* ── WHOOP-style activity tile rows ── */
     #act-list{display:grid;gap:8px;}
@@ -223,11 +223,11 @@
     /* ── Pace goals ── */
     .pace-row{display:flex;align-items:center;gap:12px;padding:15px 16px;border-bottom:1px solid var(--border);}
     .pace-row:last-child{border-bottom:none;}
-    .pace-icon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+    .pace-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
     .pace-text{flex:1;}
-    .pace-main{font-size:17px;font-weight:700;color:#fff;}
-    .pace-sub{font-size:13px;color:var(--muted);margin-top:3px;}
-    .pace-val{font-size:22px;font-weight:600;flex-shrink:0;text-align:right;min-width:52px;}
+    .pace-main{font-size:13px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:0.3px;}
+    .pace-sub{font-size:12px;color:var(--muted);margin-top:3px;}
+    .pace-val{font-size:15px;font-weight:700;flex-shrink:0;text-align:right;min-width:52px;}
 
     /* ── Gold achieved card ── */
     .gold-card{padding:16px;}
@@ -1164,12 +1164,12 @@ async function load() {
 
     } else {
       // Not gold — show only uncompleted medal rows + today bonus
-    var icoCalPace='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(96,165,250,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
-    var icoBronze='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F4A84A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="M8.5 8.5 6 6l3-3h6l3 3-2.5 2.5"/></svg>';
-    var icoSilver='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C8D8E8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="M8.5 8.5 6 6l3-3h6l3 3-2.5 2.5"/></svg>';
-    var icoGold='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFD000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="M8.5 8.5 6 6l3-3h6l3 3-2.5 2.5"/></svg>';
-    var icoPaceBolt='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(96,165,250,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
-    var icoPaceChk='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(34,197,94,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    var icoCalPace='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(96,165,250,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
+    var icoBronze='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F4A84A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="M8.5 8.5 6 6l3-3h6l3 3-2.5 2.5"/></svg>';
+    var icoSilver='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C8D8E8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="M8.5 8.5 6 6l3-3h6l3 3-2.5 2.5"/></svg>';
+    var icoGold='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFD000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="M8.5 8.5 6 6l3-3h6l3 3-2.5 2.5"/></svg>';
+    var icoPaceBolt='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(96,165,250,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
+    var icoPaceChk='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(34,197,94,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
 
       paceCard.appendChild(paceRow('rgba(96,165,250,0.12)',icoCalPace,daysLeft+' days remaining','Event ends June 30','Jun 30','var(--muted)'));
 
