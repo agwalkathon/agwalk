@@ -1124,8 +1124,21 @@ function calcFullPts(myActs, gender) {
   });
 
   // ── Step 4: suppress bracket bonus on per-act-no-bonus days ────
-  var suppressBonusDays = {};
+    var suppressBonusDays    = {};
+  var perActivityBonusDays = {};
   myChallenges.forEach(function(c) {
+    var nbt         = c.normal_bonus_type || 'no-change';
+    var suppress    = (nbt === 'exclude-all' || nbt === 'exclude-sum' || c.exclude_normal_bonus || c.award_type === 'per-act-no-bonus');
+    var perActivity = (nbt === 'per-activity');
+    if (!suppress && !perActivity) return;
+    Object.keys(byDay).forEach(function(day) {
+      if (day < c.start_date || day > c.end_date) return;
+      var qualifies = byDay[day].some(function(a) { return checkChallengeSingle(a, c); });
+      if (!qualifies) return;
+      if (suppress)    suppressBonusDays[day]    = true;
+      if (perActivity) perActivityBonusDays[day] = true;
+    });
+  });  myChallenges.forEach(function(c) {
     var atype = c.range_split ? 'range-split'
       : c.exclude_normal_bonus ? 'per-act-no-bonus'
       : (c.award_type === 'two-challenges-same-day') ? 'two-challenges-same-day'
@@ -1265,7 +1278,17 @@ function calcFullPts(myActs, gender) {
     totalDistKm  += dayDistKm;
     totalDistPts += parseFloat((dayDistKm * base).toFixed(2));
 
-    var bp = suppressBonusDays[day] ? 0 : calcBonus(outRangeKm);
+    var bp;
+    if (suppressBonusDays[day]) {
+      bp = 0;
+    } else if (perActivityBonusDays[day]) {
+      bp = 0;
+      dayActs.forEach(function(a) {
+        if (!a.is_flagged) bp += calcBonus(parseFloat(a.distance_meters||0)/1000);
+      });
+    } else {
+      bp = calcBonus(outRangeKm);
+    }
     totalBonus += bp;
 
     byDay[day]._outRangeKm = outRangeKm;
