@@ -1429,25 +1429,86 @@ async function fetchAll(url) {
   while(true){var sep=url.indexOf('?')>-1?'&':'?';var r=await fetch(url+sep+'limit='+ps+'&offset='+from,{headers:Object.assign({},HDR,{'Range-Unit':'items','Range':from+'-'+(from+ps-1)})});if(!r.ok)break;var page=await r.json();if(!Array.isArray(page)||!page.length)break;all=all.concat(page);if(page.length<ps)break;from+=ps;}
   return all;
 }
+
+// ── localStorage Cache Helpers ──────────────────────────────────────────────
+var CACHE_TTL = { personal: 5*60*1000, config: 10*60*1000, ranking: 5*60*1000, reg: 30*60*1000 };
+function cacheSet(key, data) {
+  try { localStorage.setItem('agwalk_' + key, JSON.stringify({ ts: Date.now(), data: data })); } catch(e) {}
+}
+function cacheGet(key, ttl) {
+  try {
+    var raw = localStorage.getItem('agwalk_' + key);
+    if (!raw) return null;
+    var obj = JSON.parse(raw);
+    if (Date.now() - obj.ts > ttl) return null;
+    return obj.data;
+  } catch(e) { return null; }
+}
+function cacheClear(athleteId) {
+  var keys = ['reg_'+athleteId,'acts_'+athleteId,'config','challenges','special_days','medals','ranking_acts','ranking_reg'];
+  keys.forEach(function(k){ try { localStorage.removeItem('agwalk_'+k); } catch(e){} });
+  console.log('[Cache] Cleared for athlete', athleteId);
+}
+// ────────────────────────────────────────────────────────────────────────────
 var currentSession=null;
 
 async function load() {
   var s=userGuard(); if(!s) return; currentSession=s; var athleteId=s.athleteId;
   try {
-    var [regRes,myActs,cfgRes,chRes,sdRes,medalRes]=await Promise.all([
-      fetch(SUPABASE_URL+'/rest/v1/registration?strava_athlete_id=eq.'+athleteId+'&select=*',{headers:HDR}),
-      fetchAll(SUPABASE_URL+'/rest/v1/activities?strava_athlete_id=eq.'+athleteId+'&is_deleted=is.false&order=activity_date.desc'),
-      fetch(SUPABASE_URL+'/rest/v1/leaderboard_config?select=config_key,config_value',{headers:HDR}),
-      fetch(SUPABASE_URL+'/rest/v1/challenges?is_active=is.true&select=*',{headers:HDR}),
-      fetch(SUPABASE_URL+'/rest/v1/special_scoring_days?select=special_date',{headers:HDR}),
-      fetch(SUPABASE_URL+'/rest/v1/leaderboard_config?config_key=eq.medals&select=config_value',{headers:HDR})
-    ]);
+    // ── Phase 1: Load personal data with cache ────────────────────────────────
+    var _cachedReg   = cacheGet('reg_'+athleteId, CACHE_TTL.reg);
+    var _cachedActs  = cacheGet('acts_'+athleteId, CACHE_TTL.personal);
+    var _cachedCfg   = cacheGet('config', CACHE_TTL.config);
+    var _cachedCh    = cacheGet('challenges', CACHE_TTL.config);
+    var _cachedSd    = cacheGet('special_days', CACHE_TTL.config);
+    var _cachedMedal = cacheGet('medals', CACHE_TTL.config);
+    var _allFromCache = _cachedReg && _cachedActs && _cachedCfg && _cachedCh && _cachedSd && _cachedMedal;
+
+    // Fetch fresh in background if any cache was used
+    if (_allFromCache) {
+      setTimeout(function(){
+        Promise.all([
+          fetch(SUPABASE_URL+'/rest/v1/registration?strava_athlete_id=eq.'+athleteId+'&select=*',{headers:HDR}).then(function(r){return r.json();}).then(function(d){cacheSet('reg_'+athleteId,d);}),
+          fetchAll(SUPABASE_URL+'/rest/v1/activities?strava_athlete_id=eq.'+athleteId+'&is_deleted=is.false&order=activity_date.desc').then(function(d){cacheSet('acts_'+athleteId,d);}),
+          fetch(SUPABASE_URL+'/rest/v1/leaderboard_config?select=config_key,config_value',{headers:HDR}).then(function(r){return r.json();}).then(function(d){cacheSet('config',d);}),
+          fetch(SUPABASE_URL+'/rest/v1/challenges?is_active=is.true&select=*',{headers:HDR}).then(function(r){return r.json();}).then(function(d){cacheSet('challenges',d);}),
+          fetch(SUPABASE_URL+'/rest/v1/special_scoring_days?select=special_date',{headers:HDR}).then(function(r){return r.json();}).then(function(d){cacheSet('special_days',d);}),
+          fetch(SUPABASE_URL+'/rest/v1/leaderboard_config?config_key=eq.medals&select=config_value',{headers:HDR}).then(function(r){return r.json();}).then(function(d){cacheSet('medals',d);})
+        ]).catch(function(e){console.warn('[Cache] Background refresh failed:', e);});
+      }, 200);
+    }
+
+    var regJsonData, myActs, cfgRows, chRows, sdRows, medalData;
+    if (_allFromCache) {
+      console.log('[Cache] Serving Phase 1 from cache ✓');
+      regJsonData  = _cachedReg;
+      myActs       = _cachedActs;
+      cfgRows      = _cachedCfg;
+      chRows       = _cachedCh;
+      sdRows       = _cachedSd;
+      medalData    = _cachedMedal;
+    } else {
+      console.log('[Cache] Cache miss — fetching Phase 1 from Supabase...');
+      var [regRes,myActsFetched,cfgRes,chRes,sdRes,medalRes]=await Promise.all([
+        fetch(SUPABASE_URL+'/rest/v1/registration?strava_athlete_id=eq.'+athleteId+'&select=*',{headers:HDR}),
+        fetchAll(SUPABASE_URL+'/rest/v1/activities?strava_athlete_id=eq.'+athleteId+'&is_deleted=is.false&order=activity_date.desc'),
+        fetch(SUPABASE_URL+'/rest/v1/leaderboard_config?select=config_key,config_value',{headers:HDR}),
+        fetch(SUPABASE_URL+'/rest/v1/challenges?is_active=is.true&select=*',{headers:HDR}),
+        fetch(SUPABASE_URL+'/rest/v1/special_scoring_days?select=special_date',{headers:HDR}),
+        fetch(SUPABASE_URL+'/rest/v1/leaderboard_config?config_key=eq.medals&select=config_value',{headers:HDR})
+      ]);
+      regJsonData = await regRes.json(); cacheSet('reg_'+athleteId, regJsonData);
+      myActs      = myActsFetched;       cacheSet('acts_'+athleteId, myActs);
+      cfgRows     = await cfgRes.json(); cacheSet('config', cfgRows);
+      chRows      = await chRes.json();  cacheSet('challenges', chRows);
+      sdRows      = await sdRes.json();  cacheSet('special_days', sdRows);
+      medalData   = await medalRes.json(); cacheSet('medals', medalData);
+    }
     var allActs=[],allRegRes=[];
-    var cfgRows=await cfgRes.json();
     if(Array.isArray(cfgRows))cfgRows.forEach(function(row){if(row.config_key==='bonus_points')CONFIG_LB.bonus=row.config_value.map(function(b){return{km:Number(b.km),points:Number(b.points||b.pts||0)};});if(row.config_key==='base_points_per_km')CONFIG_LB.basePer_km=parseFloat(row.config_value)||1;});
-    var chRows=await chRes.json(); CHALLENGES_LB=Array.isArray(chRows)?chRows:[];
-    var sdRows=await sdRes.json(); SPECIAL_DAYS_LB=Array.isArray(sdRows)?sdRows.map(function(x){return x.special_date;}):[];
-    var regs=await regRes.json(); var reg=Array.isArray(regs)&&regs.length?regs[0]:{};
+    CHALLENGES_LB=Array.isArray(chRows)?chRows:[];
+    SPECIAL_DAYS_LB=Array.isArray(sdRows)?sdRows.map(function(x){return x.special_date;}):[];
+    var regs=regJsonData; var reg=Array.isArray(regs)&&regs.length?regs[0]:{};
     LB_ME=reg; // Share reg data with LB — no extra fetch needed
     var name=reg.full_name||s.name||'Participant';
 
@@ -1662,8 +1723,7 @@ async function load() {
 
 
 
-    // Medals
-    var medalData=await medalRes.json();
+    // Medals (already loaded above via cache)
     var medals={gold:{male:300,female:250},silver:{male:200,female:150},bronze:{male:125,female:100}};
     if(Array.isArray(medalData)&&medalData.length&&medalData[0].config_value)medals=medalData[0].config_value;
     var gKey=(reg.gender||'').toLowerCase()==='female'?'female':'male';
@@ -1696,13 +1756,32 @@ async function load() {
       }
     });
 
-    // Phase 2: ranking data in background
+    // ── Phase 2: ranking data in background (with cache) ────────────────────
     (async function loadRanking(){
       try{
-        var [allActsRaw,allRegRaw]=await Promise.all([
-          fetchAll(SUPABASE_URL+'/rest/v1/activities?is_deleted=is.false&select=strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,elevation_gain'),
-          fetchAll(SUPABASE_URL+'/rest/v1/registration?select=strava_athlete_id,full_name,gender,shift,leaderboard_team')
-        ]);
+        var _cachedRankActs = cacheGet('ranking_acts', CACHE_TTL.ranking);
+        var _cachedRankReg  = cacheGet('ranking_reg',  CACHE_TTL.ranking);
+        var allActsRaw, allRegRaw;
+        if (_cachedRankActs && _cachedRankReg) {
+          console.log('[Cache] Serving Phase 2 (ranking) from cache ✓');
+          allActsRaw = _cachedRankActs;
+          allRegRaw  = _cachedRankReg;
+          // Background refresh
+          setTimeout(function(){
+            Promise.all([
+              fetchAll(SUPABASE_URL+'/rest/v1/activities?is_deleted=is.false&select=strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,elevation_gain').then(function(d){cacheSet('ranking_acts',d);}),
+              fetchAll(SUPABASE_URL+'/rest/v1/registration?select=strava_athlete_id,full_name,gender,shift,leaderboard_team').then(function(d){cacheSet('ranking_reg',d);})
+            ]).catch(function(e){console.warn('[Cache] Ranking background refresh failed:', e);});
+          }, 500);
+        } else {
+          console.log('[Cache] Cache miss — fetching Phase 2 from Supabase...');
+          var fetched = await Promise.all([
+            fetchAll(SUPABASE_URL+'/rest/v1/activities?is_deleted=is.false&select=strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,elevation_gain'),
+            fetchAll(SUPABASE_URL+'/rest/v1/registration?select=strava_athlete_id,full_name,gender,shift,leaderboard_team')
+          ]);
+          allActsRaw = fetched[0]; cacheSet('ranking_acts', allActsRaw);
+          allRegRaw  = fetched[1]; cacheSet('ranking_reg',  allRegRaw);
+        }
         allActs=allActsRaw; allRegRes=allRegRaw;
         // Feed leaderboard tab from same data — no extra API calls
         LB_REG=allRegRaw;
