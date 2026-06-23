@@ -178,6 +178,13 @@ var HDR={apikey:SB_ANON,Authorization:'Bearer '+SB_ANON,'Content-Type':'applicat
 var _BU='https://walkathon-backend-hv9j.onrender.com';function authGuard(){var t=sessionStorage.getItem('wk_admin_token');if(!t){window.location.href='admin-login.html';return;}try{var p=JSON.parse(atob(t.split('.')[1]));if(p.exp&&p.exp*1000<Date.now()){sessionStorage.removeItem('wk_admin_token');window.location.href='admin-login.html';}}catch(e){sessionStorage.removeItem('wk_admin_token');window.location.href='admin-login.html';}}function logout(){sessionStorage.removeItem('wk_admin_token');sessionStorage.removeItem('wk_admin');window.location.href='admin-login.html';}
 authGuard();
 var BONUS_DEFAULT=[{km:5,pts:1},{km:8,pts:2},{km:10,pts:3},{km:15,pts:4},{km:21,pts:7}],bonusData=BONUS_DEFAULT.slice(),flagPreviewData=[];
+var atypeOptions = ['one-time', 'per-act', 'range-split', 'two-challenges-same-day'];
+var atypeLabels = {
+  'one-time': 'One-time / Daily',
+  'per-act': 'Per Activity',
+  'range-split': 'Range Split',
+  'two-challenges-same-day': 'Two Challenges Same Day'
+};
 function toggleManualList(){var b=document.getElementById("body-manuallist"),c=document.getElementById("chev-manuallist");if(!b)return;var o=b.style.display==="block";b.style.display=o?"none":"block";if(c)c.style.transform=o?"":"rotate(180deg)"}
 function toggleSection(id){var b=document.getElementById('body-'+id),c=document.getElementById('chev-'+id);if(!b)return;var o=b.classList.contains('open');b.classList.toggle('open',!o);if(c)c.classList.toggle('open',!o)}
 function showSaved(id){var el=document.getElementById(id);if(el){el.style.display='inline';setTimeout(function(){el.style.display='none'},2500)}}
