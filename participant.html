@@ -1738,6 +1738,84 @@ async function load() {
     var smEl=document.getElementById('s-movetime');if(smEl)smEl.textContent=mts;
     var mtdash=document.getElementById('s-movetime-dash');if(mtdash)mtdash.textContent=mts;
 
+    // ── Personal Bests ──
+    (function(){
+      var maxDistM = 0;
+      var maxTimeSec = 0;
+      var maxSpeed = 0;
+      var bestPaceSport = 'Walk';
+      var dayKm = {};
+
+      validActs.forEach(function(a){
+        var km = (a.distance_meters || 0) / 1000;
+        if (a.distance_meters > maxDistM) maxDistM = a.distance_meters;
+        if (a.moving_time_seconds > maxTimeSec) maxTimeSec = a.moving_time_seconds;
+        
+        var t = a.sport_type;
+        var isWalkRun = t === 'Walk' || t === 'Run' || t === 'VirtualRun' || t === 'Hike';
+        if (isWalkRun && a.avg_speed > maxSpeed && a.avg_speed < 12) { // filter outliers
+          maxSpeed = a.avg_speed;
+          bestPaceSport = t;
+        }
+
+        var d = (a.activity_date || '').split('T')[0];
+        if (d) dayKm[d] = (dayKm[d] || 0) + km;
+      });
+
+      var maxDayKm = 0;
+      var bestDayDate = '';
+      Object.keys(dayKm).forEach(function(d){
+        if (dayKm[d] > maxDayKm) {
+          maxDayKm = dayKm[d];
+          bestDayDate = d;
+        }
+      });
+
+      var pbLongest = document.getElementById('pb-longest');
+      if (pbLongest) pbLongest.textContent = maxDistM > 0 ? (maxDistM / 1000).toFixed(2) + ' km' : '—';
+
+      var pbPace = document.getElementById('pb-pace');
+      if (pbPace) pbPace.textContent = maxSpeed > 0 ? fmtPS(maxSpeed, bestPaceSport) : '—';
+
+      var pbTime = document.getElementById('pb-time');
+      if (pbTime) pbTime.textContent = maxTimeSec > 0 ? fmtDur(maxTimeSec) : '—';
+
+      var pbBestDay = document.getElementById('pb-bestday');
+      var pbBestDayDate = document.getElementById('pb-bestday-date');
+      if (pbBestDay) pbBestDay.textContent = maxDayKm > 0 ? maxDayKm.toFixed(2) + ' km' : '—';
+      if (pbBestDayDate) {
+        if (maxDayKm > 0) {
+          var dObj = new Date(bestDayDate + 'T00:00:00');
+          pbBestDayDate.textContent = dObj.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+        } else {
+          pbBestDayDate.textContent = '';
+        }
+      }
+
+      // Also populate act-type-breakdown
+      var typeCounts = {};
+      validActs.forEach(function(a){
+        var t = a.sport_type || 'Other';
+        typeCounts[t] = (typeCounts[t] || 0) + 1;
+      });
+      var bdEl = document.getElementById('act-type-breakdown');
+      if (bdEl) {
+        if (Object.keys(typeCounts).length === 0) {
+          bdEl.style.display = 'none';
+        } else {
+          var bgColors = { Walk: 'rgba(34,197,94,0.12)', Run: 'rgba(96,165,250,0.12)', VirtualRun: 'rgba(96,165,250,0.12)', Hike: 'rgba(168,85,247,0.12)', Ride: 'rgba(244,63,94,0.12)' };
+          var textColors = { Walk: 'var(--green)', Run: 'var(--blue)', VirtualRun: 'var(--blue)', Hike: '#c084fc', Ride: '#f43f5e' };
+          bdEl.style.display = 'flex';
+          bdEl.innerHTML = Object.keys(typeCounts).map(function(type){
+            var count = typeCounts[type];
+            var bg = bgColors[type] || 'rgba(255,255,255,0.08)';
+            var fg = textColors[type] || 'var(--muted)';
+            return '<span style="font-size:11px;font-weight:700;color:' + fg + ';background:' + bg + ';padding:5px 10px;border-radius:12px;text-transform:uppercase;letter-spacing:0.5px;margin-right:8px;margin-bottom:8px;">' + type + ' · ' + count + '</span>';
+          }).join('');
+        }
+      }
+    })();
+
     // ── Interesting Facts (pure math from myActs — zero extra API calls) ──
     (function(){
       var totalKm=totalDistM/1000;
