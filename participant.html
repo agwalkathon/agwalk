@@ -50,6 +50,58 @@
     .icon-btn svg{width:20px;height:20px;}
     @keyframes spin{to{transform:rotate(360deg);}}
     .spinning{animation:spin 1s linear infinite;}
+    .btn-strava-connect{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      width:100%;
+      padding:14px;
+      background:#FC6100;
+      border:none;
+      border-radius:var(--radius-sm);
+      color:#fff;
+      font-size:14px;
+      font-weight:700;
+      font-family:var(--font);
+      text-decoration:none;
+      cursor:pointer;
+      box-shadow:0 4px 16px rgba(252,97,0,0.25);
+      transition:all 0.2s;
+    }
+    .btn-strava-connect:hover{
+      background:#e05600;
+      transform:translateY(-1px);
+      box-shadow:0 6px 20px rgba(252,97,0,0.35);
+    }
+    .btn-strava-connect:active{
+      transform:translateY(1px);
+    }
+    .you-social-link{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      flex:1;
+      padding:12px;
+      background:rgba(255,255,255,0.04);
+      border:1px solid var(--border);
+      border-radius:var(--radius-sm);
+      color:var(--muted);
+      text-decoration:none;
+      font-size:13px;
+      font-weight:600;
+      transition:all 0.2s;
+    }
+    .you-social-link:hover{
+      background:rgba(255,255,255,0.08);
+      color:#fff;
+      border-color:rgba(255,255,255,0.2);
+      transform:translateY(-1px);
+    }
+    .you-social-link:active{
+      transform:translateY(1px);
+    }
     .sign-out-btn{font-size:13px;color:var(--muted);background:rgba(255,255,255,0.12);border:1px solid var(--border);cursor:pointer;padding:6px 12px;border-radius:20px;font-family:var(--font);font-weight:600;transition:all 0.15s;}
     .sign-out-btn:active{color:#fff;background:rgba(255,255,255,0.1);}
     .hdr-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg, var(--brand) 0%, #FF8C00 100%);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;letter-spacing:0.5px;border:2px solid rgba(255,255,255,0.25);flex-shrink:0;cursor:pointer;}
@@ -1076,6 +1128,16 @@ function openStravaProfile(){
     </div>
   </div>
 
+  <!-- Connect with Strava Button -->
+  <div style="margin-top:16px; margin-bottom:8px;">
+    <a id="btn-strava-connect" class="btn-strava-connect" href="#">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L11.215 0 5.86 10.518h4.172z"/>
+      </svg>
+      Connect with Strava
+    </a>
+  </div>
+
   <!-- Profile Details — collapsed by default -->
   <div style="margin-top:8px;">
     <button onclick="(function(){var el=document.getElementById('you-profile-details');var ico=document.getElementById('you-profile-chevron');var open=el.style.display!=='none';el.style.display=open?'none':'block';ico.style.transform=open?'':'rotate(180deg)';})();"
@@ -1086,20 +1148,12 @@ function openStravaProfile(){
     <div id="you-profile-details" style="display:none;">
       <div class="card" style="margin-top:4px;border-radius:0 0 var(--radius-sm) var(--radius-sm);">
         <div class="tab-you-detail-row">
-          <span class="tab-you-detail-lbl">Employee Code</span>
-          <span class="tab-you-detail-val" id="you-emp-code">—</span>
-        </div>
-        <div class="tab-you-detail-row">
           <span class="tab-you-detail-lbl">Email</span>
           <span class="tab-you-detail-val" id="you-email">—</span>
         </div>
         <div class="tab-you-detail-row">
           <span class="tab-you-detail-lbl">Gender</span>
           <span class="tab-you-detail-val" id="you-gender">—</span>
-        </div>
-        <div class="tab-you-detail-row">
-          <span class="tab-you-detail-lbl">Shift</span>
-          <span class="tab-you-detail-val" id="you-shift">—</span>
         </div>
         <div class="tab-you-detail-row">
           <span class="tab-you-detail-lbl">Team</span>
@@ -1110,10 +1164,6 @@ function openStravaProfile(){
           <span class="tab-you-detail-val" id="you-tshirt">—</span>
         </div>
         <div class="tab-you-detail-row">
-          <span class="tab-you-detail-lbl">Project Lead</span>
-          <span class="tab-you-detail-val" id="you-project-lead">—</span>
-        </div>
-        <div class="tab-you-detail-row">
           <span class="tab-you-detail-lbl">Strava Profile</span>
           <a id="you-strava-link" href="#" target="_blank" style="font-size:14px;font-weight:700;color:var(--brand);text-decoration:none;">View ↗</a>
         </div>
@@ -1121,7 +1171,34 @@ function openStravaProfile(){
     </div>
   </div>
 
-  <div style="margin-top:16px;padding:0 4px;">
+  <!-- Social Links -->
+  <div class="you-social-row" style="margin-top:20px; display:flex; gap:10px; justify-content:center; padding:0 4px;">
+    <a href="https://strava.app.link/C243EqDbU3b" target="_blank" class="you-social-link" title="Strava Club">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#FC6100" style="flex-shrink:0;">
+        <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L11.215 0 5.86 10.518h4.172z"/>
+      </svg>
+      <span>Strava Club</span>
+    </a>
+    <a href="https://www.instagram.com/arcgate_walkathon_club" target="_blank" class="you-social-link" title="Instagram">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="url(#insta-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+        <defs>
+          <linearGradient id="insta-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#fdf497" />
+            <stop offset="5%" stop-color="#fdf497" />
+            <stop offset="45%" stop-color="#fd5949" />
+            <stop offset="60%" stop-color="#d6249f" />
+            <stop offset="100%" stop-color="#285AEB" />
+          </linearGradient>
+        </defs>
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+      </svg>
+      <span>Instagram</span>
+    </a>
+  </div>
+
+  <div style="margin-top:10px;padding:0 4px;">
     <button onclick="logout()" style="width:100%;padding:14px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--muted);font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;letter-spacing:0.3px;">Sign Out</button>
   </div>
 </div>
@@ -1662,6 +1739,14 @@ async function load() {
     if(document.getElementById('you-project-lead'))document.getElementById('you-project-lead').textContent=reg.project_lead||'—';
     var stravaLink=document.getElementById('you-strava-link');
     if(stravaLink){var surl=reg.strava_profile_url||('https://www.strava.com/athletes/'+s.athleteId);stravaLink.href=surl;}
+
+    // Wire up Connect with Strava OAuth URL dynamically
+    var btnStrava = document.getElementById('btn-strava-connect');
+    if (btnStrava) {
+      var CLIENT_ID = '29159';
+      var REDIRECT = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + '/index.html';
+      btnStrava.href = 'https://www.strava.com/oauth/authorize?client_id=' + CLIENT_ID + '&redirect_uri=' + encodeURIComponent(REDIRECT) + '&response_type=code&scope=read,activity:read&state=walkathon2026';
+    }
     // Tags for You tab (same as hero tags)
     var icoMale='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="14" r="6"/><line x1="14.5" y1="9.5" x2="21" y2="3"/><polyline points="16 3 21 3 21 8"/></svg>';
     var icoFemale='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="6"/><line x1="12" y1="16" x2="12" y2="22"/><line x1="9" y1="19" x2="15" y2="19"/></svg>';
