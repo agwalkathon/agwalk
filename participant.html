@@ -618,15 +618,40 @@
   background:#0E1012;
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
-  transition:opacity 0.45s ease, visibility 0.45s ease;
+  transition:opacity 0.4s ease;
 ">
-  <div style="display:flex;flex-direction:column;align-items:center;gap:28px;">
-    <img
-      src="aw_logo_dark.png"
-      alt="Arcgate Walkathon"
-      style="width:min(280px,72vw);opacity:1;
-             animation:splashPulse 1.6s ease-in-out infinite;"
-    >
+  <div style="display:flex;flex-direction:column;align-items:center;gap:26px;">
+    <!-- Inline SVG logo (white + orange on dark) -->
+    <svg viewBox="0 0 520 112" xmlns="http://www.w3.org/2000/svg"
+         style="width:min(290px,76vw);animation:splashPulse 1.8s ease-in-out infinite;">
+      <!-- WALK -->
+      <text x="2" y="92" font-family="Impact,'Arial Black',sans-serif"
+            font-size="90" fill="white" letter-spacing="-1">WALK</text>
+      <!-- Walking figure -->
+      <!-- Head -->
+      <circle cx="274" cy="14" r="11" fill="white"/>
+      <!-- Body (leaning forward) -->
+      <line x1="272" y1="26" x2="265" y2="58"
+            stroke="white" stroke-width="7" stroke-linecap="round"/>
+      <!-- Right arm (raised forward) -->
+      <line x1="270" y1="38" x2="287" y2="25"
+            stroke="white" stroke-width="6" stroke-linecap="round"/>
+      <!-- Left arm (back) -->
+      <line x1="269" y1="38" x2="254" y2="52"
+            stroke="white" stroke-width="6" stroke-linecap="round"/>
+      <!-- Orange stride chevron (filled triangle = the legs stride) -->
+      <polygon points="249,104 265,58 281,104" fill="#E8622A"/>
+      <!-- Right black leg extends further right past chevron -->
+      <line x1="279" y1="96" x2="296" y2="110"
+            stroke="white" stroke-width="6.5" stroke-linecap="round"/>
+      <!-- Left foot (small, going back-left) -->
+      <line x1="251" y1="101" x2="240" y2="109"
+            stroke="white" stroke-width="6" stroke-linecap="round"/>
+      <!-- THON -->
+      <text x="308" y="92" font-family="Impact,'Arial Black',sans-serif"
+            font-size="90" fill="white" letter-spacing="-1">THON</text>
+    </svg>
+    <!-- Bouncing dots loader -->
     <div style="display:flex;gap:8px;align-items:center;">
       <div class="splash-dot" style="animation-delay:0s"></div>
       <div class="splash-dot" style="animation-delay:0.2s"></div>
@@ -636,8 +661,8 @@
 </div>
 <style>
   @keyframes splashPulse{
-    0%,100%{opacity:0.85;transform:scale(1);}
-    50%{opacity:1;transform:scale(1.03);}
+    0%,100%{opacity:0.88;transform:scale(1);}
+    50%{opacity:1;transform:scale(1.025);}
   }
   .splash-dot{
     width:7px;height:7px;border-radius:50%;
@@ -654,8 +679,18 @@ function hideSplash(){
   var sp=document.getElementById('splash-screen');
   if(!sp)return;
   sp.style.opacity='0';
-  sp.style.visibility='hidden';
-  setTimeout(function(){if(sp.parentNode)sp.parentNode.removeChild(sp);},500);
+  sp.style.pointerEvents='none';
+  setTimeout(function(){ sp.style.display='none'; sp.style.opacity='1'; },420);
+}
+function showSplash(){
+  var sp=document.getElementById('splash-screen');
+  if(!sp)return;
+  sp.style.display='flex';
+  sp.style.opacity='0';
+  sp.style.pointerEvents='auto';
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){ sp.style.opacity='1'; });
+  });
 }
 </script>
 <!-- ──────────────────────────────────────────────────────────────────── -->
@@ -2362,10 +2397,13 @@ function showTab(tab){
 // ──────────────────────────────────────────────────────────────────────────
 
 function refreshData(){
-  var icon=document.getElementById('refresh-icon'); icon.classList.add('spinning');
-  document.getElementById('act-list').innerHTML='<div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div></div><div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div></div>';
+  // Clear personal-data cache so we always fetch fresh data on manual refresh
+  var s = currentSession || JSON.parse(localStorage.getItem('wk_user')||'{}');
+  if (s && s.athleteId) cacheClear(s.athleteId);
+
+  showSplash();
   document.getElementById('flagged-banner').style.display='none';
-  load().finally(function(){icon.classList.remove('spinning');});
+  load().finally(function(){ hideSplash(); });
 }
 
 // ── Leaderboard shared vars (declared here so Phase 1 can populate them) ──
