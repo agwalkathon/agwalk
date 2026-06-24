@@ -615,44 +615,19 @@
 <!-- ── Splash Screen ──────────────────────────────────────────────────── -->
 <div id="splash-screen" style="
   position:fixed;inset:0;z-index:9999;
-  background:#0E1012;
+  background:#ffffff;
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
   transition:opacity 0.4s ease;
 ">
-  <div style="display:flex;flex-direction:column;align-items:center;gap:26px;">
-    <!-- Inline SVG logo (white + orange on dark) -->
-    <svg viewBox="0 0 520 112" xmlns="http://www.w3.org/2000/svg"
-         style="width:min(290px,76vw);animation:splashPulse 1.8s ease-in-out infinite;">
-      <!-- WALK -->
-      <text x="2" y="92" font-family="Impact,'Arial Black',sans-serif"
-            font-size="90" fill="white" letter-spacing="-1">WALK</text>
-      <!-- Walking figure -->
-      <!-- Head -->
-      <circle cx="274" cy="14" r="11" fill="white"/>
-      <!-- Body (leaning forward) -->
-      <line x1="272" y1="26" x2="265" y2="58"
-            stroke="white" stroke-width="7" stroke-linecap="round"/>
-      <!-- Right arm (raised forward) -->
-      <line x1="270" y1="38" x2="287" y2="25"
-            stroke="white" stroke-width="6" stroke-linecap="round"/>
-      <!-- Left arm (back) -->
-      <line x1="269" y1="38" x2="254" y2="52"
-            stroke="white" stroke-width="6" stroke-linecap="round"/>
-      <!-- Orange stride chevron (filled triangle = the legs stride) -->
-      <polygon points="249,104 265,58 281,104" fill="#E8622A"/>
-      <!-- Right black leg extends further right past chevron -->
-      <line x1="279" y1="96" x2="296" y2="110"
-            stroke="white" stroke-width="6.5" stroke-linecap="round"/>
-      <!-- Left foot (small, going back-left) -->
-      <line x1="251" y1="101" x2="240" y2="109"
-            stroke="white" stroke-width="6" stroke-linecap="round"/>
-      <!-- THON -->
-      <text x="308" y="92" font-family="Impact,'Arial Black',sans-serif"
-            font-size="90" fill="white" letter-spacing="-1">THON</text>
-    </svg>
-    <!-- Bouncing dots loader -->
-    <div style="display:flex;gap:8px;align-items:center;">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:32px;">
+    <img
+      src="logo-horizontal.png"
+      alt="Walkathon"
+      style="width:min(260px,68vw);
+             animation:splashPulse 1.8s ease-in-out infinite;"
+    >
+    <div style="display:flex;gap:9px;align-items:center;">
       <div class="splash-dot" style="animation-delay:0s"></div>
       <div class="splash-dot" style="animation-delay:0.2s"></div>
       <div class="splash-dot" style="animation-delay:0.4s"></div>
@@ -661,35 +636,55 @@
 </div>
 <style>
   @keyframes splashPulse{
-    0%,100%{opacity:0.88;transform:scale(1);}
+    0%,100%{opacity:0.9;transform:scale(1);}
     50%{opacity:1;transform:scale(1.025);}
   }
   .splash-dot{
-    width:7px;height:7px;border-radius:50%;
+    width:8px;height:8px;border-radius:50%;
     background:#E8622A;
     animation:splashDotBounce 1s ease-in-out infinite;
   }
   @keyframes splashDotBounce{
-    0%,80%,100%{transform:scale(0.6);opacity:0.4;}
+    0%,80%,100%{transform:scale(0.55);opacity:0.35;}
     40%{transform:scale(1);opacity:1;}
   }
 </style>
 <script>
+// Minimum time splash is visible (ms) — avoids flash on cache-hit
+var _splashMinMs = 1500;
+var _splashReadyAt = Date.now() + _splashMinMs;
+var _splashHideQueued = false;
+
 function hideSplash(){
-  var sp=document.getElementById('splash-screen');
-  if(!sp)return;
-  sp.style.opacity='0';
-  sp.style.pointerEvents='none';
-  setTimeout(function(){ sp.style.display='none'; sp.style.opacity='1'; },420);
+  var now = Date.now();
+  var remaining = _splashReadyAt - now;
+  if (remaining > 0) {
+    // Data loaded faster than min time — wait the remainder
+    if (!_splashHideQueued) {
+      _splashHideQueued = true;
+      setTimeout(_doHideSplash, remaining);
+    }
+  } else {
+    _doHideSplash();
+  }
+}
+function _doHideSplash(){
+  var sp = document.getElementById('splash-screen');
+  if (!sp || sp.style.display === 'none') return;
+  sp.style.opacity = '0';
+  sp.style.pointerEvents = 'none';
+  setTimeout(function(){ sp.style.display = 'none'; sp.style.opacity = '1'; }, 420);
 }
 function showSplash(){
-  var sp=document.getElementById('splash-screen');
-  if(!sp)return;
-  sp.style.display='flex';
-  sp.style.opacity='0';
-  sp.style.pointerEvents='auto';
+  var sp = document.getElementById('splash-screen');
+  if (!sp) return;
+  _splashHideQueued = false;
+  _splashReadyAt = Date.now() + _splashMinMs;
+  sp.style.display = 'flex';
+  sp.style.opacity = '0';
+  sp.style.pointerEvents = 'auto';
   requestAnimationFrame(function(){
-    requestAnimationFrame(function(){ sp.style.opacity='1'; });
+    requestAnimationFrame(function(){ sp.style.opacity = '1'; });
   });
 }
 </script>
@@ -1839,9 +1834,6 @@ async function load() {
       }
     });
 
-    // ── Phase 1 render complete — dismiss splash ───────────────────────────
-    hideSplash();
-
     // ── Phase 2: ranking data in background (with cache) ────────────────────
     (async function loadRanking(){
       try{
@@ -2214,6 +2206,9 @@ async function load() {
       var bd2=document.getElementById('act-type-breakdown');
       if(bd2){bd2.innerHTML='';Object.keys(tC).sort(function(a,b){return tC[b]-tC[a];}).forEach(function(t){var pill=document.createElement('span');pill.style.cssText='display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:700;background:'+(tCol[t]||tCol.Other)+';color:'+(tTxt[t]||tTxt.Other)+';';pill.textContent=t+' · '+tC[t];bd2.appendChild(pill);});}
     })();
+
+    // ── All Phase 1 content rendered — now safe to dismiss splash ────────────
+    hideSplash();
 
   } catch(e) {
     hideSplash();
