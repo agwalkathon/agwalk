@@ -2254,36 +2254,57 @@ function showTab(tab){
 // ── Swipe Gesture for Tab Navigation ──────────────────────────────────────
 (function(){
   var touchStartX = 0, touchStartY = 0;
-  var touchEndX   = 0, touchEndY   = 0;
   var MIN_SWIPE_X = 55;   // minimum horizontal px to count as a swipe
-  var MAX_ANGLE   = 0.55; // tan(~29°) — prevents vertical scrolls triggering swipe
+  var MAX_ANGLE   = 0.55; // tan(~29°)
+  // null = undecided, 'h' = horizontal lock, 'v' = vertical (ignore)
+  var _swipeDir = null;
 
   document.addEventListener('touchstart', function(e){
     touchStartX = e.changedTouches[0].clientX;
     touchStartY = e.changedTouches[0].clientY;
+    _swipeDir = null; // reset each new touch
   }, { passive: true });
 
-  document.addEventListener('touchend', function(e){
-    touchEndX = e.changedTouches[0].clientX;
-    touchEndY = e.changedTouches[0].clientY;
-    var dx = touchEndX - touchStartX;
-    var dy = touchEndY - touchStartY;
+  // Non-passive so we can call preventDefault() when it's a horizontal swipe
+  document.addEventListener('touchmove', function(e){
+    if (_swipeDir === 'v') return; // already decided it's a vertical scroll — let it go
+    if (touchStartY > window.innerHeight - 80) return; // bottom nav zone
+
+    var dx = e.changedTouches[0].clientX - touchStartX;
+    var dy = e.changedTouches[0].clientY - touchStartY;
     var absDx = Math.abs(dx);
     var absDy = Math.abs(dy);
 
-    // Ignore if: too short, mostly vertical, or started in the bottom nav zone
-    if (absDx < MIN_SWIPE_X) return;
-    if (absDy / absDx > MAX_ANGLE) return;
-    if (touchStartY > window.innerHeight - 80) return; // bottom nav area
+    // Need at least 8px movement before deciding direction
+    if (absDx < 8 && absDy < 8) return;
+
+    if (_swipeDir === null) {
+      // First time we have enough movement — decide direction
+      _swipeDir = absDy / absDx > MAX_ANGLE ? 'v' : 'h';
+    }
+
+    if (_swipeDir === 'h') {
+      // It's horizontal — block the browser from scrolling the page
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  document.addEventListener('touchend', function(e){
+    if (_swipeDir !== 'h') return; // wasn't a horizontal swipe
+    if (touchStartY > window.innerHeight - 80) return; // bottom nav zone
+
+    var dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) < MIN_SWIPE_X) return; // too short
 
     var idx = TAB_ORDER.indexOf(_currentTab);
     if (dx < 0) {
-      // Swipe left → go to next tab
+      // Swipe left → next tab
       if (idx < TAB_ORDER.length - 1) showTab(TAB_ORDER[idx + 1]);
     } else {
-      // Swipe right → go to previous tab
+      // Swipe right → previous tab
       if (idx > 0) showTab(TAB_ORDER[idx - 1]);
     }
+    _swipeDir = null;
   }, { passive: true });
 })();
 // ──────────────────────────────────────────────────────────────────────────
