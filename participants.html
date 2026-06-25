@@ -194,54 +194,54 @@ tr:hover td{background:#FAFAFA}
     <div class="card" id="rate-limit-dashboard" style="margin-bottom:16px;padding:20px;border-radius:12px;background:var(--card-bg);border:1px solid var(--border);flex:none;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
         <div style="display:flex;align-items:center;gap:8px;">
-          <h3 style="margin:0;font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;color:var(--text);">
+          <h3 style="margin:0;font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;color:var(--text-primary);">
             <i class="ti ti-brand-strava" style="color:#fc5200;font-size:20px;"></i> Strava API Rate Limits & Status
           </h3>
-          <span id="queue-status" class="badge" style="font-size:11px;padding:3px 8px;border-radius:12px;background:rgba(255,255,255,0.05);color:var(--text-muted);">Queue Idle</span>
+          <span id="queue-status" class="badge" style="font-size:11px;padding:3px 8px;border-radius:12px;background:rgba(0,0,0,0.05);color:var(--text-secondary);">Queue Idle</span>
         </div>
         <button class="btn btn-sm" id="kill-switch-btn" onclick="toggleKillSwitch()" style="font-size:12px;font-weight:600;padding:6px 12px;border-radius:6px;border:none;cursor:pointer;transition:all 0.15s;"></button>
       </div>
 
       <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;margin-bottom:16px;">
         <!-- Overall Quota 15m -->
-        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:12px;">
-          <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px;">Overall Rate Limit (15-Min)</div>
-          <div style="font-size:13px;font-weight:500;color:var(--text);" id="limit-overall-15m-desc">Last 15 Minutes: -- Remaining (Limit 600 Requests)</div>
-          <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:2px;margin-top:8px;overflow:hidden;">
+        <div style="background:rgba(0,0,0,0.015);border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Overall Rate Limit (15-Min)</div>
+          <div style="font-size:13px;font-weight:500;color:var(--text-secondary);" id="limit-overall-15m-desc">Last 15 Minutes: -- Remaining (Limit 600 Requests)</div>
+          <div style="height:4px;background:rgba(0,0,0,0.06);border-radius:2px;margin-top:8px;overflow:hidden;">
             <div id="bar-overall-15m" style="height:100%;width:0%;background:#fc5200;transition:width 0.3s;"></div>
           </div>
         </div>
 
         <!-- Overall Quota 24h -->
-        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:12px;">
-          <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px;">Overall Rate Limit (Daily)</div>
-          <div style="font-size:13px;font-weight:500;color:var(--text);" id="limit-overall-24h-desc">Per Day: -- Remaining (Limit 6,000 requests)</div>
-          <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:2px;margin-top:8px;overflow:hidden;">
+        <div style="background:rgba(0,0,0,0.015);border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Overall Rate Limit (Daily)</div>
+          <div style="font-size:13px;font-weight:500;color:var(--text-secondary);" id="limit-overall-24h-desc">Per Day: -- Remaining (Limit 6,000 requests)</div>
+          <div style="height:4px;background:rgba(0,0,0,0.06);border-radius:2px;margin-top:8px;overflow:hidden;">
             <div id="bar-overall-24h" style="height:100%;width:0%;background:#fc5200;transition:width 0.3s;"></div>
           </div>
         </div>
 
         <!-- Read Quota 15m -->
-        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:12px;">
-          <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px;">Read Rate Limit (15-Min)</div>
-          <div style="font-size:13px;font-weight:500;color:var(--text);" id="limit-read-15m-desc">Last 15 Minutes: -- Remaining (Limit 300 Requests)</div>
-          <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:2px;margin-top:8px;overflow:hidden;">
+        <div style="background:rgba(0,0,0,0.015);border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Read Rate Limit (15-Min)</div>
+          <div style="font-size:13px;font-weight:500;color:var(--text-secondary);" id="limit-read-15m-desc">Last 15 Minutes: -- Remaining (Limit 300 Requests)</div>
+          <div style="height:4px;background:rgba(0,0,0,0.06);border-radius:2px;margin-top:8px;overflow:hidden;">
             <div id="bar-read-15m" style="height:100%;width:0%;background:#3b82f6;transition:width 0.3s;"></div>
           </div>
         </div>
 
         <!-- Read Quota 24h -->
-        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:12px;">
-          <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px;">Read Rate Limit (Daily)</div>
-          <div style="font-size:13px;font-weight:500;color:var(--text);" id="limit-read-24h-desc">Per Day: -- Remaining (Limit 3,000 requests)</div>
-          <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:2px;margin-top:8px;overflow:hidden;">
+        <div style="background:rgba(0,0,0,0.015);border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Read Rate Limit (Daily)</div>
+          <div style="font-size:13px;font-weight:500;color:var(--text-secondary);" id="limit-read-24h-desc">Per Day: -- Remaining (Limit 3,000 requests)</div>
+          <div style="height:4px;background:rgba(0,0,0,0.06);border-radius:2px;margin-top:8px;overflow:hidden;">
             <div id="bar-read-24h" style="height:100%;width:0%;background:#3b82f6;transition:width 0.3s;"></div>
           </div>
         </div>
       </div>
 
       <!-- Diagnostic Status Indicator Panel -->
-      <div id="api-status-banner" style="border-radius:8px;padding:12px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;transition:all 0.15s;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:var(--text-muted);">
+      <div id="api-status-banner" style="border-radius:8px;padding:12px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;transition:all 0.15s;background:rgba(0,0,0,0.015);border:1px solid var(--border);color:var(--text-muted);">
         <span id="api-status-icon" style="font-size:16px;"></span>
         <span id="api-status-text">Checking status...</span>
       </div>
@@ -506,8 +506,8 @@ async function updateRateLimitDashboard() {
         qStatus.style.color = 'var(--brand)';
       } else {
         qStatus.textContent = 'Queue Idle';
-        qStatus.style.background = 'rgba(255,255,255,0.05)';
-        qStatus.style.color = 'var(--text-muted)';
+        qStatus.style.background = 'rgba(0,0,0,0.05)';
+        qStatus.style.color = 'var(--text-secondary)';
       }
 
       // API Diagnostic Status Indicator
