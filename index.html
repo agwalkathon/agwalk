@@ -170,7 +170,8 @@ async function doLogin(){
       if(d.error==='not_found') showErr('⛔ <strong>Employee code not found.</strong><br>Check your code or contact pra@arcgate.com');
       else if(d.error==='not_approved') showErr('⏳ <strong>Registration pending approval.</strong><br>You will be notified once approved.');
       else if(d.error==='no_strava_id') showErr('⚠️ <strong>Account setup incomplete.</strong><br>Contact pra@arcgate.com for assistance.');
-      else showErr('❌ <strong>Login failed.</strong><br>Please try again.');
+      else if(res.status===429 || (d.error && d.error.indexOf('Too many')>-1)) showErr('⏳ <strong>Too many login attempts.</strong><br>Please try again in 15 minutes or switch to mobile data.');
+      else showErr('❌ <strong>Login failed.</strong><br>' + esc(d.error || 'Please try again.'));
       return;
     }
     showProc('Loading your dashboard...');
