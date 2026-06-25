@@ -661,7 +661,11 @@ function calcPoints(acts, athleteId, gender, shift) {
   var myChallenges = CHALLENGES.filter(function(c) {
     if (!c.is_active) return false;
     var elig = (c.eligible || 'all').toLowerCase();
-    if (elig === 'female' && (gender || '').toLowerCase() === 'female') return true;
+    if (elig === 'all')        return true;
+    if (elig === 'male'      && (gender || '').toLowerCase() === 'male')   return true;
+    if (elig === 'female'    && (gender || '').toLowerCase() === 'female') return true;
+    if (elig === 'dayshift'  && !_isNightShift) return true;
+    if (elig === 'nightshift' && _isNightShift) return true;
     return false;
   });
 
