@@ -351,6 +351,12 @@ tr:hover td{background:#FAFAFA}
         </select>
       </div>
       <div class="filter-group">
+        <label>Challenge Completed</label>
+        <select id="challenge-filter" onchange="applyFilters()">
+          <option value="">All challenges</option>
+        </select>
+      </div>
+      <div class="filter-group">
         <label>Search</label>
         <input type="text" id="name-search" placeholder="Participant name..." oninput="applyFilters()">
       </div>
@@ -393,7 +399,7 @@ var HDR = { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + SUPABASE_ANON, 'Co
 // ── Indian number format ─────────────────────────────────────
 function fmtIndian(n) {
   var num = parseFloat(n) || 0;
-  return num.toLocaleString('en-IN', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  return num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 function fmtIndianInt(n) {
   var num = Math.round(parseFloat(n)) || 0;
@@ -432,6 +438,7 @@ function clearFilters() {
   document.getElementById('team-filter').value  = '';
   document.getElementById('sport-filter').value = '';
   document.getElementById('medal-filter').value = '';
+  document.getElementById('challenge-filter').value = '';
   document.getElementById('name-search').value  = '';
   applyFilters();
 }
@@ -441,6 +448,7 @@ function applyFilters() {
   var team   = document.getElementById('team-filter').value;
   var sport  = document.getElementById('sport-filter').value;
   var medal  = document.getElementById('medal-filter').value;
+  var challenge = document.getElementById('challenge-filter').value;
   var search = document.getElementById('name-search').value.trim().toLowerCase();
 
   currentBoard = board;
@@ -458,8 +466,15 @@ function applyFilters() {
   // Filter by medal
   if (medal) rows = rows.filter(function(r){
     var m = getMedal(r.pts.totalPts, r.p.gender);
-    return m.level === medal;
+    return m.cls === 'medal-' + medal;
   });
+
+  // Filter by challenge completion
+  if (challenge) {
+    rows = rows.filter(function(r) {
+      return Array.isArray(r.pts.challenges) && r.pts.challenges.indexOf(challenge) !== -1;
+    });
+  }
 
   // Filter by sport — re-calc points using only matching sport activities
   if (sport) {
@@ -476,7 +491,7 @@ function applyFilters() {
   }
 
   var info = rows.length + ' participant' + (rows.length===1?'':'s');
-  if (team||sport||medal||search) info += ' (filtered)';
+  if (team||sport||medal||challenge||search) info += ' (filtered)';
   document.getElementById('result-info').textContent = info;
 
   renderBoard(rows, board);
@@ -502,7 +517,17 @@ async function loadChallenges() {
     var r = await fetch(SB_URL+'/rest/v1/challenges?is_active=is.true&select=*', {headers:HDR});
     var raw = await r.json();
     CHALLENGES = Array.isArray(raw) ? raw : [];
-    // challenge chip removed
+    
+    var cel = document.getElementById('challenge-filter');
+    if (cel) {
+      cel.innerHTML = '<option value="">All challenges</option>';
+      CHALLENGES.forEach(function(c) {
+        var opt = document.createElement('option');
+        opt.value = c.name;
+        opt.textContent = c.name;
+        cel.appendChild(opt);
+      });
+    }
   } catch(e) { CHALLENGES = []; }
 }
 
