@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -211,16 +211,58 @@ function updateChFields(sel){
   var scopeWrap=document.getElementById('ch-scope-wrap-'+cid);
   var nbtWrap=document.getElementById('ch-nbt-wrap-'+cid);
   var descEl=document.getElementById('adesc-'+sel.id);
+  // Activity scope: only visible for one-time
   if(scopeWrap) scopeWrap.style.display=(atype==='one-time')?'':'none';
+  // Normal Bonus: hidden for range-split and two-challenges-same-day
   if(nbtWrap)   nbtWrap.style.display=(atype==='range-split'||atype==='two-challenges-same-day')?'none':'';
-  var descs={'one-time':'Award bonus_points ONCE if any qualifying activity (or daily total) meets criteria.','per-act':'Award bonus_points for EACH qualifying activity.','range-split':'In-range activities each earn flat challenge bonus. Out-of-range summed for normal dist+bracket.','two-challenges-same-day':'Each qualifying activity earns base pts + own bracket bonus + challenge pts. 21km cap only trims remaining pool.'};
-  if(descEl){descEl.textContent=descs[atype]||'';descEl.style.display=descs[atype]?'block':'none';}
+  var descs={
+    'one-time':                'Award bonus_points ONCE if any qualifying activity (or daily total) meets criteria. Standard distance bonus still applies.',
+    'per-act':                 'Award bonus_points for EACH qualifying activity that meets the distance/elevation/time criteria. Standard distance bonus still applies.',
+    'range-split':             'In-range activities each earn a flat challenge bonus individually. Out-of-range activities are summed for normal dist + bracket bonus. 21 km cap applies to full day total.',
+    'two-challenges-same-day': 'First qualifying activity on a day earns: base pts + its own bracket bonus + challenge pts. Remaining activities pool for normal base + bracket. 21 km cap trims only the remaining pool.'
+  };
+  if(descEl){
+    descEl.textContent=descs[atype]||'';
+    descEl.style.display=descs[atype]?'block':'none';
+  }
 }
 function showAtypeDesc(sel){var descs={'one-time':       'Award bonus_points ONCE if any qualifying activity (or daily total) meets the criteria. Standard distance bonus still applies.','per-act':        'Award bonus_points for EACH activity that individually falls within the distance range. Standard distance bonus still applies.','range-split':'Activities within the distance range each earn a flat challenge bonus individually. Activities outside the range are summed for standard distance + bracket bonus. Combined daily total (in-range + out-of-range) is capped at 21 km for base points.','two-challenges-same-day':'First qualifying activity earns base pts + its own bracket bonus + challenge bonus. Conflicting activities (qualifying for another challenge that day) are excluded. Remaining activities pooled for base pts + bracket bonus. 21km cap applies to full day.'};var d=sel.closest('.field').querySelector('.atype-desc');if(d)d.textContent=descs[sel.value]||'';}
 function toggleCh(id){var det=document.getElementById('chd-'+id);if(det)det.style.display=det.style.display==='none'?'block':'none'}
 function field_select(label,id,opts,val){return '<div class="field"><label style="font-size:11px;font-weight:600;color:#888;letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:4px">'+label+'</label><select id="'+id+'" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px">'+opts.map(function(o){return '<option value="'+o[0]+'"'+(val===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select></div>';}
-function field(label,id,type,val){var input='';if(type==='select-elig')input='<select id="'+id+'">'+['all','dayshift','nightshift','male','female'].map(function(v){return '<option value="'+v+'"'+(v==val?' selected':'')+'>'+v.charAt(0).toUpperCase()+v.slice(1)+'</option>'}).join('')+'</select>';else if(type==='select-scope')input='<select id="'+id+'"><option value="single"'+(val==='single'?' selected':'')+'>Single activity</option><option value="daily"'+(val==='daily'?' selected':'')+'>Entire day total</option></select>';else if(type==='select-dtype')input='<select id="'+id+'"><option value="fixed"'+(val==='fixed'?' selected':'')+'>Fixed</option><option value="range"'+(val==='range'?' selected':'')+'>Range</option><option value="extended"'+(val==='extended'?' selected':'')+'>Extended (min+)</option></select>';else if(type==='select-bool')input='<select id="'+id+'"><option value="false"'+(val==='false'||val===false?' selected':'')+'>No</option><option value="true"'+(val==='true'||val===true?' selected':'')+'>Yes</option></select>';else if(type==='select-atype-dep'){input='<select id="'+id+'" onchange="updateChFields(this)" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px">'+atypeOptions.map(function(v){return '<option value="'+v+'"'+(v===val?' selected':'')+'>'+atypeLabels[v]+'</option>';}).join('')+'</select><div class="atype-desc" id="adesc-'+id+'" style="margin-top:6px;padding:6px 8px;background:#f0f4ff;border-radius:4px;font-size:11px;color:#555"></div>';}
-if(type==='select-atype'){var atypeDesc={'one-time':'Award bonus_points ONCE if any qualifying activity (or daily total) meets the criteria. Standard distance bonus still applies.','per-act':'Award bonus_points for EACH activity that individually falls within the distance range. Standard distance bonus still applies.','range-split':'Activities within the distance range each earn a flat challenge bonus individually. Activities outside the range are summed for standard distance + bracket bonus. Combined daily total is capped at 21 km.'};input='<select id="'+id+'" onchange="showAtypeDesc(this)">'+atypeOptions.map(function(v){return '<option value="'+v+'"'+(v===val?' selected':'')+'>'+atypeLabels[v]+'</option>';}).join('')+'</select>';input+='<div class="atype-desc" id="adesc-'+id+'" style="margin-top:6px;padding:7px 10px;background:#f0f6ff;border-left:3px solid #1565c0;border-radius:4px;font-size:11.5px;color:#444;line-height:1.5">'+atypeDesc[val||'one-time']+'</div>';}else input='<input type="'+type+'" id="'+id+'" value="'+esc(val||'')+'">';return '<div class="field"><label>'+label+'</label>'+input+'</div>'}
+function field(label,id,type,val){
+  var eligLabels={'all':'All Participants','dayshift':'Day Shift Only','nightshift':'Night Shift Only','male':'Male Only','female':'Female Only'};
+  var input='';
+  if(type==='select-elig'){
+    input='<select id="'+id+'">';
+    ['all','dayshift','nightshift','male','female'].forEach(function(v){
+      input+='<option value="'+v+'"'+(v===val?' selected':'')+'>'+eligLabels[v]+'</option>';
+    });
+    input+='</select>';
+  } else if(type==='select-scope'){
+    input='<select id="'+id+'"><option value="single"'+(val==='single'?' selected':'')+'>Single activity</option><option value="daily"'+(val==='daily'?' selected':'')+'>Entire day total</option></select>';
+  } else if(type==='select-dtype'){
+    input='<select id="'+id+'"><option value="fixed"'+(val==='fixed'?' selected':'')+'>Fixed (±0.1 km)</option><option value="range"'+(val==='range'?' selected':'')+'>Range (strict)</option><option value="extended"'+(val==='extended'?' selected':'')+'>Extended (min km+)</option></select>';
+  } else if(type==='select-bool'){
+    input='<select id="'+id+'"><option value="false"'+(val==='false'||val===false?' selected':'')+'>No</option><option value="true"'+(val==='true'||val===true?' selected':'')+'>Yes</option></select>';
+  } else if(type==='select-atype-dep'){
+    var atypeDescs={
+      'one-time':                'Award bonus_points ONCE if any qualifying activity (or daily total) meets criteria. Standard distance bonus still applies.',
+      'per-act':                 'Award bonus_points for EACH qualifying activity that meets the distance/elevation/time criteria. Standard distance bonus still applies.',
+      'range-split':             'In-range activities each earn a flat challenge bonus individually. Out-of-range activities are summed for normal dist + bracket bonus. 21 km cap applies to full day total.',
+      'two-challenges-same-day': 'First qualifying activity on a day earns: base pts + its own bracket bonus + challenge pts. Remaining activities pool for normal base + bracket. 21 km cap trims only the remaining pool.'
+    };
+    input='<select id="'+id+'" onchange="updateChFields(this)" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px">';
+    atypeOptions.forEach(function(v){
+      input+='<option value="'+v+'"'+(v===val?' selected':'')+'>'+atypeLabels[v]+'</option>';
+    });
+    input+='</select>';
+    var currentDesc=atypeDescs[val||'one-time']||'';
+    input+='<div class="atype-desc" id="adesc-'+id+'" style="margin-top:6px;padding:7px 10px;background:#f0f4ff;border-left:3px solid #1565c0;border-radius:4px;font-size:11.5px;color:#444;line-height:1.5;display:'+(currentDesc?'block':'none')+'">'+(currentDesc)+'</div>';
+  } else {
+    input='<input type="'+type+'" id="'+id+'" value="'+esc(val||'')+'">';
+  }
+  return '<div class="field"><label>'+label+'</label>'+input+'</div>';
+}
 function getVal(id){var el=document.getElementById(id);return el?el.value:null}
 async function saveChallenge(id){var atype=getVal('ch-atype-'+id)||'one-time';var data={name:getVal('ch-name-'+id),start_date:getVal('ch-start-'+id),end_date:getVal('ch-end-'+id),bonus_points:+getVal('ch-pts-'+id)||0,eligible:getVal('ch-elig-'+id),activity_scope:getVal('ch-scope-'+id),distance_type:getVal('ch-dtype-'+id),distance_min:+getVal('ch-dmin-'+id)||0,distance_max:+getVal('ch-dmax-'+id)||0,start_time_criteria:getVal('ch-time-'+id)||null,elevation_criteria:+getVal('ch-elev-'+id)||0,award_type:atype,per_activity_points:(atype==='per-act'?+getVal('ch-pts-'+id)||1:0),normal_bonus_type:(document.getElementById('ch-nbt-'+id)||{}).value||'no-change',exclude_normal_bonus:((document.getElementById('ch-nbt-'+id)||{}).value==='exclude-all'),range_split:atype==='range-split'};await fetch(SB_URL+'/rest/v1/challenges?id=eq.'+id,{method:'PATCH',headers:HDR,body:JSON.stringify(data)});showSaved('ch-saved');loadChallenges()}
 async function toggleChallenge(id,current){await fetch(SB_URL+'/rest/v1/challenges?id=eq.'+id,{method:'PATCH',headers:HDR,body:JSON.stringify({is_active:!current})});loadChallenges()}
