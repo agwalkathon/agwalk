@@ -767,7 +767,7 @@ function showSplash(){
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
           <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
         </svg>
-        <span class="notification-badge" id="notification-badge" style="position: absolute; top: 1px; right: 1px; background: #FC6100; color: white; border-radius: 50%; width: 10px; height: 10px; display: block; border: 1.5px solid var(--surface);"></span>
+        <span class="notification-badge" id="notification-badge" style="position: absolute; top: 1px; right: 1px; background: #FC6100; color: white; border-radius: 50%; width: 10px; height: 10px; display: none; border: 1.5px solid var(--surface);"></span>
       </button>
       
       <!-- Notification Dropdown -->
@@ -776,16 +776,10 @@ function showSplash(){
           <span style="font-size: 13px; font-weight: 700; color: #fff;">Notifications</span>
           <span id="notif-clear-all" onclick="clearNotifications(event)" style="font-size: 11px; color: var(--brand); cursor: pointer; font-weight: 600;">Clear all</span>
         </div>
-        <div id="notif-list">
-          <div id="notif-item-1" style="display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; cursor: pointer;">
-            <div style="background: rgba(252,97,0,0.15); color: var(--brand); border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; margin-top: 1px;">📢</div>
-            <div>
-              <div style="font-size: 12.5px; font-weight: 600; color: #fff; line-height: 1.3;">Welcome to Walkathon 2026</div>
-              <div style="font-size: 10px; color: var(--muted); margin-top: 3px;">Just now</div>
-            </div>
-          </div>
+        <div id="notif-list" style="max-height: 240px; overflow-y: auto;">
+          <!-- Will be rendered dynamically -->
         </div>
-        <div id="notif-empty" style="display: none; text-align: center; padding: 16px 0; color: var(--muted); font-size: 11px;">
+        <div id="notif-empty" style="display: block; text-align: center; padding: 16px 0; color: var(--muted); font-size: 11px;">
           No new notifications
         </div>
       </div>
@@ -1709,6 +1703,7 @@ var currentSession=null;
 
 async function load() {
   var s=userGuard(); if(!s) return; currentSession=s; var athleteId=s.athleteId;
+  loadNotifications();
   try {
     // ── Phase 1: Load personal data with cache ────────────────────────────────
     var _cachedReg   = cacheGet('reg_'+athleteId, CACHE_TTL.reg);
@@ -2830,6 +2825,10 @@ function renderStanding() {
       if(teamCard) teamCard.style.display='';
       if(standingGrid) standingGrid.style.gridTemplateColumns='1fr 1fr';
     }
+
+    var myActs = LB_ACTS.filter(function(a){return String(a.strava_athlete_id)===String(athleteId);});
+    var currentPoints = calcFullPts(myActs, reg.gender).total;
+    checkMilestoneNotifications(athleteId, shiftRank, currentPoints, reg.gender, myActs, reg);
   } catch(e) {
     console.warn('renderStanding failed:', e);
   }
@@ -2849,6 +2848,205 @@ function clearPWACache(){
     });
   } else { window.location.reload(true); }
 }
+
+var _notificationsList = [];
+
+async function loadNotifications() {
+  try {
+    var session = JSON.parse(localStorage.getItem('wk_user') || '{}');
+    var athleteId = session.athleteId;
+    if (!athleteId) return;
+
+    var res = await fetch(BACKEND + '/notifications?athlete_id=' + encodeURIComponent(athleteId));
+    var data = await res.json();
+    if (data.success && Array.isArray(data.notifications)) {
+      _notificationsList = data.notifications;
+      renderNotifications();
+    }
+  } catch (e) {
+    console.warn('Failed to load notifications:', e);
+  }
+}
+
+function timeAgo(dateString) {
+  try {
+    var now = new Date();
+    var past = new Date(dateString);
+    var diffMs = now - past;
+    var diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return diffMins + 'm ago';
+    var diffHrs = Math.floor(diffMins / 60);
+    if (diffHrs < 24) return diffHrs + 'h ago';
+    var diffDays = Math.floor(diffHrs / 24);
+    if (diffDays === 1) return 'Yesterday';
+    return diffDays + 'd ago';
+  } catch(e) {
+    return 'Recently';
+  }
+}
+
+function getNotifEmoji(title, body) {
+  var t = (title + ' ' + body).toLowerCase();
+  if (t.indexOf('gold') !== -1) return '🥇';
+  if (t.indexOf('silver') !== -1) return '🥈';
+  if (t.indexOf('bronze') !== -1) return '🥉';
+  if (t.indexOf('medal') !== -1) return '🏆';
+  if (t.indexOf('flagged') !== -1) return '⚠️';
+  if (t.indexOf('approved') !== -1 || t.indexOf('welcome') !== -1) return '🎉';
+  if (t.indexOf('sync') !== -1 || t.indexOf('recorded') !== -1) return '👟';
+  if (t.indexOf('broadcast') !== -1 || t.indexOf('update') !== -1) return '📢';
+  return '🔔';
+}
+
+function renderNotifications() {
+  var badge = document.getElementById('notification-badge');
+  var listEl = document.getElementById('notif-list');
+  var emptyEl = document.getElementById('notif-empty');
+  if (!listEl || !emptyEl) return;
+
+  var unreadCount = _notificationsList.filter(function(n) { return !n.is_read; }).length;
+  
+  if (badge) {
+    if (unreadCount > 0) {
+      badge.style.display = 'block';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  if (_notificationsList.length === 0) {
+    listEl.innerHTML = '';
+    listEl.style.display = 'none';
+    emptyEl.style.display = 'block';
+  } else {
+    emptyEl.style.display = 'none';
+    listEl.style.display = 'block';
+    listEl.innerHTML = _notificationsList.map(function(n) {
+      var emoji = getNotifEmoji(n.title, n.body);
+      var timeStr = timeAgo(n.created_at);
+      return '<div style="display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer;" onclick="if(\'' + n.url + '\' && \'' + n.url + '\' !== \'null\' && \'' + n.url + '\' !== \'undefined\') { window.location.href=\'' + n.url + '\'; }">' +
+        '<div style="background: rgba(252,97,0,0.12); color: var(--brand); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; margin-top: 1px;">' + emoji + '</div>' +
+        '<div style="flex: 1; min-width: 0;">' +
+          '<div style="font-size: 12.5px; font-weight: 600; color: #fff; line-height: 1.3; word-wrap: break-word;">' + esc(n.title) + '</div>' +
+          '<div style="font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.3; word-wrap: break-word;">' + esc(n.body) + '</div>' +
+          '<div style="font-size: 9.5px; color: var(--label); margin-top: 4px;">' + timeStr + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+}
+
+async function clearNotifications(e) {
+  if (e) e.stopPropagation();
+  try {
+    var session = JSON.parse(localStorage.getItem('wk_user') || '{}');
+    var athleteId = session.athleteId;
+    if (!athleteId) return;
+
+    var res = await fetch(BACKEND + '/notifications/clear', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ athlete_id: athleteId })
+    });
+    var data = await res.json();
+    if (data.success) {
+      _notificationsList = [];
+      renderNotifications();
+    }
+  } catch (e) {
+    console.warn('Failed to clear notifications:', e);
+    _notificationsList = [];
+    renderNotifications();
+  }
+}
+
+async function checkMilestoneNotifications(athleteId, currentRank, currentPoints, currentGender, myActs, reg) {
+  try {
+    var keyRank = 'agwalk_prev_rank_' + athleteId;
+    var keyMedals = 'agwalk_prev_medals_' + athleteId;
+    var keyChallenges = 'agwalk_prev_challenges_' + athleteId;
+
+    var prevRank = localStorage.getItem(keyRank);
+    var prevMedalsRaw = localStorage.getItem(keyMedals);
+    var prevChallengesRaw = localStorage.getItem(keyChallenges);
+
+    var prevMedals = prevMedalsRaw ? JSON.parse(prevMedalsRaw) : [];
+    var prevChallenges = prevChallengesRaw ? JSON.parse(prevChallengesRaw) : [];
+
+    var gKey = (currentGender || '').toLowerCase() === 'female' ? 'female' : 'male';
+    var medalsThresh = { gold: 300, silver: 200, bronze: 125 };
+    if (typeof medalData !== 'undefined' && Array.isArray(medalData) && medalData.length && medalData[0].config_value) {
+      medalsThresh = medalData[0].config_value;
+    }
+    var bt = Number(medalsThresh.bronze[gKey]) || 125;
+    var st = Number(medalsThresh.silver[gKey]) || 200;
+    var gt = Number(medalsThresh.gold[gKey]) || 300;
+
+    var currentMedals = [];
+    if (currentPoints >= bt) currentMedals.push('medal_bronze');
+    if (currentPoints >= st) currentMedals.push('medal_silver');
+    if (currentPoints >= gt) currentMedals.push('medal_gold');
+
+    // Newly unlocked medals
+    for (var i = 0; i < currentMedals.length; i++) {
+      var mKey = currentMedals[i];
+      if (prevMedals.indexOf(mKey) === -1) {
+        await fetch(BACKEND + '/push/trigger', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ trigger_key: mKey, athlete_id: athleteId })
+        }).catch(function(err){});
+      }
+    }
+
+    // Completed challenges
+    var completedChallenges = [];
+    if (Array.isArray(CHALLENGES_LB)) {
+      CHALLENGES_LB.forEach(function(c) {
+        if (!c.is_active) return;
+        var qualifies = myActs.some(function(act) { return checkChallengeSingle(act, c); });
+        if (qualifies) {
+          completedChallenges.push(c.id);
+          if (prevChallenges.indexOf(c.id) === -1) {
+            fetch(BACKEND + '/push/trigger', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ trigger_key: 'challenge_bonus', athlete_id: athleteId, vars: { name: c.name } })
+            }).catch(function(err){});
+          }
+        }
+      });
+    }
+
+    // Rank changes
+    if (currentRank && prevRank !== null && prevRank !== undefined && prevRank !== '') {
+      var cRank = parseInt(currentRank, 10);
+      var pRank = parseInt(prevRank, 10);
+      if (cRank < pRank) {
+        var tKey = cRank === 1 ? 'rank_top1' : 'rank_improved';
+        fetch(BACKEND + '/push/trigger', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ trigger_key: tKey, athlete_id: athleteId, vars: { rank: String(cRank) } })
+        }).catch(function(err){});
+      } else if (cRank > pRank) {
+        fetch(BACKEND + '/push/trigger', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ trigger_key: 'rank_dropped', athlete_id: athleteId, vars: { rank: String(cRank) } })
+        }).catch(function(err){});
+      }
+    }
+
+    localStorage.setItem(keyRank, String(currentRank));
+    localStorage.setItem(keyMedals, JSON.stringify(currentMedals));
+    localStorage.setItem(keyChallenges, JSON.stringify(completedChallenges));
+  } catch (err) {
+    console.warn('Failed to check milestone notifications:', err);
+  }
+}
+
 // Show splash screen on every page load until all resources/data are preloaded
 load().finally(function(){ hideSplash(); });
 </script>
