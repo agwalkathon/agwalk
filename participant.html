@@ -1815,7 +1815,7 @@ function cacheGet(key, ttl) {
   } catch(e) { return null; }
 }
 function cacheClear(athleteId) {
-  var keys = ['reg_'+athleteId,'acts_'+athleteId,'config','challenges','special_days','medals','ranking_acts','ranking_reg'];
+  var keys = ['reg_'+athleteId,'acts_'+athleteId,'config','challenges','special_days','medals','ranking_acts_v2','ranking_reg'];
   keys.forEach(function(k){ try { localStorage.removeItem('agwalk_'+k); } catch(e){} });
   console.log('[Cache] Cleared for athlete', athleteId);
 }
@@ -2323,7 +2323,7 @@ async function load(isBackgroundRefresh) {
     // ── Phase 2: ranking data in background (with cache) ────────────────────
     (async function loadRanking(){
       try{
-        var _cachedRankActs = cacheGet('ranking_acts', CACHE_TTL.ranking);
+        var _cachedRankActs = cacheGet('ranking_acts_v2', CACHE_TTL.ranking);
         var _cachedRankReg  = cacheGet('ranking_reg',  CACHE_TTL.ranking);
         var allActsRaw, allRegRaw;
         if (_cachedRankActs && _cachedRankReg) {
@@ -2334,11 +2334,11 @@ async function load(isBackgroundRefresh) {
           if (!isBackgroundRefresh) {
             setTimeout(function(){
               Promise.all([
-                fetchAll(SUPABASE_URL+'/rest/v1/activities?is_deleted=is.false&select=strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,elevation_gain'),
+                fetchAll(SUPABASE_URL+'/rest/v1/activities?is_deleted=is.false&select=strava_activity_id,strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,elevation_gain'),
                 fetchAll(SUPABASE_URL+'/rest/v1/registration?select=strava_athlete_id,full_name,gender,shift,leaderboard_team')
               ]).then(function(results){
                 console.log('[Cache] Phase 2 background refresh complete. Re-rendering...');
-                cacheSet('ranking_acts', results[0]);
+                cacheSet('ranking_acts_v2', results[0]);
                 cacheSet('ranking_reg', results[1]);
                 load(true);
               }).catch(function(e){console.warn('[Cache] Ranking background refresh failed:', e);});
@@ -2347,10 +2347,10 @@ async function load(isBackgroundRefresh) {
         } else {
           console.log('[Cache] Cache miss — fetching Phase 2 from Supabase...');
           var fetched = await Promise.all([
-            fetchAll(SUPABASE_URL+'/rest/v1/activities?is_deleted=is.false&select=strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,elevation_gain'),
+            fetchAll(SUPABASE_URL+'/rest/v1/activities?is_deleted=is.false&select=strava_activity_id,strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,elevation_gain'),
             fetchAll(SUPABASE_URL+'/rest/v1/registration?select=strava_athlete_id,full_name,gender,shift,leaderboard_team')
           ]);
-          allActsRaw = fetched[0]; cacheSet('ranking_acts', allActsRaw);
+          allActsRaw = fetched[0]; cacheSet('ranking_acts_v2', allActsRaw);
           allRegRaw  = fetched[1]; cacheSet('ranking_reg',  allRegRaw);
         }
         allActs=allActsRaw; allRegRes=allRegRaw;
