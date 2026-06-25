@@ -190,6 +190,63 @@ tr:hover td{background:#FAFAFA}
       </div>
     </div>
 
+    <!-- Strava API Rate Limit Status Dashboard -->
+    <div class="card" id="rate-limit-dashboard" style="margin-bottom:16px;padding:20px;border-radius:12px;background:var(--card-bg);border:1px solid var(--border-color);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <h3 style="margin:0;font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;color:var(--text);">
+            <i class="ti ti-brand-strava" style="color:#fc5200;font-size:20px;"></i> Strava API Rate Limits & Status
+          </h3>
+          <span id="queue-status" class="badge" style="font-size:11px;padding:3px 8px;border-radius:12px;background:rgba(255,255,255,0.05);color:var(--text-muted);">Queue Idle</span>
+        </div>
+        <button class="btn btn-sm" id="kill-switch-btn" onclick="toggleKillSwitch()" style="font-size:12px;font-weight:600;padding:6px 12px;border-radius:6px;border:none;cursor:pointer;transition:all 0.15s;"></button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;margin-bottom:16px;">
+        <!-- Overall Quota 15m -->
+        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px;">Overall Rate Limit (15-Min)</div>
+          <div style="font-size:13px;font-weight:500;color:var(--text);" id="limit-overall-15m-desc">Last 15 Minutes: -- Remaining (Limit 600 Requests)</div>
+          <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:2px;margin-top:8px;overflow:hidden;">
+            <div id="bar-overall-15m" style="height:100%;width:0%;background:#fc5200;transition:width 0.3s;"></div>
+          </div>
+        </div>
+
+        <!-- Overall Quota 24h -->
+        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px;">Overall Rate Limit (Daily)</div>
+          <div style="font-size:13px;font-weight:500;color:var(--text);" id="limit-overall-24h-desc">Per Day: -- Remaining (Limit 6,000 requests)</div>
+          <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:2px;margin-top:8px;overflow:hidden;">
+            <div id="bar-overall-24h" style="height:100%;width:0%;background:#fc5200;transition:width 0.3s;"></div>
+          </div>
+        </div>
+
+        <!-- Read Quota 15m -->
+        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px;">Read Rate Limit (15-Min)</div>
+          <div style="font-size:13px;font-weight:500;color:var(--text);" id="limit-read-15m-desc">Last 15 Minutes: -- Remaining (Limit 300 Requests)</div>
+          <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:2px;margin-top:8px;overflow:hidden;">
+            <div id="bar-read-15m" style="height:100%;width:0%;background:#3b82f6;transition:width 0.3s;"></div>
+          </div>
+        </div>
+
+        <!-- Read Quota 24h -->
+        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px;">Read Rate Limit (Daily)</div>
+          <div style="font-size:13px;font-weight:500;color:var(--text);" id="limit-read-24h-desc">Per Day: -- Remaining (Limit 3,000 requests)</div>
+          <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:2px;margin-top:8px;overflow:hidden;">
+            <div id="bar-read-24h" style="height:100%;width:0%;background:#3b82f6;transition:width 0.3s;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Diagnostic Status Indicator Panel -->
+      <div id="api-status-banner" style="border-radius:8px;padding:12px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;transition:all 0.15s;background:rgba(255,255,255,0.03);border:1px solid var(--border-color);color:var(--text-muted);">
+        <span id="api-status-icon" style="font-size:16px;"></span>
+        <span id="api-status-text">Checking status...</span>
+      </div>
+    </div>
+
     <!-- Filter toolbar -->
     <div class="toolbar">
       <input id="search" oninput="filterTable()" placeholder="Search name, email or team">
@@ -200,6 +257,10 @@ tr:hover td{background:#FAFAFA}
         <option value="connected">Strava connected</option>
         <option value="notconnected">Not connected</option>
       </select>
+      <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.03);border:1px solid var(--border-color);border-radius:6px;padding:5px 10px;height:38px;box-sizing:border-box;">
+        <label for="sync-date" style="font-size:11px;color:var(--text-muted);font-weight:700;text-transform:uppercase;white-space:nowrap;margin:0;">Sync From:</label>
+        <input type="date" id="sync-date" value="2026-06-22" style="background:transparent;border:none;color:var(--text);font-size:12px;padding:0;outline:none;cursor:pointer;font-family:inherit;">
+      </div>
       <span id="count" class="count-badge"></span>
       <button class="btn btn-ghost btn-sm" id="export-btn" onclick="exportCSV()" style="margin-left:auto;font-size:13px;display:none"><i class="ti ti-download"></i> Export CSV</button>
     </div>
@@ -293,7 +354,8 @@ function renderRows(rows) {
         <td>
           <div style="display:flex;align-items:center;gap:8px;">
             <span style="font-weight:600">${p.cnt || 0}</span>
-            ${p.cnt > 0 ? `<a href="javascript:void(0)" onclick="clearActivities('${p.strava_athlete_id}','${esc(p.full_name)}')" style="color: #ef4444; text-decoration: none; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05); transition: all 0.15s;" onmouseover="this.style.background='rgba(239,68,68,0.15)';this.style.borderColor='#ef4444'" onmouseout="this.style.background='rgba(239,68,68,0.05)';this.style.borderColor='rgba(239,68,68,0.2)'">Clear</a>` : ''}
+            ${p.connected ? `<a href="javascript:void(0)" id="sync-btn-${p.strava_athlete_id}" onclick="syncActivities('${p.strava_athlete_id}','${esc(p.full_name)}')" style="color: var(--brand); text-decoration: none; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(232, 98, 42, 0.2); background: rgba(232, 98, 42, 0.05); transition: all 0.15s;" onmouseover="this.style.background='rgba(232,98,42,0.15)';this.style.borderColor='var(--brand)'" onmouseout="this.style.background='rgba(232,98,42,0.05)';this.style.borderColor='rgba(232, 98, 42, 0.2)'">Sync</a>` : ''}
+            ${p.cnt > 0 ? `<a href="javascript:void(0)" onclick="clearActivities('${p.strava_athlete_id}','${esc(p.full_name)}')" style="color: #ef4444; text-decoration: none; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05); transition: all 0.15s;" onmouseover="this.style.background='rgba(239,68,68,0.15)';this.style.borderColor='#ef4444'" onmouseout="this.style.background='rgba(239,68,68,0.05)';this.style.borderColor='rgba(239, 68, 68, 0.2)'">Clear</a>` : ''}
           </div>
         </td>
         <td><span class="badge ${p.cnt > 0 ? 'ok' : 'warn'}">${p.cnt > 0 ? 'Active' : 'Pending'}</span></td>
@@ -373,6 +435,7 @@ async function loadParticipants() {
     document.getElementById('s-active').textContent    = allRows.filter(r => r.cnt > 0).length;
     document.getElementById('s-km').textContent        = (allRows.reduce((s, r) => s + r.dist, 0) / 1000).toFixed(1) + ' km';
     filterTable();
+    updateRateLimitDashboard();
   } catch(e) {
     document.getElementById('participants-body').innerHTML =
       `<tr><td colspan="12" style="text-align:center;padding:48px;color:#DC2626">Error: ${esc(e.message)}</td></tr>`;
@@ -381,6 +444,188 @@ async function loadParticipants() {
 
 authGuard();
 loadParticipants();
+
+let currentKillSwitchState = false;
+
+async function updateRateLimitDashboard() {
+  const token = sessionStorage.getItem('wk_admin_token');
+  if (!token) return;
+  try {
+    const res = await fetch(_BU + '/admin/strava-status', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!res.ok) return;
+    const d = await res.json();
+    if (d.success && d.limits) {
+      const lim = d.limits;
+      const status = d.status;
+      
+      // Update kill switch state
+      currentKillSwitchState = d.killSwitchActive;
+      const ksBtn = document.getElementById('kill-switch-btn');
+      if (currentKillSwitchState) {
+        ksBtn.textContent = '▶️ Resume Strava API Calls';
+        ksBtn.style.background = 'rgba(16, 185, 129, 0.1)';
+        ksBtn.style.color = '#10B981';
+        ksBtn.style.border = '1px solid rgba(16, 185, 129, 0.2)';
+      } else {
+        ksBtn.textContent = '🛑 Stop Strava API Calls';
+        ksBtn.style.background = 'rgba(239, 68, 68, 0.1)';
+        ksBtn.style.color = '#EF4444';
+        ksBtn.style.border = '1px solid rgba(239, 68, 68, 0.2)';
+      }
+
+      // Calculate Remaining
+      const remOverall15 = Math.max(0, lim.overallLimit15m - lim.overallUsage15m);
+      const remOverall24 = Math.max(0, lim.overallLimit24h - lim.overallUsage24h);
+      const remRead15 = Math.max(0, lim.readLimit15m - lim.readUsage15m);
+      const remRead24 = Math.max(0, lim.readLimit24h - lim.readUsage24h);
+
+      // Set Text
+      document.getElementById('limit-overall-15m-desc').textContent = `Last 15 Minutes: ${remOverall15} Remaining (Limit ${lim.overallLimit15m} Requests)`;
+      document.getElementById('limit-overall-24h-desc').textContent = `Per Day: ${remOverall24.toLocaleString()} Remaining (Limit ${lim.overallLimit24h.toLocaleString()} requests)`;
+      document.getElementById('limit-read-15m-desc').textContent = `Last 15 Minutes: ${remRead15} Remaining (Limit ${lim.readLimit15m} Requests)`;
+      document.getElementById('limit-read-24h-desc').textContent = `Per Day: ${remRead24.toLocaleString()} Remaining (Limit ${lim.readLimit24h || 3000} requests)`;
+
+      // Set Bars
+      const pctOverall15 = Math.min(100, (lim.overallUsage15m / lim.overallLimit15m) * 100);
+      const pctOverall24 = Math.min(100, (lim.overallUsage24h / lim.overallLimit24h) * 100);
+      const pctRead15 = Math.min(100, (lim.readUsage15m / lim.readLimit15m) * 100);
+      const pctRead24 = Math.min(100, (lim.readUsage24h / lim.readLimit24h) * 100);
+
+      document.getElementById('bar-overall-15m').style.width = `${pctOverall15}%`;
+      document.getElementById('bar-overall-24h').style.width = `${pctOverall24}%`;
+      document.getElementById('bar-read-15m').style.width = `${pctRead15}%`;
+      document.getElementById('bar-read-24h').style.width = `${pctRead24}%`;
+
+      // Queue Status
+      const qStatus = document.getElementById('queue-status');
+      if (d.queueProcessing) {
+        qStatus.textContent = `Queue Active (Pending: ${d.queueSize})`;
+        qStatus.style.background = 'rgba(232, 98, 42, 0.15)';
+        qStatus.style.color = 'var(--brand)';
+      } else {
+        qStatus.textContent = 'Queue Idle';
+        qStatus.style.background = 'rgba(255,255,255,0.05)';
+        qStatus.style.color = 'var(--text-muted)';
+      }
+
+      // API Diagnostic Status Indicator
+      const banner = document.getElementById('api-status-banner');
+      const icon = document.getElementById('api-status-icon');
+      const text = document.getElementById('api-status-text');
+
+      if (status.state === 'suspended') {
+        banner.style.background = 'rgba(245, 158, 11, 0.08)';
+        banner.style.border = '1px solid rgba(245, 158, 11, 0.15)';
+        banner.style.color = '#F59E0B';
+        icon.textContent = '⚠';
+        text.textContent = 'Strava API calls are suspended by Administrator';
+      } else if (status.state === 'error') {
+        banner.style.background = 'rgba(239, 68, 68, 0.08)';
+        banner.style.border = '1px solid rgba(239, 68, 68, 0.15)';
+        banner.style.color = '#EF4444';
+        icon.textContent = '❌';
+        
+        const dateStr = status.lastErrorTime ? new Date(status.lastErrorTime).toLocaleTimeString() : '';
+        text.textContent = `API Call Failed: ${status.lastError || 'Unknown error'} ${dateStr ? 'at ' + dateStr : ''}`;
+      } else {
+        banner.style.background = 'rgba(16, 185, 129, 0.08)';
+        banner.style.border = '1px solid rgba(16, 185, 129, 0.15)';
+        banner.style.color = '#10B981';
+        icon.textContent = '✓';
+        text.textContent = 'Strava API calls are working fine';
+      }
+    }
+  } catch(e) {
+    console.warn('Failed to update rate limit dashboard:', e);
+  }
+}
+
+async function toggleKillSwitch() {
+  const token = sessionStorage.getItem('wk_admin_token');
+  if (!token) { alert('Unauthorized. Please log in again.'); window.location.href = 'admin-login.html'; return; }
+  
+  const newState = !currentKillSwitchState;
+  const actionText = newState ? 'stop all outbound Strava API calls?' : 'resume normal Strava API calls?';
+  if (!confirm(`Are you sure you want to ${actionText}`)) return;
+
+  try {
+    const res = await fetch(_BU + '/admin/toggle-kill-switch', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ active: newState })
+    });
+    const d = await res.json();
+    if (d.success) {
+      alert(newState ? 'Strava API access has been STOPPED.' : 'Strava API access has been RESUMED.');
+      await updateRateLimitDashboard();
+    }
+  } catch(e) {
+    alert('Failed to toggle kill switch: ' + e.message);
+  }
+}
+
+async function syncActivities(athleteId, name) {
+  const syncDate = document.getElementById('sync-date').value;
+  if (!syncDate) { alert('Please select a sync date.'); return; }
+  
+  const token = sessionStorage.getItem('wk_admin_token');
+  if (!token) { alert('Unauthorized. Please log in again.'); window.location.href = 'admin-login.html'; return; }
+  
+  if (currentKillSwitchState) {
+    alert('Strava API is currently suspended. Please resume API calls first.');
+    return;
+  }
+
+  const btn = document.getElementById(`sync-btn-${athleteId}`);
+  const originalText = btn.textContent;
+  btn.textContent = 'Syncing...';
+  btn.style.pointerEvents = 'none';
+  btn.style.opacity = '0.6';
+  
+  try {
+    const res = await fetch(_BU + '/admin/sync-activities', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ athlete_id: athleteId, after_date: syncDate })
+    });
+    
+    const d = await res.json();
+    if (!res.ok || !d.success) throw new Error(d.error || 'Failed to sync');
+    
+    btn.textContent = 'Success ✅';
+    btn.style.color = '#10B981';
+    btn.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+    btn.style.background = 'rgba(16, 185, 129, 0.05)';
+    
+    alert(`Sync complete for ${name}!\nSaved: ${d.savedCount} activities\nSkipped (Duplicates): ${d.skippedCount} activities`);
+    
+    await loadParticipants();
+  } catch(e) {
+    btn.textContent = 'Failed ❌';
+    btn.style.color = '#EF4444';
+    btn.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+    btn.style.background = 'rgba(239, 68, 68, 0.05)';
+    alert(`Sync failed for ${name}: ` + e.message);
+    setTimeout(() => {
+      btn.textContent = originalText;
+      btn.style.pointerEvents = 'auto';
+      btn.style.opacity = '1';
+      btn.style.color = 'var(--brand)';
+      btn.style.borderColor = 'rgba(232, 98, 42, 0.2)';
+      btn.style.background = 'rgba(232, 98, 42, 0.05)';
+    }, 4000);
+  } finally {
+    await updateRateLimitDashboard();
+  }
+}
 
 async function revokeStrava(athleteId, name) {
   if (!confirm(`Are you sure you want to revoke Strava authorization for ${name}? The app will no longer be able to fetch new activities.`)) return;
