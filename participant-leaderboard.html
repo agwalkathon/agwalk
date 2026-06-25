@@ -829,7 +829,7 @@ async function boot(){
     ME=(Array.isArray(myRegs)&&myRegs.length)?myRegs[0]:{strava_athlete_id:s.athleteId};
     REG=results[1]; ACTS=results[2];
     var cfgRows=await results[3].json();
-    if(Array.isArray(cfgRows))cfgRows.forEach(function(row){if(row.config_key==='bonus_points')CONFIG.bonus=row.config_value.map(function(b){return{km:Number(b.km),points:Number(b.points||b.pts||0)};});if(row.config_key==='base_points_per_km')CONFIG.basePer_km=parseFloat(row.config_value)||1;});
+    if(Array.isArray(cfgRows))cfgRows.forEach(function(row){if(row.config_key==='bonus_points')CONFIG.bonus=row.config_value.map(function(b){return{km:Number(b.km),points:Number(b.points||b.pts||0)};});if(row.config_key==='base_points')CONFIG.basePer_km=parseFloat(row.config_value.per_km)||1;if(row.config_key==='base_points_per_km')CONFIG.basePer_km=parseFloat(row.config_value)||1;});
     var chRows=await results[4].json(); CHALLENGES=Array.isArray(chRows)?chRows:[];
     var sdRows=await results[5].json(); SPECIAL_DAYS=Array.isArray(sdRows)?sdRows.map(function(x){return x.special_date;}):[];
     var medalRows=await results[6].json();
