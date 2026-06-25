@@ -1271,6 +1271,23 @@ var SPECIAL_DAYS_LB = [];
 var ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoZGdrbmNwa3J0dHZlbXZ3dWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NzgyNjMsImV4cCI6MjA5NzI1NDI2M30.d7mvXOYDq5G4aqs1Mbc6HFNgTBlQk4B6ah0eahE_yZE';
 var HDR = { apikey: ANON, Authorization: 'Bearer ' + ANON };
 
+function safeSetText(id, val) {
+  var el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+function safeSetHtml(id, val) {
+  var el = document.getElementById(id);
+  if (el) el.innerHTML = val;
+}
+function safeToggleClass(id, className, force) {
+  var el = document.getElementById(id);
+  if (el) el.classList.toggle(className, force);
+}
+function safeSetStyle(id, prop, val) {
+  var el = document.getElementById(id);
+  if (el) el.style[prop] = val;
+}
+
 function userGuard() {
   var s = JSON.parse(localStorage.getItem('wk_user') || '{}');
   if (!s.loggedIn || s.expires < Date.now() || !s.athleteId) { window.location.href = 'index.html'; return null; }
@@ -2136,18 +2153,18 @@ async function load(isBackgroundRefresh) {
 
     var fullPts=calcFullPts(myActs,reg.gender,reg.shift);
     var validCount=myActs.filter(function(a){return !a.is_flagged;}).length;
-    document.getElementById('s-dist').textContent=Math.round(fullPts.km);
-    document.getElementById('s-acts').textContent=validCount;
+    safeSetText('s-dist', Math.round(fullPts.km));
+    safeSetText('s-acts', validCount);
 
     var validActs=myActs.filter(function(a){return !a.is_flagged;});
     var totalMovingSec=validActs.reduce(function(s,a){return s+(a.moving_time_seconds||0);},0);
     var totalDistM=validActs.reduce(function(s,a){return s+(a.distance_meters||0);},0);
     var avgPaceStr='—';
     if(totalDistM>0){var psk=totalMovingSec/(totalDistM/1000),pmin=Math.floor(psk/60),psec=Math.round(psk%60);avgPaceStr=pmin+':'+(psec<10?'0':'')+psec;}
-    var spEl=document.getElementById('s-pace');if(spEl)spEl.textContent=avgPaceStr;
+    safeSetText('s-pace', avgPaceStr);
     var mts='—';if(totalMovingSec>0){var mh=Math.floor(totalMovingSec/3600),mm=Math.floor((totalMovingSec%3600)/60);mts=mh>0?mh+'h '+mm+'m':mm+'m';}
-    var smEl=document.getElementById('s-movetime');if(smEl)smEl.textContent=mts;
-    var mtdash=document.getElementById('s-movetime-dash');if(mtdash)mtdash.textContent=mts;
+    safeSetText('s-movetime', mts);
+    safeSetText('s-movetime-dash', mts);
 
     // ── Personal Bests ──
     (function(){
@@ -2611,9 +2628,9 @@ async function load(isBackgroundRefresh) {
       prevD=d;
     });
 
-    document.getElementById('streak-num').textContent=(streakIsLive&&streak>0?'🔥':'')+streak;
-    document.getElementById('streak-best-val').textContent=best;
-    document.getElementById('streak-msg').textContent=streakIsLive?(streak>=7?'Amazing streak!':streak>=3?'Keep it going!':'Good start!'):(lastActiveDay?'Last active '+lastActiveDay:'Start today!');
+    safeSetText('streak-num', (streakIsLive&&streak>0?'🔥':'')+streak);
+    safeSetText('streak-best-val', best);
+    safeSetText('streak-msg', streakIsLive?(streak>=7?'Amazing streak!':streak>=3?'Keep it going!':'Good start!'):(lastActiveDay?'Last active '+lastActiveDay:'Start today!'));
 
     var days7=[],labels7=[];
     for(var di=6;di>=0;di--){
@@ -2623,8 +2640,8 @@ async function load(isBackgroundRefresh) {
       days7.push({str:dstr,active:!!activeDays[dstr],isToday:di===0});
       labels7.push(di===0?'Today':dayNames[dd.getDay()]);
     }
-    document.getElementById('streak-bars').innerHTML=days7.map(function(d){return'<div class="sbar '+(d.isToday?'dim':d.active?'on':'off')+'"></div>';}).join('');
-    document.getElementById('streak-labels').innerHTML=labels7.map(function(l){return'<span class="sdlbl">'+l+'</span>';}).join('');
+    safeSetHtml('streak-bars', days7.map(function(d){return'<div class="sbar '+(d.isToday?'dim':d.active?'on':'off')+'"></div>';}).join(''));
+    safeSetHtml('streak-labels', labels7.map(function(l){return'<span class="sdlbl">'+l+'</span>';}).join(''));
 
     // ── Challenges (Phase 1 — CHALLENGES_LB already loaded) ──────────────────
     (function renderChallenges(){
@@ -2657,7 +2674,7 @@ async function load(isBackgroundRefresh) {
     // ── Activities title ──────────────────────────────────────────────────────
     var flaggedCount=myActs.filter(function(a){return a.is_flagged;}).length;
     var uniqueDays=new Set(myActs.filter(function(a){return !a.is_flagged;}).map(function(a){return(a.activity_date||'').split('T')[0];})).size;
-    document.getElementById('act-section-title').textContent=uniqueDays+' Days \u00b7 '+myActs.length+' Activities'+(flaggedCount?' \u00b7 '+flaggedCount+' Flagged':'');
+    safeSetText('act-section-title', uniqueDays+' Days \u00b7 '+myActs.length+' Activities'+(flaggedCount?' \u00b7 '+flaggedCount+' Flagged':''));
     // Render Activities List
     renderActivities(myActs, fullPts.dayBreakdown, fullPts.actBreakdown, reg.gender);
 
@@ -2668,8 +2685,8 @@ async function load(isBackgroundRefresh) {
     hideSplash();
     console.error('Load error:',e.message||e);
     var err='<div class="empty-state"><div class="icon">⚠️</div><p>Could not load data.<br>'+(e.message||'Unknown error')+'</p></div>';
-    document.getElementById('act-list').innerHTML=err;
-    document.getElementById('tab-dashboard').innerHTML='<div style="padding:40px 20px;text-align:center;color:var(--muted)">⚠️ '+(e.message||'Load error')+'</div>';
+    safeSetHtml('act-list', err);
+    safeSetHtml('tab-dashboard', '<div style="padding:40px 20px;text-align:center;color:var(--muted)">⚠️ '+(e.message||'Load error')+'</div>');
   }
 }
 
@@ -2678,7 +2695,7 @@ function renderActivities(acts,dayBreakdown,actBreakdown,gender) {
   var list=document.getElementById('act-list');
   if(!acts.length){list.innerHTML='<div class="empty-state"><div class="icon">'+icoRun+'<p>No activities yet.<br>Save a walk or run on Strava — it will appear here.</p></div>';return;}
   var flaggedCount=acts.filter(function(a){return a.is_flagged;}).length;
-  if(flaggedCount>0)document.getElementById('flagged-banner').style.display='block';
+  if(flaggedCount>0)safeSetStyle('flagged-banner', 'display', 'block');
   var groups={},dateOrder=[];
   acts.forEach(function(a){var d=(a.activity_date||'').split('T')[0]||'Unknown';if(!groups[d]){groups[d]=[];dateOrder.push(d);}groups[d].push(a);});
   list.innerHTML='';
@@ -2781,10 +2798,10 @@ function showTab(tab){
     }
   });
 
-  document.getElementById('bnav-dashboard').classList.toggle('active',tab==='dashboard');
-  document.getElementById('bnav-activities').classList.toggle('active',tab==='activities');
-  document.getElementById('bnav-leaderboard').classList.toggle('active',tab==='leaderboard');
-  document.getElementById('bnav-you').classList.toggle('active',tab==='you');
+  safeToggleClass('bnav-dashboard', 'active', tab==='dashboard');
+  safeToggleClass('bnav-activities', 'active', tab==='activities');
+  safeToggleClass('bnav-leaderboard', 'active', tab==='leaderboard');
+  safeToggleClass('bnav-you', 'active', tab==='you');
 
   // rings + metrics now inside dashboard tab — no separate show/hide needed
   if(tab==='leaderboard'&&!_lbLoaded){
@@ -2859,7 +2876,7 @@ function refreshData(isPull){
   var s = currentSession || JSON.parse(localStorage.getItem('wk_user')||'{}');
   if (s && s.athleteId) cacheClear(s.athleteId);
 
-  document.getElementById('flagged-banner').style.display='none';
+  safeSetStyle('flagged-banner', 'display', 'none');
 
   if (isPull) {
     var ptr = document.getElementById('ptr-indicator');
@@ -3327,7 +3344,7 @@ function renderRows(rows, prevRanks) {
   var meId = LB_ME ? String(LB_ME.strava_athlete_id) : '', list = document.getElementById('lb-list');
   if (rows.length === 0) {
     list.innerHTML = '<div class="empty-box"><div class="ei">🏃</div><p>No activities yet in this category.</p></div>';
-    document.getElementById('lb-my-rank').textContent = '—';
+    safeSetText('lb-my-rank', '—');
     return;
   }
   list.innerHTML = '';
@@ -3520,9 +3537,9 @@ function renderWeeklyBoard(mode) {
 
 function switchTab(mode){
   LB_currentTab=mode;
-  document.getElementById('lb-tab-shift').classList.toggle('active',mode==='shift');
-  document.getElementById('lb-tab-team').classList.toggle('active',mode==='team');
-  document.getElementById('lb-tab-hof').classList.toggle('active',mode==='hof');
+  safeToggleClass('lb-tab-shift', 'active', mode==='shift');
+  safeToggleClass('lb-tab-team', 'active', mode==='team');
+  safeToggleClass('lb-tab-hof', 'active', mode==='hof');
   if(mode==='hof'){renderHallOfFame();return;}
   renderRows(getRows(mode));
 }
@@ -3530,10 +3547,10 @@ function buildTabs(){
   if(!LB_ME)return;
   var myGender=norm(LB_ME.gender),myShift=norm(LB_ME.shift),myTeam=LB_ME.leaderboard_team||'My Team',isNight=myShift.indexOf('night')>-1,isFemale=myGender==='female'||myGender==='f';
   var gLabel=isFemale?'Female':'Male';
-  document.getElementById('lb-tab-shift').textContent=isNight?'Nightshift':'Dayshift';
-  document.getElementById('lb-tab-team').textContent=myTeam;
+  safeSetText('lb-tab-shift', isNight?'Nightshift':'Dayshift');
+  safeSetText('lb-tab-team', myTeam);
 }
-function showSkeletons(){var h='';for(var i=0;i<6;i++)h+='<div class="skel-row"><div class="skeleton skel-c"></div><div class="skel-lines"><div class="skeleton skel-l m"></div><div class="skeleton skel-l s"></div></div></div>';document.getElementById('lb-list').innerHTML=h;}
+function showSkeletons(){var h='';for(var i=0;i<6;i++)h+='<div class="skel-row"><div class="skeleton skel-c"></div><div class="skel-lines"><div class="skeleton skel-l m"></div><div class="skeleton skel-l s"></div></div></div>';safeSetHtml('lb-list', h);}
 
 function lbRender(){
   // Pure render — zero API calls. Uses LB_ME/LB_REG/LB_ACTS already in memory.
@@ -3541,12 +3558,12 @@ function lbRender(){
   try{
     renderStanding();
     var name=(LB_ME&&LB_ME.full_name)||s.name||'Participant';
-    document.getElementById('lb-my-name').textContent=name.toUpperCase();
+    safeSetText('lb-my-name', name.toUpperCase());
     var tags=[];if(LB_ME&&LB_ME.gender)tags.push(LB_ME.gender);if(LB_ME&&LB_ME.shift)tags.push(LB_ME.shift);if(LB_ME&&LB_ME.leaderboard_team)tags.push(LB_ME.leaderboard_team);
-    document.getElementById('lb-my-tags').innerHTML=tags.map(function(t){return'<span class="my-tag">'+esc(t)+'</span>';}).join('');
+    safeSetHtml('lb-my-tags', tags.map(function(t){return'<span class="my-tag">'+esc(t)+'</span>';}).join(''));
     buildTabs(); renderRows(getRows(LB_currentTab));
     var allRows=getRows(LB_currentTab),myRow=allRows.find(function(r){return String(r.p.strava_athlete_id)===String(s.athleteId);});
-    document.getElementById('lb-my-pts').textContent=myRow?myRow.pts.total.toFixed(2):'—';
+    safeSetText('lb-my-pts', myRow?myRow.pts.total.toFixed(2):'—');
     (function(){
       try{
         var meId=s.athleteId;
@@ -3589,13 +3606,15 @@ async function lbBoot(){
     // LB_ME already set from Phase 1 reg; CONFIG_LB already set from Phase 1 config
     _lbReady=true;
     lbRender();
-  }catch(e){console.error('lbBoot error:',e);document.getElementById('lb-list').innerHTML='<div class="empty-box"><div class="ei">⚠️</div><p>Could not load.<br>Tap refresh.</p></div>';}
+  }catch(e){console.error('lbBoot error:',e);safeSetHtml('lb-list', '<div class="empty-box"><div class="ei">⚠️</div><p>Could not load.<br>Tap refresh.</p></div>');}
 }
 
 function lbClearCache() {
   var btn = document.getElementById('clear-cache-btn');
-  btn.style.opacity = '0.4';
-  btn.style.pointerEvents = 'none';
+  if (btn) {
+    btn.style.opacity = '0.4';
+    btn.style.pointerEvents = 'none';
+  }
   try {
     for (var i = localStorage.length - 1; i >= 0; i--) {
       var key = localStorage.key(i);
