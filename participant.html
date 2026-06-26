@@ -3026,6 +3026,25 @@ async function load(isBackgroundRefresh) {
         }).join(' ');
       }
 
+      function getChallengeEmoji(name) {
+        var n = (name || '').toLowerCase();
+        if (n.indexOf('strava') > -1) return '🧡';
+        if (n.indexOf('walk') > -1) return '🚶';
+        if (n.indexOf('run') > -1) return '🏃';
+        if (n.indexOf('ride') > -1 || n.indexOf('cycle') > -1 || n.indexOf('bike') > -1) return '🚴';
+        if (n.indexOf('hike') > -1 || n.indexOf('climb') > -1) return '🥾';
+        if (n.indexOf('sunchaser') > -1 || n.indexOf('sun') > -1 || n.indexOf('morning') > -1) return '🌅';
+        if (n.indexOf('night') > -1 || n.indexOf('evening') > -1) return '🌙';
+        if (n.indexOf('environment') > -1 || n.indexOf('nature') > -1 || n.indexOf('green') > -1) return '🌱';
+        if (n.indexOf('wednesday') > -1 || n.indexOf('friday') > -1 || n.indexOf('day') > -1) return '📅';
+        if (n.indexOf('weekend') > -1 || n.indexOf('saturday') > -1 || n.indexOf('sunday') > -1) return '🏖️';
+        if (n.indexOf('gold') > -1) return '🥇';
+        if (n.indexOf('silver') > -1) return '🥈';
+        if (n.indexOf('bronze') > -1) return '🥉';
+        if (n.indexOf('title') > -1 || n.indexOf('champion') > -1) return '🏆';
+        return '🎯';
+      }
+
       var sortedCh = combined.sort(function(a,b){return (b.start_date||'').localeCompare(a.start_date||'');});
       sortedCh.forEach(function(ch,ci2){
         var key = ch.is_manual ? ch.id : 'ch_'+(ch.id||ci2);
@@ -3040,7 +3059,8 @@ async function load(isBackgroundRefresh) {
         var statusCls=earned?'won':missed?'missed':'avail';
         var statusIcon=earned?'\u2713':missed?'\u2715':'!';
         var div=document.createElement('div');div.className='ch-row';
-        div.innerHTML='<div class="ch-dot '+statusCls+'">'+statusIcon+'</div><div class="ch-body"><div class="ch-title" style="letter-spacing:0.5px;">'+esc(toTitleCase(ch.name))+'</div><div class="ch-sub">'+(ch.start_date===ch.end_date?ch.start_date:ch.start_date+' \u2013 '+ch.end_date)+'</div></div><div class="ch-pts '+statusCls+'">+'+(earned?displayPts.toFixed(1):ch.bonus_points)+' pts</div>';
+        var displayName = getChallengeEmoji(ch.name) + ' ' + toTitleCase(ch.name);
+        div.innerHTML='<div class="ch-dot '+statusCls+'">'+statusIcon+'</div><div class="ch-body"><div class="ch-title" style="letter-spacing:0.5px;">'+esc(displayName)+'</div><div class="ch-sub">'+(ch.start_date===ch.end_date?ch.start_date:ch.start_date+' \u2013 '+ch.end_date)+'</div></div><div class="ch-pts '+statusCls+'">+'+Math.round(earned?displayPts:ch.bonus_points)+' pts</div>';
         chCard.appendChild(div);
       });
     })();
