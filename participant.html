@@ -3013,8 +3013,15 @@ async function load(isBackgroundRefresh) {
         return;
       }
       chCard.innerHTML='';
+      function toTitleCase(str) {
+        if (!str) return '';
+        return str.toLowerCase().split(' ').map(function(word) {
+          return word.charAt(0).toUpperCase() + word.slice(1);
+        }).join(' ');
+      }
+
       var sortedCh = combined.sort(function(a,b){return (b.start_date||'').localeCompare(a.start_date||'');});
-      sortedCh.slice(0,8).forEach(function(ch,ci2){
+      sortedCh.forEach(function(ch,ci2){
         var key = ch.is_manual ? ch.id : 'ch_'+(ch.id||ci2);
         var ep=fullPts.earnedPts||{};
         var ec=fullPts.earnedChallenges||{};
@@ -3027,7 +3034,7 @@ async function load(isBackgroundRefresh) {
         var statusCls=earned?'won':missed?'missed':'avail';
         var statusIcon=earned?'\u2713':missed?'\u2715':'!';
         var div=document.createElement('div');div.className='ch-row';
-        div.innerHTML='<div class="ch-dot '+statusCls+'">'+statusIcon+'</div><div class="ch-body"><div class="ch-title" style="text-transform:uppercase;letter-spacing:0.5px;">'+esc(ch.name)+'</div><div class="ch-sub">'+(ch.start_date===ch.end_date?ch.start_date:ch.start_date+' \u2013 '+ch.end_date)+'</div></div><div class="ch-pts '+statusCls+'">+'+(earned?displayPts.toFixed(1):ch.bonus_points)+' pts</div>';
+        div.innerHTML='<div class="ch-dot '+statusCls+'">'+statusIcon+'</div><div class="ch-body"><div class="ch-title" style="letter-spacing:0.5px;">'+esc(toTitleCase(ch.name))+'</div><div class="ch-sub">'+(ch.start_date===ch.end_date?ch.start_date:ch.start_date+' \u2013 '+ch.end_date)+'</div></div><div class="ch-pts '+statusCls+'">+'+(earned?displayPts.toFixed(1):ch.bonus_points)+' pts</div>';
         chCard.appendChild(div);
       });
     })();
