@@ -1381,7 +1381,29 @@ function userGuard() {
 }
 function logout() { localStorage.removeItem('wk_user'); sessionStorage.removeItem('wk_admin'); window.location.href = 'index.html'; }
 function esc(v) { return String(v==null?'':v).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
-function fmtTime(d) { var naive = d ? d.replace(/[Zz]$/, '').replace(/\+00:00$/, '') : d; return new Date(naive).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}); }
+function getISTDate(d) {
+  if (!d) return '';
+  try {
+    var dt = new Date(d);
+    if (isNaN(dt.getTime())) return '';
+    var formatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' });
+    return formatter.format(dt);
+  } catch (e) {
+    return d.split('T')[0];
+  }
+}
+function fmtTime(d, startTime) {
+  if (!d) return '';
+  if (startTime === null || startTime === undefined || startTime === '') return '';
+  try {
+    var dt = new Date(d);
+    if (isNaN(dt.getTime())) return '';
+    return dt.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true });
+  } catch (e) {
+    var naive = d ? d.replace(/[Zz]$/, '').replace(/\+00:00$/, '') : d;
+    return new Date(naive).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+  }
+}
 function fmtDur(s) { var h=Math.floor(s/3600),m=Math.floor((s%3600)/60); return h>0?h+'h '+m+'m':m+'m'; }
 function fmtPS(ms,t) { if(!ms) return '—'; if(t==='Ride'||t==='VirtualRide'||t==='MountainBikeRide') return (ms*3.6).toFixed(1)+' km/h'; var p=1000/ms,min=Math.floor(p/60),sec=Math.round(p%60); return min+':'+(sec<10?'0':'')+sec+'/km'; }
 
@@ -2181,7 +2203,7 @@ async function load(isBackgroundRefresh) {
       var totalEventDays=Math.round((Math.min(nowD,EVENT_END)-EVENT_START)/86400000)+1;
       // Days active
       var activeDaysSet={};
-      validA.forEach(function(a){var d=(a.activity_date||'').split('T')[0];if(d)activeDaysSet[d]=true;});
+      validA.forEach(function(a){var d=getISTDate(a.activity_date);if(d)activeDaysSet[d]=true;});
       var activeDayCount=Object.keys(activeDaysSet).length;
       var consistPct=totalEventDays>0?Math.round((activeDayCount/totalEventDays)*100):0;
       var ade=document.getElementById('you-active-days');if(ade)ade.textContent=activeDayCount;
@@ -2234,7 +2256,7 @@ async function load(isBackgroundRefresh) {
         // Build km-per-day map for intensity
         var dayKmMap={};
         validA.forEach(function(a){
-          var d=(a.activity_date||'').split('T')[0];
+          var d=getISTDate(a.activity_date);
           if(d)dayKmMap[d]=(dayKmMap[d]||0)+(a.distance_meters||0)/1000;
         });
         var todayStr=new Date().toISOString().split('T')[0];
@@ -2312,7 +2334,7 @@ async function load(isBackgroundRefresh) {
           bestPaceSport = t;
         }
 
-        var d = (a.activity_date || '').split('T')[0];
+        var d = getISTDate(a.activity_date);
         if (d) dayKm[d] = (dayKm[d] || 0) + km;
       });
 
@@ -2540,8 +2562,8 @@ async function load(isBackgroundRefresh) {
     var now=new Date();
     var EVENT_END=new Date('2026-06-30T23:59:59');
     var daysLeft=Math.max(0,Math.ceil((EVENT_END-now)/(1000*60*60*24)));
-    var todayStr=now.toISOString().split('T')[0];
-    var todayKm=myActs.filter(function(a){return !a.is_flagged;}).reduce(function(s,a){return(a.activity_date||'').split('T')[0]===todayStr?s+(a.distance_meters||0)/1000:s;},0);
+    var todayStr=getISTDate(now.toISOString());
+    var todayKm=myActs.filter(function(a){return !a.is_flagged;}).reduce(function(s,a){return getISTDate(a.activity_date)===todayStr?s+(a.distance_meters||0)/1000:s;},0);
     var bonusTiers=[[5,1],[8,2],[10,3],[15,4],[21,7]],nextTier=null;
     for(var ti=0;ti<bonusTiers.length;ti++){if(todayKm<bonusTiers[ti][0]){nextTier=bonusTiers[ti];break;}}
 
@@ -2687,7 +2709,7 @@ async function load(isBackgroundRefresh) {
       var validActs=myActs.filter(function(a){return !a.is_flagged;});
       if(!validActs.length)return;
       // Find most recent activity date
-      var sortedDates=validActs.map(function(a){return (a.activity_date||'').split('T')[0];}).filter(Boolean).sort();
+      var sortedDates=validActs.map(function(a){return getISTDate(a.activity_date);}).filter(Boolean).sort();
       var lastDate=sortedDates[sortedDates.length-1];
       if(!lastDate)return;
       var nowD=new Date(); nowD.setHours(12,0,0,0);
@@ -2695,7 +2717,7 @@ async function load(isBackgroundRefresh) {
       var daysDiff=Math.floor((nowD-lastD)/86400000);
       if(daysDiff>1)return; // only today or yesterday
       // Total km on that last date
-      var lastKm=validActs.reduce(function(s,a){return (a.activity_date||'').split('T')[0]===lastDate?s+(a.distance_meters||0)/1000:s;},0);
+      var lastKm=validActs.reduce(function(s,a){return getISTDate(a.activity_date)===lastDate?s+(a.distance_meters||0)/1000:s;},0);
       if(lastKm<8)return; // below threshold
       // Determine intensity
       var wrap=document.getElementById('recovery-card-wrap');
@@ -2752,7 +2774,7 @@ async function load(isBackgroundRefresh) {
     // Streak
     var activeDays={};
     myActs.filter(function(a){return !a.is_flagged;}).forEach(function(a){
-      var d=(a.activity_date||'').split('T')[0];
+      var d=getISTDate(a.activity_date);
       if(d)activeDays[d]=true;
     });
 
@@ -2833,7 +2855,7 @@ async function load(isBackgroundRefresh) {
 
     // ── Activities title ──────────────────────────────────────────────────────
     var flaggedCount=myActs.filter(function(a){return a.is_flagged;}).length;
-    var uniqueDays=new Set(myActs.filter(function(a){return !a.is_flagged;}).map(function(a){return(a.activity_date||'').split('T')[0];})).size;
+    var uniqueDays=new Set(myActs.filter(function(a){return !a.is_flagged;}).map(function(a){return getISTDate(a.activity_date);})).size;
     safeSetText('act-section-title', uniqueDays+' Days \u00b7 '+myActs.length+' Activities'+(flaggedCount?' \u00b7 '+flaggedCount+' Flagged':''));
     // Render Activities List
     renderActivities(myActs, fullPts.dayBreakdown, fullPts.actBreakdown, reg.gender);
@@ -2857,7 +2879,7 @@ function renderActivities(acts,dayBreakdown,actBreakdown,gender) {
   var flaggedCount=acts.filter(function(a){return a.is_flagged;}).length;
   if(flaggedCount>0)safeSetStyle('flagged-banner', 'display', 'block');
   var groups={},dateOrder=[];
-  acts.forEach(function(a){var d=(a.activity_date||'').split('T')[0]||'Unknown';if(!groups[d]){groups[d]=[];dateOrder.push(d);}groups[d].push(a);});
+  acts.forEach(function(a){var d=getISTDate(a.activity_date)||'Unknown';if(!groups[d]){groups[d]=[];dateOrder.push(d);}groups[d].push(a);});
   list.innerHTML='';
   dateOrder.forEach(function(date,gi){
     var dayActs=groups[date],db=dayBreakdown[date]||{km:0,distPts:0,bonusPts:0,challenges:[]};
@@ -2897,7 +2919,7 @@ function renderActivities(acts,dayBreakdown,actBreakdown,gender) {
       var ps=fmtPS(a.avg_speed,a.sport_type);
       var actUrl='https://www.strava.com/activities/'+a.strava_activity_id;
       var tc=tileClass(a.sport_type),isFlag=a.is_flagged;
-      var timeStr=(a.activity_date&&a.activity_date.indexOf('T')>-1)?fmtTime(a.activity_date):'';
+      var timeStr=(a.activity_date&&a.activity_date.indexOf('T')>-1)?fmtTime(a.activity_date, a.start_time):'';
       var item=document.createElement('div'); item.className='act-tile';
       item.innerHTML=
         '<div class="act-tile-icon '+tc+'">'+renderIcon(a.sport_type)+' <span>'+sportStr+' · '+stepsStr+'</span></div>'+
@@ -3639,7 +3661,7 @@ function getRows(mode){
 
 function getLastActive(acts) {
   if (!acts || !acts.length) return null;
-  var sorted = acts.filter(function(a){return !a.is_flagged;}).map(function(a){return (a.activity_date||'').split('T')[0];}).filter(Boolean).sort();
+  var sorted = acts.filter(function(a){return !a.is_flagged;}).map(function(a){return getISTDate(a.activity_date);}).filter(Boolean).sort();
   return sorted.length ? sorted[sorted.length-1] : null;
 }
 function lastActiveLabel(dateStr) {
@@ -3653,7 +3675,7 @@ function lastActiveLabel(dateStr) {
 function buildSparkline(acts) {
   var dayKm={}, now=new Date();
   (acts||[]).filter(function(a){return !a.is_flagged;}).forEach(function(a){
-    var d=(a.activity_date||'').split('T')[0]; if(!d)return;
+    var d=getISTDate(a.activity_date); if(!d)return;
     dayKm[d]=(dayKm[d]||0)+(a.distance_meters||0)/1000;
   });
   var vals=[];
@@ -3789,7 +3811,7 @@ function renderHallOfFame() {
     var acts = LB_ACTS.filter(function(a){return String(a.strava_athlete_id)===String(p.strava_athlete_id)&&!a.is_flagged;});
     var totalKm = acts.reduce(function(s,a){return s+(a.distance_meters||0)/1000;},0);
     var dayKm = {};
-    acts.forEach(function(a){var d=(a.activity_date||'').split('T')[0];if(d)dayKm[d]=(dayKm[d]||0)+(a.distance_meters||0)/1000;});
+    acts.forEach(function(a){var d=getISTDate(a.activity_date);if(d)dayKm[d]=(dayKm[d]||0)+(a.distance_meters||0)/1000;});
     var maxDayKm = Object.values(dayKm).reduce(function(m,v){return Math.max(m,v);},0);
     // streak
     var days = Object.keys(dayKm).sort(), streak=0, cur=0, prev=null;
@@ -3837,7 +3859,7 @@ function renderWeeklyBoard(mode) {
 
   var scored = peers.map(function(p){
     var acts = LB_ACTS.filter(function(a){return String(a.strava_athlete_id)===String(p.strava_athlete_id)&&!a.is_flagged;});
-    var weekActs = acts.filter(function(a){var d=(a.activity_date||'').split('T')[0];return d>=mondayStr&&d<=sundayStr;});
+    var weekActs = acts.filter(function(a){var d=getISTDate(a.activity_date);return d>=mondayStr&&d<=sundayStr;});
     var km = weekActs.reduce(function(s,a){return s+(a.distance_meters||0)/1000;},0);
     return {p:p, km:km};
   }).filter(function(r){return r.km>0;}).sort(function(a,b){return b.km-a.km;});
@@ -3891,8 +3913,8 @@ function lbRender(){
         var meId=s.athleteId;
         var curRank=allRows.findIndex(function(r){return String(r.p.strava_athlete_id)===String(meId);})+1;
         var cutoff=new Date();cutoff.setDate(cutoff.getDate()-7);
-        var cutoffStr=cutoff.toISOString().split('T')[0];
-        var oldActs=LB_ACTS.filter(function(a){return(a.activity_date||'').split('T')[0]<=cutoffStr;});
+        var cutoffStr=getISTDate(cutoff.toISOString());
+        var oldActs=LB_ACTS.filter(function(a){return getISTDate(a.activity_date)<=cutoffStr;});
         var myGd=norm(LB_ME.gender),myShd=norm(LB_ME.shift),isNd=myShd.indexOf('night')>-1,isFd=myGd==='female'||myGd==='f';
         var oldRows=LB_REG.filter(function(q){var pg=norm(q.gender),ps=norm(q.shift),pt=norm(q.leaderboard_team),pIsFemale=pg==='female'||pg==='f';if(pIsFemale!==isFd)return false;return LB_currentTab==='team'?pt===norm(LB_ME.leaderboard_team):ps.indexOf('night')>-1===isNd;}).map(function(q){return{id:String(q.strava_athlete_id),pts:calcFullPts(oldActs.filter(function(a){return String(a.strava_athlete_id)===String(q.strava_athlete_id);}),q.gender,q.shift).total};}).filter(function(r){return r.pts>0;}).sort(function(a,b){return b.pts-a.pts;});
         var oldRank=oldRows.findIndex(function(r){return r.id===String(meId);})+1;
