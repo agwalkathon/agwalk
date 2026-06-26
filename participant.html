@@ -3339,6 +3339,14 @@ function renderStanding() {
   }
 }
 
+var _notificationsList = [];
+var _notificationsLoaded = false;
+var _activeRecovery = null;   // {key, title, sub, chips}
+var _activeInsight  = null;   // {key, title, body, emoji}
+
+// Medal rings animation state and helper functions
+var _ringAnimationData = [];
+
 (function(){
   var hash = window.location.hash.replace('#','');
   var startTab = (hash==='activities'||hash==='dashboard'||hash==='you'||hash==='leaderboard') ? hash : 'dashboard';
@@ -3365,14 +3373,6 @@ function clearPWACache(){
     });
   } else { window.location.reload(true); }
 }
-
-var _notificationsList = [];
-var _notificationsLoaded = false;
-var _activeRecovery = null;   // {key, title, sub, chips}
-var _activeInsight  = null;   // {key, title, body, emoji}
-
-// Medal rings animation state and helper functions
-var _ringAnimationData = [];
 
 function animateCountUp(el, targetVal, durationMs) {
   if (!el) return;
