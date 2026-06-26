@@ -230,14 +230,154 @@ tr:hover td{background:#FAFAFA}
   padding: 8px 0;
 }
 
-  </style>
+/* Tab Bar */
+.tab-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  background: var(--card-bg);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.tab-btn {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all .15s;
+  font-family: var(--font);
+}
+.tab-btn.active {
+  background: var(--brand);
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(232, 98, 42, 0.2);
+}
+.tab-btn:hover:not(.active) {
+  background: var(--brand-light);
+  color: var(--brand);
+}
+
+.btn-recheck {
+  padding: 8px 16px;
+  background: var(--page-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all .15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-recheck:hover {
+  background: #EAECF0;
+  color: var(--text-primary);
+  border-color: var(--text-muted);
+}
+.btn-recheck:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.spinner-inline {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--brand);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+  display: inline-block;
+}
+
+/* Summary Box */
+.summary {
+  padding: 14px 20px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  border: 1px solid transparent;
+}
+.summary.warn { background: #FFF5F5; color: #C53030; border-color: #FEB2B2; }
+.summary.ok { background: #F0FDF4; color: #15803D; border-color: #BBF7D0; }
+.summary.info { background: #EFF6FF; color: #1D4ED8; border-color: #BFDBFE; }
+
+/* Flag Reason Badge */
+.flag-reason {
+  font-weight: 500;
+  color: #DC2626;
+  background: #FEF2F2;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  border: 1px solid #FEE2E2;
+  display: inline-block;
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Rules Tab specific field settings */
+.field {display:flex;flex-direction:column;gap:6px}
+.field label{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.field input,.field select{padding:9px 12px;border:1px solid #e8e8e8;border-radius:8px;font-size:14px;background:#fafafa;font-family:var(--font);color:var(--text-primary)}
+.field input:focus,.field select:focus{outline:none;border-color:var(--brand);background:white}
+
+.section{background:white;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);margin-bottom:16px;overflow:hidden}
+.section-body{padding:24px}
+.rule-box{background:#fff7f2;border-left:4px solid #E8622A;border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:13px;line-height:1.65;color:#555}
+
+/* Bulk actions bar */
+.bulk-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 10px 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+.bulk-selected-count {
+  font-weight: 600;
+  color: var(--brand);
+}
+
+.row-already-flagged {
+  background: #fafafa;
+}
+
+.btn-orange{background:#FFF0EA;color:#E8622A;border:1px solid #FFD0BD}
+.btn-orange:hover{background:#E8622A;color:#fff}
+
+td button.btn {
+  margin-right: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+td button.btn:last-child { margin-right: 0; }
+</style>
 </head>
 <body>
 <aside class="sidebar">
 <div class="sb-section">Main</div>
 <a href="admin.html" class="sb-item"><i class="ti ti-layout-dashboard"></i><span class="sb-label">Dashboard</span></a>
 <a href="activities.html" class="sb-item active"><i class="ti ti-run"></i><span class="sb-label">Activities</span></a>
-<a href="flagged-rules.html" class="sb-item"><i class="ti ti-flag"></i><span class="sb-label">Flagged Activities</span></a>
 <a href="ag-leaderboard.html" class="sb-item"><i class="ti ti-trophy"></i><span class="sb-label">Leaderboard</span></a>
 <a href="participants.html" class="sb-item"><i class="ti ti-users"></i><span class="sb-label">Participants</span></a>
 <a href="participant-requests.html" class="sb-item"><i class="ti ti-user-check"></i><span class="sb-label">Requests</span></a>
@@ -249,19 +389,193 @@ tr:hover td{background:#FAFAFA}
 <a href="push-notifications.html" class="sb-item"><i class="ti ti-bell"></i><span class="sb-label">Notifications</span></a>
 <div class="sb-spacer"></div><div class="sb-divider"></div><button class="sb-signout" onclick="logout()"><i class="ti ti-logout"></i><span class="sb-label">Sign out</span></button></aside>
 <div class="main">
-<header class="topbar"><div class="topbar-left"><h1>Activities</h1><p>Search and manage all logged workouts</p></div><div class="topbar-right"><a href="admin.html" class="topbar-back"><i class="ti ti-arrow-left"></i> Dashboard</a></div></header>
+<header class="topbar"><div class="topbar-left"><h1 id="page-title">Activities</h1><p id="page-subtitle">Search and manage all logged workouts</p></div><div class="topbar-right"><a href="admin.html" class="topbar-back"><i class="ti ti-arrow-left"></i> Dashboard</a></div></header>
   <div class="content">
-<div class="filter-bar"><h3>Filter activities <span class="default-note">Default: Today's Activities</span></h3><div class="filter-grid">
-<div class="filter-group"><label>From date</label><input type="date" id="date-from"></div><div class="filter-group"><label>To date</label><input type="date" id="date-to"></div>
-<div class="filter-group"><label>Status</label><select id="status-filter"><option value="">All statuses</option><option value="valid">✅ Valid</option><option value="invalid">🚩 Invalid / Flagged</option></select></div>
-<div class="filter-group"><label>Flag reason</label><select id="flag-reason-filter"><option value="">All reasons</option><optgroup label="── Manual Review ──"><option>Manual Review - Distance Issue</option><option>Manual Review - Pace Issue</option></optgroup><optgroup label="── Manual Flags ──"><option>Not Our Participant</option><option>Less than 1 km</option><option>Treadmill</option><option>Workout</option><option>Elapsed Time Issue</option><option>Pace Issue (Bike/Cycle)</option><option>Shared (no proof)</option><option>Indoor Run/Walk</option><option>More than 2 Activities</option><option>Suspicious Activity</option><option>Ride / Cycling</option><option>Distance Cropped - GPS Glitch</option><option>Distance Issue</option><option>GPS Glitch</option></optgroup></select></div>
-<div class="filter-group"><label>Activity type</label><select id="sport-filter"><option value="">All types</option><option value="Walk">Walk</option><option value="Run">Run</option><option value="Ride">Ride</option><option value="Hike">Hike</option><option value="VirtualRun">Virtual Run</option><option value="VirtualRide">Virtual Ride</option><option value="MountainBikeRide">Mountain Bike Ride</option></select></div>
-<div class="filter-group"><label>Participant Name</label><input type="text" id="athlete-name" placeholder="Search participant name..." list="participant-names"><datalist id="participant-names"></datalist></div><div class="filter-group"><label>Team</label><select id="team-filter"><option value="">All teams</option><option>Team Seattle</option><option>Team San Francisco</option><option>Team Los Angeles</option><option>Team Chicago</option><option>Team Austin</option><option>Team New York</option></select></div><div class="filter-group"><label>Activity ID</label><input type="text" id="activity-id-filter" placeholder="Search activity ID..."></div><div class="filter-group"><label>Athlete ID</label><input type="text" id="athlete-id-filter" placeholder="Search athlete ID..."></div>
-</div><div class="filter-actions"><button class="btn btn-primary" onclick="loadActivities()">Search</button><button class="btn btn-ghost" onclick="setDefaultTodayFilters();loadActivities();">Today</button><button class="btn btn-ghost" onclick="clearFilters()">Clear</button><button class="btn btn-ghost" id="export-btn" onclick="exportCSV()" style="display:none"><i class="ti ti-download"></i> Export CSV</button><span id="searching-indicator" style="display:none;align-items:center;gap:8px;font-size:13px;color:#888"><div class="spinner" style="width:18px;height:18px;border-width:2px"></div>Searching...</span></div></div>
-<div class="stats-grid" id="stats-row" style="display:none"><div class="stat-card"><div class="val" id="total-activities">—</div><div class="lbl">Activities found</div></div><div class="stat-card"><div class="val" id="total-distance">—</div><div class="lbl">Total km</div></div><div class="stat-card dark"><div class="val" id="total-participants">—</div><div class="lbl">Participants</div></div><div class="stat-card green"><div class="val" id="total-valid">—</div><div class="lbl">Valid</div></div><div class="stat-card red"><div class="val" id="total-flagged">—</div><div class="lbl">Flagged</div></div></div>
-<div id="flag-counts" style="display:none;margin-bottom:18px;gap:8px;flex-wrap:wrap"></div>
-<div class="card"><div id="placeholder" class="empty"><div class="icon">🔍</div><p>Today's activities load by default. Use filters and click <strong>Search</strong> to refine results.</p></div><div id="results" style="display:none"><div class="result-count"><span id="result-count"></span></div><div class="scroll-top" id="scroll-top"><div class="scroll-top-inner" id="scroll-top-inner"></div></div><div class="table-wrap" id="table-wrap"><table id="main-table"><thead><tr><th>Status</th><th>Original Time (UTC)</th><th>IST Time</th><th>Participant Name</th><th>Activity Name</th><th>Type</th><th>Distance</th><th>Moving Time</th><th>Pace/Speed</th><th>Elevation</th><th>Device</th></tr></thead><tbody id="activities-body"></tbody></table></div></div></div>
-</div>
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+      <div style="display:flex;gap:4px;">
+        <button class="tab-btn active" id="tab-all" onclick="switchTab('all')">🏃 All Workouts</button>
+        <button class="tab-btn" id="tab-review" onclick="switchTab('review')">🚩 Under Review</button>
+        <button class="tab-btn" id="tab-rules" onclick="switchTab('rules')">⚙️ Auto-Flag Rules</button>
+        <button class="tab-btn" id="tab-deleted" onclick="switchTab('deleted')">🗑️ Deleted</button>
+      </div>
+      <!-- Re-check auto-flag button only visible for 'review' tab -->
+      <button class="btn-recheck" id="btn-recheck-outer" style="display:none" onclick="recheckAll()">🔍 Re-run Auto-flag</button>
+    </div>
+
+    <!-- Tab 1: All Workouts -->
+    <div id="all-workouts-container">
+      <div class="filter-bar"><h3>Filter activities <span class="default-note">Default: Today's Activities</span></h3><div class="filter-grid">
+      <div class="filter-group"><label>From date</label><input type="date" id="date-from"></div><div class="filter-group"><label>To date</label><input type="date" id="date-to"></div>
+      <div class="filter-group"><label>Status</label><select id="status-filter"><option value="">All statuses</option><option value="valid">✅ Valid</option><option value="invalid">🚩 Invalid / Flagged</option></select></div>
+      <div class="filter-group"><label>Flag reason</label><select id="flag-reason-filter"><option value="">All reasons</option><optgroup label="── Manual Review ──"><option>Manual Review - Distance Issue</option><option>Manual Review - Pace Issue</option></optgroup><optgroup label="── Manual Flags ──"><option>Not Our Participant</option><option>Less than 1 km</option><option>Treadmill</option><option>Workout</option><option>Elapsed Time Issue</option><option>Pace Issue (Bike/Cycle)</option><option>Shared (no proof)</option><option>Indoor Run/Walk</option><option>More than 2 Activities</option><option>Suspicious Activity</option><option>Ride / Cycling</option><option>Distance Cropped - GPS Glitch</option><option>Distance Issue</option><option>GPS Glitch</option></optgroup></select></div>
+      <div class="filter-group"><label>Activity type</label><select id="sport-filter"><option value="">All types</option><option value="Walk">Walk</option><option value="Run">Run</option><option value="Ride">Ride</option><option value="Hike">Hike</option><option value="VirtualRun">Virtual Run</option><option value="VirtualRide">Virtual Ride</option><option value="MountainBikeRide">Mountain Bike Ride</option></select></div>
+      <div class="filter-group"><label>Participant Name</label><input type="text" id="athlete-name" placeholder="Search participant name..." list="participant-names"><datalist id="participant-names"></datalist></div><div class="filter-group"><label>Team</label><select id="team-filter"><option value="">All teams</option><option>Team Seattle</option><option>Team San Francisco</option><option>Team Los Angeles</option><option>Team Chicago</option><option>Team Austin</option><option>Team New York</option></select></div><div class="filter-group"><label>Activity ID</label><input type="text" id="activity-id-filter" placeholder="Search activity ID..."></div><div class="filter-group"><label>Athlete ID</label><input type="text" id="athlete-id-filter" placeholder="Search athlete ID..."></div>
+      </div><div class="filter-actions"><button class="btn btn-primary" onclick="loadActivities()">Search</button><button class="btn btn-ghost" onclick="setDefaultTodayFilters();loadActivities();">Today</button><button class="btn btn-ghost" onclick="clearFilters()">Clear</button><button class="btn btn-ghost" id="export-btn" onclick="exportCSV()" style="display:none"><i class="ti ti-download"></i> Export CSV</button><span id="searching-indicator" style="display:none;align-items:center;gap:8px;font-size:13px;color:#888"><div class="spinner" style="width:18px;height:18px;border-width:2px"></div>Searching...</span></div></div>
+      <div class="stats-grid" id="stats-row" style="display:none"><div class="stat-card"><div class="val" id="total-activities">—</div><div class="lbl">Activities found</div></div><div class="stat-card"><div class="val" id="total-distance">—</div><div class="lbl">Total km</div></div><div class="stat-card dark"><div class="val" id="total-participants">—</div><div class="lbl">Participants</div></div><div class="stat-card green"><div class="val" id="total-valid">—</div><div class="lbl">Valid</div></div><div class="stat-card red"><div class="val" id="total-flagged">—</div><div class="lbl">Flagged</div></div></div>
+      <div id="flag-counts" style="display:none;margin-bottom:18px;gap:8px;flex-wrap:wrap"></div>
+      <div class="card"><div id="placeholder" class="empty"><div class="icon">🔍</div><p>Today's activities load by default. Use filters and click <strong>Search</strong> to refine results.</p></div><div id="results" style="display:none"><div class="result-count"><span id="result-count"></span></div><div class="scroll-top" id="scroll-top"><div class="scroll-top-inner" id="scroll-top-inner"></div></div><div class="table-wrap" id="table-wrap"><table id="main-table"><thead><tr><th>Status</th><th>Original Time (UTC)</th><th>IST Time</th><th>Participant Name</th><th>Activity Name</th><th>Type</th><th>Distance</th><th>Moving Time</th><th>Pace/Speed</th><th>Elevation</th><th>Device</th></tr></thead><tbody id="activities-body"></tbody></table></div></div></div>
+    </div>
+
+    <!-- Tab 2 & 4: Under Review / Deleted Workouts -->
+    <div id="flagged-data-container" style="display:none">
+      <div class="filter-bar" id="data-filter-bar">
+        <h3>Filter Results</h3>
+        <div class="filter-grid">
+          <div class="filter-group">
+            <label>Participant Name</label>
+            <input type="text" id="flagged-athlete-name" placeholder="Search participant name..." oninput="applyFlaggedFilters()">
+          </div>
+          <div class="filter-group">
+            <label>Activity Type</label>
+            <select id="flagged-sport-filter" onchange="applyFlaggedFilters()">
+              <option value="">All types</option>
+              <option value="Walk">Walk</option>
+              <option value="Run">Run</option>
+              <option value="Ride">Ride</option>
+              <option value="Hike">Hike</option>
+              <option value="VirtualRun">Virtual Run</option>
+              <option value="VirtualRide">Virtual Ride</option>
+            </select>
+          </div>
+          <div class="filter-group" id="reason-filter-group">
+            <label>Flag Reason</label>
+            <select id="flagged-reason-filter" onchange="applyFlaggedFilters()">
+              <option value="">All reasons</option>
+              <optgroup label="── Manual Review ──">
+                <option>Manual Review - Distance Issue</option>
+                <option>Manual Review - Pace Issue</option>
+              </optgroup>
+              <optgroup label="── Manual Flags ──">
+                <option>Not Our Participant</option>
+                <option>Less than 1 km</option>
+                <option>Treadmill</option>
+                <option>Workout</option>
+                <option>Elapsed Time Issue</option>
+                <option>Pace Issue (Bike/Cycle)</option>
+                <option>Shared (no proof)</option>
+                <option>Indoor Run/Walk</option>
+                <option>More than 2 Activities</option>
+                <option>Suspicious Activity</option>
+                <option>Ride / Cycling</option>
+                <option>Distance Cropped - GPS Glitch</option>
+                <option>Distance Issue</option>
+                <option>GPS Glitch</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+        <div class="filter-actions">
+          <button class="btn btn-ghost" onclick="clearFlaggedFilters()">Clear Filters</button>
+        </div>
+      </div>
+
+      <div class="summary warn" id="summary">Loading...</div>
+
+      <div id="data-table-container">
+        <div class="bulk-bar" id="bulk-actions-bar" style="display:none">
+          <span id="bulk-count-msg"><span class="bulk-selected-count" id="bulk-selected-num">0</span> items selected</span>
+          <div style="margin-left:auto; display:flex; gap:8px;">
+            <button class="btn btn-success" id="btn-bulk-clear" onclick="doBulkAction('unflag')">✅ Clear Selected</button>
+            <button class="btn btn-danger" id="btn-bulk-delete" onclick="doBulkAction('delete')">🗑️ Delete Selected</button>
+            <button class="btn btn-primary" id="btn-bulk-restore" style="display:none" onclick="doBulkAction('restore')">↩️ Restore Selected</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:38px; text-align:center"><input type="checkbox" id="chk-all-rows" onchange="toggleAllRows(this.checked)" style="cursor:pointer; width:15px; height:15px"></th>
+                  <th>Athlete</th>
+                  <th>Activity</th>
+                  <th>Type</th>
+                  <th>Date & time</th>
+                  <th>Distance</th>
+                  <th>Pace</th>
+                  <th>Flag reason</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="flagged-body">
+                <tr class="loading-row"><td colspan="9">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3: Auto-Flag Rules -->
+    <div id="rules-container" style="display:none">
+      <div class="section">
+        <div class="section-body">
+          <div class="rule-box">
+            <strong>Configure Dynamic Rules:</strong> Find activities matching specific metrics and flag them in bulk.
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px;align-items:end">
+            <div class="field"><label>Date From</label><input type="date" id="fr-date-from"></div>
+            <div class="field"><label>Date To</label><input type="date" id="fr-date-to"></div>
+            <div class="field">
+              <label>Activity Type</label>
+              <select id="fr-sport">
+                <option value="">All types</option>
+                <option value="Walk">Walk</option>
+                <option value="Run">Run</option>
+                <option value="Hike">Hike</option>
+                <option value="Ride">Ride</option>
+              </select>
+            </div>
+            <div class="field"><label>Distance Min (km)</label><input type="number" id="fr-dist-min" placeholder="e.g. 21" step="0.1" min="0"></div>
+            <div class="field"><label>Distance Max (km)</label><input type="number" id="fr-dist-max" placeholder="e.g. 100" step="0.1" min="0"></div>
+            <div class="field"><label>Pace Min (min/km)</label><input type="number" id="fr-pace1-min" placeholder="e.g. 4" step="0.5" min="0"></div>
+            <div class="field"><label>Pace Max (min/km)</label><input type="number" id="fr-pace1-max" placeholder="e.g. 5" step="0.5" min="0"></div>
+          </div>
+          <div style="font-size:12px;color:#888;margin-bottom:16px;background:#f5f5f5;padding:10px 14px;border-radius:8px;line-height:1.7">
+            <strong>Distance:</strong> Filter candidates where distance falls within limits &nbsp;·&nbsp;
+            <strong>Pace:</strong> Filter candidates where pace falls within limits.
+          </div>
+          <div style="background:#fff3e0;border:1px solid #ffcc80;border-radius:10px;padding:16px;margin-bottom:16px">
+            <div style="font-size:13px;color:#e65100;margin-bottom:8px">⚠️ <strong>This will scan all activities in the system matching the filters above.</strong></div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <button class="btn btn-primary" onclick="previewFlagRules()">👁️ Preview matches</button>
+              <button class="btn btn-danger" id="btn-apply-flags" onclick="applyFlagRules()" disabled>🚩 Flag Selected</button>
+              <span id="flag-preview-count" style="font-size:13px;color:#888"></span>
+              <span id="flag-selected-count" style="font-size:13px;color:#555;display:none">— <strong id="flag-selected-num">0</strong> selected</span>
+            </div>
+          </div>
+
+          <div id="flag-preview-list" style="display:none; margin-top:20px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <div style="font-size:14px;font-weight:600">Matching Activities</div>
+              <div style="font-size:13px;color:#888">
+                <a href="#" style="color:#E8622A;text-decoration:none" onclick="toggleAllPreviewCheckboxes(true);return false">Select all</a> &nbsp;/&nbsp; 
+                <a href="#" style="color:#888;text-decoration:none" onclick="toggleAllPreviewCheckboxes(false);return false">None</a>
+              </div>
+            </div>
+            <div style="max-height:60vh;overflow-y:auto;overflow-x:auto;border:1px solid #f0f0f0;border-radius:8px">
+              <table style="width:100%;border-collapse:collapse;font-size:13px">
+                <thead style="position:sticky;top:0;z-index:2">
+                  <tr style="background:#fafafa">
+                    <th style="padding:8px 12px;text-align:center;width:36px"><input type="checkbox" id="chk-all-preview" onchange="toggleAllPreviewCheckboxes(this.checked)" style="cursor:pointer;width:15px;height:15px"></th>
+                    <th style="padding:8px 12px;text-align:left;color:#888;font-size:11px">ATHLETE</th>
+                    <th style="padding:8px 12px;text-align:left;color:#888;font-size:11px">ACTIVITY</th>
+                    <th style="padding:8px 12px;text-align:left;color:#888;font-size:11px">TYPE</th>
+                    <th style="padding:8px 12px;text-align:left;color:#888;font-size:11px">DATE</th>
+                    <th style="padding:8px 12px;text-align:left;color:#888;font-size:11px">DISTANCE</th>
+                    <th style="padding:8px 12px;text-align:left;color:#888;font-size:11px">PACE</th>
+                    <th style="padding:8px 12px;text-align:left;color:#888;font-size:11px">FLAG REASON</th>
+                  </tr>
+                </thead>
+                <tbody id="flag-preview-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 <div class="modal-overlay" id="flag-modal"><div class="modal"><h3>Update Status</h3><p class="sub" id="modal-sub"></p><label>Flag reason</label><select id="modal-flag-reason" onchange="checkModalDist()"><option value="">— Mark as Valid (clear flag) —</option><optgroup label="── Manual Review ──"><option>Manual Review - Distance Issue</option><option>Manual Review - Pace Issue</option></optgroup><optgroup label="── Manual Flags ──"><option>Not Our Participant</option><option>Less than 1 km</option><option>Treadmill</option><option>Workout</option><option>Elapsed Time Issue</option><option>Pace Issue (Bike/Cycle)</option><option>Shared (no proof)</option><option>Indoor Run/Walk</option><option>More than 2 Activities</option><option>Suspicious Activity</option><option>Ride / Cycling</option><option>Distance Cropped - GPS Glitch</option><option>Distance Issue</option><option>GPS Glitch</option></optgroup></select><div class="dist-field" id="modal-dist-field"><label>Corrected distance (meters)</label><input type="number" id="modal-corrected-dist" placeholder="e.g. 3500"></div><div class="modal-actions"><button class="btn-cancel" onclick="closeModal()">Cancel</button><button class="btn-confirm" onclick="confirmStatus()">Save</button></div></div></div>
 <footer class="site-footer"><span>© 2026 Arcgate Walkathon</span><div><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms of Service</a></div></footer>
 </div><!-- /main -->
@@ -319,7 +633,7 @@ async function loadRegistrations() {
 }
 authGuard();
 function setDefaultTodayFilters(){var today=localDateValue(new Date());document.getElementById('date-from').value=today;document.getElementById('date-to').value=today}function initScrollSync(){var tw=document.getElementById('table-wrap'),st=document.getElementById('scroll-top'),si=document.getElementById('scroll-top-inner');if(!tw||!st||!si)return;si.style.width=tw.scrollWidth+'px';st.onscroll=function(){tw.scrollLeft=st.scrollLeft};tw.onscroll=function(){st.scrollLeft=tw.scrollLeft}}
-var currentId=null;function openModal(id){currentId=id;var cell=document.getElementById('status-cell-'+id);var reason=cell?(cell.getAttribute('data-reason')||''):'';document.getElementById('modal-sub').textContent='Activity #'+id;document.getElementById('modal-flag-reason').value=reason;checkModalDist();document.getElementById('flag-modal').classList.add('show')}function closeModal(){document.getElementById('flag-modal').classList.remove('show');currentId=null}function checkModalDist(){var v=document.getElementById('modal-flag-reason').value;document.getElementById('modal-dist-field').classList.toggle('show',v==='Distance Cropped - GPS Glitch')}async function confirmStatus(){var reason=document.getElementById('modal-flag-reason').value,dist=document.getElementById('modal-corrected-dist').value,payload;if(!reason)payload={activity_id:currentId,action:'unflag',flag_reason:''};else if(reason==='Distance Cropped - GPS Glitch'&&dist)payload={activity_id:currentId,action:'update_distance',flag_reason:reason,distance_meters:parseFloat(dist)};else payload={activity_id:currentId,action:'flag',flag_reason:reason};try{var resp=await fetch(BACKEND_URL+'/flag',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});var result={success:resp.ok};try{result=await resp.json()}catch(e){}if(!resp.ok&&!result.success)throw new Error('Flag error '+resp.status);var statusCell=document.getElementById('status-cell-'+currentId);if(statusCell){if(reason){statusCell.innerHTML='<span class="badge badge-invalid" style="cursor:pointer" onclick="openModal('+currentId+')">🚩 '+esc(reason)+'</span>';statusCell.setAttribute('data-reason',reason)}else{statusCell.innerHTML='<span class="badge badge-valid" style="cursor:pointer" onclick="openModal('+currentId+')">✅ Valid</span>';statusCell.setAttribute('data-reason','')}}closeModal()}catch(e){alert('Error saving: '+e.message)}}document.getElementById('flag-modal').addEventListener('click',function(e){if(e.target===this)closeModal()});
+var currentId=null;function openModal(id){currentId=id;var cell=document.getElementById('status-cell-'+id);var reason=cell?(cell.getAttribute('data-reason')||''):'';document.getElementById('modal-sub').textContent='Activity #'+id;document.getElementById('modal-flag-reason').value=reason;checkModalDist();document.getElementById('flag-modal').classList.add('show')}function closeModal(){document.getElementById('flag-modal').classList.remove('show');currentId=null}function checkModalDist(){var v=document.getElementById('modal-flag-reason').value;document.getElementById('modal-dist-field').classList.toggle('show',v==='Distance Cropped - GPS Glitch')}async function confirmStatus(){var reason=document.getElementById('modal-flag-reason').value,dist=document.getElementById('modal-corrected-dist').value,payload;if(!reason)payload={activity_id:currentId,action:'unflag',flag_reason:''};else if(reason==='Distance Cropped - GPS Glitch'&&dist)payload={activity_id:currentId,action:'update_distance',flag_reason:reason,distance_meters:parseFloat(dist)};else payload={activity_id:currentId,action:'flag',flag_reason:reason};try{var resp=await fetch(BACKEND_URL+'/flag',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});var result={success:resp.ok};try{result=await resp.json()}catch(e){}if(!resp.ok&&!result.success)throw new Error('Flag error '+resp.status);var statusCell=document.getElementById('status-cell-'+currentId);if(statusCell){if(reason){statusCell.innerHTML='<span class="badge badge-invalid" style="cursor:pointer" onclick="openModal('+currentId+')">🚩 '+esc(reason)+'</span>';statusCell.setAttribute('data-reason',reason)}else{statusCell.innerHTML='<span class="badge badge-valid" style="cursor:pointer" onclick="openModal('+currentId+')">✅ Valid</span>';statusCell.setAttribute('data-reason','')}}closeModal(); if(typeof currentTab !== 'undefined' && currentTab === 'review') { loadFlaggedData(); }}catch(e){alert('Error saving: '+e.message)}}document.getElementById('flag-modal').addEventListener('click',function(e){if(e.target===this)closeModal()});
 document.addEventListener('dblclick',function(e){var cell=e.target.closest('td[data-edit]');if(!cell)return;var type=cell.getAttribute('data-edit'),actId=cell.getAttribute('data-id'),current=cell.getAttribute('data-val');if(type==='dist')startEditDist(cell,actId,current);if(type==='type')startEditType(cell,actId,current)});function startEditDist(cell,actId,currentM){var km=(parseFloat(currentM)||0)/1000;cell.innerHTML='<input class="edit-input" type="number" step="0.01" value="'+km.toFixed(2)+'" id="ei-'+actId+'">';var inp=cell.querySelector('input');inp.focus();inp.select();inp.addEventListener('blur',function(){saveDist(cell,actId,inp.value)});inp.addEventListener('keydown',function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape')cell.innerHTML=km.toFixed(2)+' km'})}async function saveDist(cell,actId,val){var km=parseFloat(val)||0,meters=Math.round(km*1000);cell.innerHTML='<span style="color:#E8622A;font-size:11px">Saving...</span>';try{await fetch(SUPABASE_URL+'/rest/v1/activities?id=eq.'+actId,{method:'PATCH',headers:{apikey:SUPABASE_ANON,Authorization:'Bearer '+SUPABASE_ANON,'Content-Type':'application/json'},body:JSON.stringify({distance_meters:meters})});cell.setAttribute('data-val',meters);cell.innerHTML=km.toFixed(2)+' km'}catch(e){cell.innerHTML='Error'}}function startEditType(cell,actId,current){var types=['Walk','Run','Hike','Ride','VirtualRun','VirtualRide','MountainBikeRide'];var opts=types.map(function(t){return'<option value="'+t+'"'+(t===current?' selected':'')+'>'+t+'</option>'}).join('');cell.innerHTML='<select class="edit-select"><option value="">— Select —</option>'+opts+'</select>';var sel=cell.querySelector('select');sel.focus();sel.addEventListener('blur',function(){saveType(cell,actId,sel.value)});sel.addEventListener('change',function(){sel.blur()})}async function saveType(cell,actId,newType){if(!newType){cell.innerHTML=cell.getAttribute('data-val')||'—';return}cell.innerHTML='<span style="color:#E8622A;font-size:11px">Saving...</span>';try{await fetch(SUPABASE_URL+'/rest/v1/activities?id=eq.'+actId,{method:'PATCH',headers:{apikey:SUPABASE_ANON,Authorization:'Bearer '+SUPABASE_ANON,'Content-Type':'application/json'},body:JSON.stringify({sport_type:newType})});cell.setAttribute('data-val',newType);cell.innerHTML='<span class="badge '+bc(newType)+'">'+newType+'</span>'}catch(e){cell.innerHTML='Error'}}
 function clearFilters(){
   document.getElementById('athlete-name').value='';
@@ -600,11 +914,464 @@ function fmtPSSplit(ms, system) {
   return min + ':' + String(sec).padStart(2, '0') + ' /' + (system === 'metric' ? 'km' : 'mi');
 }
 
+var currentTab = 'all', allActivities = [], bulkSelected = {};
+
+function switchTab(t){
+  currentTab=t;
+  document.getElementById('tab-all').classList.toggle('active',t==='all');
+  document.getElementById('tab-review').classList.toggle('active',t==='review');
+  document.getElementById('tab-rules').classList.toggle('active',t==='rules');
+  document.getElementById('tab-deleted').classList.toggle('active',t==='deleted');
+
+  // Reset filters
+  if(t === 'all') {
+    clearFilters();
+  } else {
+    document.getElementById('flagged-athlete-name').value = '';
+    document.getElementById('flagged-sport-filter').value = '';
+    document.getElementById('flagged-reason-filter').value = '';
+    bulkSelected = {};
+    var chkAll = document.getElementById('chk-all-rows');
+    if (chkAll) chkAll.checked = false;
+  }
+
+  if (t === 'rules') {
+    document.getElementById('page-title').textContent = 'Flagged Activities Rules';
+    document.getElementById('page-subtitle').textContent = 'Set dynamic rules and bulk-flag activities';
+    document.getElementById('all-workouts-container').style.display = 'none';
+    document.getElementById('flagged-data-container').style.display = 'none';
+    document.getElementById('rules-container').style.display = 'block';
+    document.getElementById('btn-recheck-outer').style.display = 'none';
+    updateBulkBar();
+  } else if (t === 'all') {
+    document.getElementById('page-title').textContent = 'Activities';
+    document.getElementById('page-subtitle').textContent = 'Search and manage all logged workouts';
+    document.getElementById('all-workouts-container').style.display = 'block';
+    document.getElementById('flagged-data-container').style.display = 'none';
+    document.getElementById('rules-container').style.display = 'none';
+    document.getElementById('btn-recheck-outer').style.display = 'none';
+    loadActivities();
+  } else {
+    document.getElementById('page-title').textContent = 'Flagged Activities';
+    document.getElementById('page-subtitle').textContent = t==='review'?'Activities under review or needing attention':'Deleted activities awaiting review or restoration';
+    document.getElementById('all-workouts-container').style.display = 'none';
+    document.getElementById('flagged-data-container').style.display = 'block';
+    document.getElementById('rules-container').style.display = 'none';
+    document.getElementById('btn-recheck-outer').style.display = t==='review'?'inline-flex':'none';
+    
+    // Adjust filters and bulk action buttons based on Review vs Deleted
+    document.getElementById('reason-filter-group').style.display = t==='review'?'block':'none';
+    document.getElementById('btn-bulk-clear').style.display = t==='review'?'inline-flex':'none';
+    document.getElementById('btn-bulk-delete').style.display = t==='review'?'inline-flex':'none';
+    document.getElementById('btn-bulk-restore').style.display = t==='deleted'?'inline-flex':'none';
+
+    loadFlaggedData();
+  }
+}
+
+function fmtDate(d) {
+  if (!d) return '';
+  try {
+    var dt = new Date(d);
+    if (isNaN(dt.getTime())) return '';
+    return dt.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric', timeZone: 'Asia/Kolkata' });
+  } catch (e) {
+    var naive = d ? d.replace(/[Zz]$/, '').replace(/\+00:00$/, '') : d;
+    return new Date(naive).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+  }
+}
+
+function fmtTime(d, startTime) {
+  if (!d) return '';
+  if (startTime === null || startTime === undefined || startTime === '') return '';
+  try {
+    var dt = new Date(d);
+    if (isNaN(dt.getTime())) return '';
+    return dt.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true, timeZone: 'Asia/Kolkata' });
+  } catch (e) {
+    var naive = d ? d.replace(/[Zz]$/, '').replace(/\+00:00$/, '') : d;
+    return new Date(naive).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true });
+  }
+}
+
+async function loadFlaggedData(){
+  document.getElementById('flagged-body').innerHTML='<tr class="loading-row"><td colspan="9">Loading...</td></tr>';
+  bulkSelected = {};
+  updateBulkBar();
+  try {
+    var url=currentTab==='review'
+      ?SUPABASE_URL+'/rest/v1/activities?is_flagged=eq.true&is_deleted=eq.false&order=activity_date.desc'
+      :SUPABASE_URL+'/rest/v1/activities?is_deleted=eq.true&order=activity_date.desc';
+    var acts = await fetchAllRows(url, HDR);
+    allActivities = acts;
+    applyFlaggedFilters();
+  } catch(e) {
+    console.error(e);
+    document.getElementById('flagged-body').innerHTML='<tr class="loading-row"><td colspan="9" style="color:#c62828">Error loading data. Please try again.</td></tr>';
+  }
+}
+
+var filteredFlaggedActivities = [];
+function applyFlaggedFilters() {
+  var nameQuery = (document.getElementById('flagged-athlete-name').value || '').trim().toLowerCase();
+  var sportQuery = document.getElementById('flagged-sport-filter').value;
+  var reasonQuery = currentTab === 'review' ? document.getElementById('flagged-reason-filter').value : '';
+
+  filteredFlaggedActivities = allActivities.filter(function(a) {
+    var r = regMap[String(a.strava_athlete_id).trim()];
+    var name = r ? r.full_name : 'Unknown';
+    if (nameQuery && name.toLowerCase().indexOf(nameQuery) === -1) return false;
+    if (sportQuery && a.sport_type !== sportQuery) return false;
+    if (reasonQuery && a.flag_reason !== reasonQuery) return false;
+    return true;
+  });
+
+  var sum = document.getElementById('summary');
+  if (currentTab === 'review') {
+    sum.className = filteredFlaggedActivities.length ? 'summary warn' : 'summary ok';
+    sum.textContent = filteredFlaggedActivities.length ? '⚠️ ' + filteredFlaggedActivities.length + ' activit' + (filteredFlaggedActivities.length === 1 ? 'y' : 'ies') + ' flagged for review' : '✅ No flagged activities match the filters!';
+  } else {
+    sum.className = 'summary info';
+    sum.textContent = '🗑️ ' + filteredFlaggedActivities.length + ' deleted activit' + (filteredFlaggedActivities.length === 1 ? 'y' : 'ies') + '— can be restored anytime';
+  }
+
+  // Adjust table checkboxes
+  var cleanSelected = {};
+  filteredFlaggedActivities.forEach(function(a) {
+    if (bulkSelected[a.id]) cleanSelected[a.id] = true;
+  });
+  bulkSelected = cleanSelected;
+  updateBulkBar();
+
+  if (!filteredFlaggedActivities.length) {
+    document.getElementById('flagged-body').innerHTML = '<tr class="loading-row"><td colspan="9">No matching activities found</td></tr>';
+    return;
+  }
+
+  document.getElementById('flagged-body').innerHTML = filteredFlaggedActivities.map(function(a) {
+    var r = regMap[String(a.strava_athlete_id).trim()];
+    var name = r ? r.full_name : 'Unknown';
+    var safeReason = (a.flag_reason || '').replace(/'/g, "\\'");
+    var actions = currentTab === 'review'
+      ? '<button class="btn btn-orange" onclick="openReviewModal(' + a.id + ',\'' + name.replace(/'/g, "\\'") + '\',\'' + safeReason + '\')">✏️ Edit</button>'
+        + '<button class="btn btn-success" onclick="doAction(' + a.id + ',\'unflag\',\'\')">✅ Clear</button>'
+        + '<button class="btn btn-danger" onclick="doAction(' + a.id + ',\'delete\',\'' + safeReason + '\')">🗑️ Delete</button>'
+      : '<button class="btn btn-primary" onclick="doAction(' + a.id + ',\'restore\',\'\')">↩️ Restore</button>';
+      
+    var isChecked = bulkSelected[a.id] ? ' checked' : '';
+
+    return '<tr id="row-' + a.id + '">'
+      + '<td style="text-align:center"><input type="checkbox" class="row-chk" data-id="' + a.id + '"' + isChecked + ' onchange="toggleRowSelect(' + a.id + ', this.checked)" style="cursor:pointer; width:15px; height:15px"></td>'
+      + '<td><a href="https://www.strava.com/athletes/' + a.strava_athlete_id + '" target="_blank" class="ath">' + name + '</a></td>'
+      + '<td><a href="https://www.strava.com/activities/' + a.strava_activity_id + '" target="_blank" class="act-link">' + (a.activity_name || '—') + '</a></td>'
+      + '<td><span class="badge ' + bc(a.sport_type) + '">' + (a.sport_type || '—') + '</span></td>'
+      + '<td>' + fmtDate(a.activity_date) + ' ' + fmtTime(a.activity_date, a.start_time) + '</td>'
+      + '<td>' + (a.distance_meters ? (a.distance_meters / 1000).toFixed(2) + ' km' : '—') + '</td>'
+      + '<td>' + fmtPS(a.avg_speed, a.sport_type) + '</td>'
+      + '<td><span class="flag-reason">' + (a.flag_reason || '—') + '</span></td>'
+      + '<td>' + actions + '</td>'
+      + '</tr>';
+  }).join('');
+}
+
+function clearFlaggedFilters() {
+  document.getElementById('flagged-athlete-name').value = '';
+  document.getElementById('flagged-sport-filter').value = '';
+  document.getElementById('flagged-reason-filter').value = '';
+  applyFlaggedFilters();
+}
+
+function toggleRowSelect(id, checked) {
+  if (checked) bulkSelected[id] = true;
+  else delete bulkSelected[id];
+  updateBulkBar();
+}
+
+function toggleAllRows(checked) {
+  filteredFlaggedActivities.forEach(function(a) {
+    if (checked) bulkSelected[a.id] = true;
+    else delete bulkSelected[a.id];
+  });
+  
+  var chks = document.querySelectorAll('.row-chk');
+  chks.forEach(function(c) { c.checked = checked; });
+  updateBulkBar();
+}
+
+function updateBulkBar() {
+  var ids = Object.keys(bulkSelected);
+  var n = ids.length;
+  var bar = document.getElementById('bulk-actions-bar');
+  if (!bar) return;
+  if (n > 0 && currentTab !== 'rules') {
+    bar.style.display = 'flex';
+    document.getElementById('bulk-selected-num').textContent = n;
+    
+    var allChk = document.getElementById('chk-all-rows');
+    if (allChk && filteredFlaggedActivities.length > 0) {
+      allChk.checked = n === filteredFlaggedActivities.length;
+    }
+  } else {
+    bar.style.display = 'none';
+    var allChk = document.getElementById('chk-all-rows');
+    if (allChk) allChk.checked = false;
+  }
+}
+
+async function doAction(id,action,reason){
+  await fetch(BACKEND_URL+'/flag',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({activity_id:id,action:action,flag_reason:reason})});
+  allActivities = allActivities.filter(function(a) { return a.id !== id; });
+  delete bulkSelected[id];
+  applyFlaggedFilters();
+}
+
+async function doBulkAction(action) {
+  var ids = Object.keys(bulkSelected);
+  if (!ids.length) return;
+  if (!confirm('Are you sure you want to bulk-' + action + ' the ' + ids.length + ' selected activities?')) return;
+  
+  var bar = document.getElementById('bulk-actions-bar');
+  var origHtml = bar.innerHTML;
+  bar.innerHTML = '<span>⏳ Processing bulk action... <span class="bulk-selected-count" id="bulk-prog">0</span> / ' + ids.length + '</span>';
+  
+  var success = 0;
+  for (var i = 0; i < ids.length; i++) {
+    var id = ids[i];
+    try {
+      var act = allActivities.find(function(a) { return String(a.id) === String(id); });
+      var reason = act ? act.flag_reason || '' : '';
+      await fetch(BACKEND_URL+'/flag', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activity_id: parseInt(id), action: action, flag_reason: reason })
+      });
+      success++;
+    } catch(e) {
+      console.error('Bulk item failed:', id, e);
+    }
+    var prog = document.getElementById('bulk-prog');
+    if (prog) prog.textContent = i + 1;
+  }
+  
+  bar.innerHTML = origHtml;
+  bulkSelected = {};
+  alert('Bulk action completed. Successful updates: ' + success);
+  loadFlaggedData();
+}
+
+async function recheckAll(){
+  if(!confirm('Re-run auto-flag on all activities?')) return;
+  var btn=document.getElementById('btn-recheck-outer');
+  btn.innerHTML='<span class="spinner-inline"></span>Running...'; btn.disabled=true;
+  await fetch(BACKEND_URL+'/recheck-flags',{method:'POST',headers:{'Content-Type':'application/json'}});
+  setTimeout(function(){ btn.innerHTML='🔍 Re-run Auto-flag'; btn.disabled=false; loadFlaggedData(); },6000);
+}
+
+function openReviewModal(id, name, reason) {
+  currentId = id;
+  document.getElementById('modal-sub').textContent = 'Activity by: ' + name;
+  document.getElementById('modal-flag-reason').value = reason || '';
+  checkModalDist();
+  document.getElementById('flag-modal').classList.add('show');
+}
+
+// ── Auto-Flag Rules Tab Javascript ──
+var flagPreviewData = [];
+
+function fmtPace(avgSpeed) {
+  return fmtPS(avgSpeed, 'Walk');
+}
+
+async function fetchFlagCandidates() {
+  var dFrom = document.getElementById('fr-date-from').value;
+  var dTo = document.getElementById('fr-date-to').value;
+  var sport = document.getElementById('fr-sport').value;
+  var distMin = parseFloat(document.getElementById('fr-dist-min').value) || 0;
+  var distMax = parseFloat(document.getElementById('fr-dist-max').value) || 999999;
+  var paceMin = parseFloat(document.getElementById('fr-pace1-min').value) || 0;
+  var paceMax = parseFloat(document.getElementById('fr-pace1-max').value) || 999999;
+
+  var q = `is_deleted=eq.false&order=activity_date.desc`;
+  if (dFrom) q += `&activity_date=gte.${dFrom}T00:00:00`;
+  if (dTo) q += `&activity_date=lte.${dTo}T23:59:59`;
+  if (sport) q += `&sport_type=eq.${sport}`;
+
+  var acts = await fetchAllRows(SUPABASE_URL + '/rest/v1/activities?' + q, HDR);
+  var matches = [];
+  
+  acts.forEach(function(a) {
+    var km = (a.distance_meters || 0) / 1000;
+    var pace = a.avg_speed ? (1000 / a.avg_speed) / 60 : 999999;
+    var reasons = [];
+
+    // Rules logic
+    if (distMin > 0 && km < distMin) reasons.push('Distance below min limit (' + km.toFixed(2) + ' < ' + distMin + ' km)');
+    if (distMax < 999999 && km > distMax) reasons.push('Distance above max limit (' + km.toFixed(2) + ' > ' + distMax + ' km)');
+    if (paceMin > 0 && pace < paceMin) reasons.push('Pace too fast (' + pace.toFixed(2) + ' < ' + paceMin + ' min/km)');
+    if (paceMax < 999999 && pace > paceMax) reasons.push('Pace too slow (' + pace.toFixed(2) + ' > ' + paceMax + ' min/km)');
+
+    if (reasons.length > 0) {
+      matches.push({
+        act: a,
+        name: regMap[String(a.strava_athlete_id).trim()] ? regMap[String(a.strava_athlete_id).trim()].full_name : 'Unknown',
+        reasons: reasons
+      });
+    }
+  });
+
+  return matches;
+}
+
+async function previewFlagRules() {
+  var countEl = document.getElementById('flag-preview-count');
+  var bodyEl = document.getElementById('flag-preview-body');
+  var listEl = document.getElementById('flag-preview-list');
+  var btn = document.getElementById('btn-apply-flags');
+  
+  countEl.textContent = '⏳ Scanning activities...';
+  bodyEl.innerHTML = '';
+  listEl.style.display = 'none';
+  btn.disabled = true;
+  
+  try {
+    flagPreviewData = await fetchFlagCandidates();
+    countEl.textContent = flagPreviewData.length + ' activit' + (flagPreviewData.length === 1 ? 'y' : 'ies') + ' match the rules';
+    btn.disabled = flagPreviewData.length === 0;
+    if (flagPreviewData.length === 0) return;
+    
+    bodyEl.innerHTML = flagPreviewData.map(function(m) {
+      var a = m.act;
+      var km = ((parseFloat(a.distance_meters) || 0) / 1000).toFixed(2);
+      var dt = (a.activity_date || '').split('T')[0];
+      var already = a.is_flagged ? ' style="opacity:0.5"' : '';
+      var athleteUrl = 'https://www.strava.com/athletes/' + a.strava_athlete_id;
+      var actUrl = 'https://www.strava.com/activities/' + (a.strava_activity_id || a.id);
+      var actName = esc(a.activity_name || '—');
+      var chkDisabled = a.is_flagged ? ' disabled title="Already flagged"' : '';
+      var chkChecked = a.is_flagged ? '' : ' checked';
+      
+      return '<tr' + already + ' data-idx="' + flagPreviewData.indexOf(m) + '"' + (a.is_flagged ? ' class="row-already-flagged"' : '') + '>'
+        + ' <td style="padding:8px 12px;text-align:center"><input type="checkbox" class="row-preview-chk" data-idx="' + flagPreviewData.indexOf(m) + '"' + chkChecked + chkDisabled + ' onchange="updateSelectedPreviewCount()" style="cursor:pointer;width:15px;height:15px"></td>'
+        + '<td style="padding:8px 12px">' + (a.is_flagged ? '<span style="color:#bbb;font-size:11px">✓ already</span> ' : '') + '<a href="' + athleteUrl + '" target="_blank" style="color:#E8622A;font-weight:600;text-decoration:none">' + esc(m.name) + '</a></td>'
+        + '<td style="padding:8px 12px"><a href="' + actUrl + '" target="_blank" style="color:#1A1A1A;text-decoration:none">' + actName + '</a></td>'
+        + '<td style="padding:8px 12px">' + esc(a.sport_type || '—') + '</td>'
+        + '<td style="padding:8px 12px">' + dt + '</td>'
+        + '<td style="padding:8px 12px">' + km + ' km</td>'
+        + '<td style="padding:8px 12px">' + fmtPace(a.avg_speed) + '</td>'
+        + '<td style="padding:8px 12px;color:#c62828;font-size:12px">' + m.reasons.join('<br>') + '</td>'
+        + '</tr>';
+    }).join('');
+    
+    if (flagPreviewData.length > 200) {
+      bodyEl.innerHTML += '<tr><td colspan="8" style="padding:12px;text-align:center;color:#888;font-size:13px">...and ' + (flagPreviewData.length - 200) + ' more</td></tr>';
+    }
+    listEl.style.display = 'block';
+    updateSelectedPreviewCount();
+  } catch(e) {
+    countEl.textContent = '❌ Error: ' + e.message;
+  }
+}
+
+async function applyFlagRules() {
+  var chks = document.querySelectorAll('.row-preview-chk:checked:not(:disabled)');
+  var selectedIdxs = Array.from(chks).map(function(c) { return parseInt(c.getAttribute('data-idx')); });
+  var toFlag = selectedIdxs.map(function(i) { return flagPreviewData[i]; }).filter(Boolean);
+  if (!toFlag.length) {
+    alert('Please select at least one activity to flag.');
+    return;
+  }
+  
+  var btn = document.getElementById('btn-apply-flags');
+  var countEl = document.getElementById('flag-preview-count');
+  if (!confirm('Flag ' + toFlag.length + ' selected activities?')) return;
+  
+  btn.disabled = true;
+  btn.textContent = 'Flagging...';
+  var success = 0, failed = 0;
+  
+  for (var i = 0; i < toFlag.length; i++) {
+    var m = toFlag[i];
+    try {
+      var newReason = (m.act.flag_reason ? m.act.flag_reason + ', ' : '') + m.reasons.join(', ');
+      var r = await fetch(SUPABASE_URL + '/rest/v1/activities?id=eq.' + m.act.id, {
+        method: 'PATCH',
+        headers: HDR,
+        body: JSON.stringify({ is_flagged: true, flag_reason: newReason })
+      });
+      if (r.ok) {
+        success++;
+        m.act.is_flagged = true;
+        var chkEl = document.querySelector('.row-preview-chk[data-idx="' + flagPreviewData.indexOf(m) + '"]');
+        if (chkEl) {
+          chkEl.checked = false;
+          chkEl.disabled = true;
+          var row = chkEl.closest('tr');
+          if (row) row.style.opacity = '0.5';
+        }
+      }
+    } catch(e) {
+      failed++;
+    }
+    if (i % 10 === 0) countEl.textContent = 'Flagging... ' + (i + 1) + ' / ' + toFlag.length;
+  }
+  
+  btn.textContent = '🚩 Flag Selected';
+  btn.disabled = false;
+  countEl.textContent = '✅ Done — ' + success + ' flagged' + (failed ? ' | ❌ ' + failed + ' failed' : '');
+  updateSelectedPreviewCount();
+}
+
+function toggleAllPreviewCheckboxes(checked) {
+  var chks = document.querySelectorAll('.row-preview-chk:not(:disabled)');
+  chks.forEach(function(c) { c.checked = checked; });
+  var allChk = document.getElementById('chk-all-preview');
+  if (allChk) allChk.checked = checked;
+  updateSelectedPreviewCount();
+}
+
+function updateSelectedPreviewCount() {
+  var chks = document.querySelectorAll('.row-preview-chk:checked:not(:disabled)');
+  var n = chks.length;
+  var countEl = document.getElementById('flag-selected-count');
+  var numEl = document.getElementById('flag-selected-num');
+  var btn = document.getElementById('btn-apply-flags');
+  
+  if (numEl) numEl.textContent = n;
+  if (countEl) countEl.style.display = n > 0 ? 'inline' : 'none';
+  if (btn) btn.disabled = n === 0;
+  
+  var allChk = document.getElementById('chk-all-preview');
+  var allUnchecked = document.querySelectorAll('.row-preview-chk:not(:disabled)');
+  if (allChk && allUnchecked.length > 0) {
+    allChk.checked = n === allUnchecked.length;
+  }
+}
+
+// ── Startup ──
 setDefaultTodayFilters();
 loadRegistrations().then(function(){
   loadActivities();
 });
 
+// Flagged inputs search on Enter
+['flagged-athlete-name'].forEach(function(id){
+  var el = document.getElementById(id);
+  if(el) el.addEventListener('keydown',function(e){if(e.key==='Enter')applyFlaggedFilters()});
+});
+
+var nameInputFlagged = document.getElementById('flagged-athlete-name');
+if(nameInputFlagged) {
+  nameInputFlagged.addEventListener('input', function(e) {
+    var val = this.value;
+    var options = document.querySelectorAll('#participant-names option');
+    for (var i = 0; i < options.length; i++) {
+      if (options[i].value === val) {
+        applyFlaggedFilters();
+        break;
+      }
+    }
+  });
+}
 </script>
 </body>
 </html>
