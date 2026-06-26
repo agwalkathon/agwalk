@@ -2165,8 +2165,16 @@ async function load(isBackgroundRefresh) {
           fetch(SUPABASE_URL+'/rest/v1/special_scoring_days?select=special_date',{headers:HDR}).then(function(r){return r.json();}).then(function(d){cacheSet('special_days',d);}),
           fetch(SUPABASE_URL+'/rest/v1/leaderboard_config?config_key=eq.medals&select=config_value',{headers:HDR}).then(function(r){return r.json();}).then(function(d){cacheSet('medals',d);})
         ]).then(function(){
-          console.log('[Cache] Phase 1 background refresh complete. Re-rendering dashboard UI...');
-          load(true);
+          function doReload() {
+            if (_touchInteracting) {
+              console.log('[Cache] User is interacting, deferring dashboard background reload...');
+              setTimeout(doReload, 300);
+            } else {
+              console.log('[Cache] Phase 1 background refresh complete. Re-rendering dashboard UI...');
+              load(true);
+            }
+          }
+          doReload();
         }).catch(function(e){console.warn('[Cache] Background refresh failed:', e);});
       }, 200);
     }
@@ -2678,10 +2686,18 @@ async function load(isBackgroundRefresh) {
                 fetchAll(SUPABASE_URL+'/rest/v1/activities?is_deleted=is.false&activity_date=gte.2026-06-01&activity_date=lte.2026-06-30&select=strava_activity_id,strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,elevation_gain,description'),
                 fetchAll(SUPABASE_URL+'/rest/v1/registration?select=strava_athlete_id,full_name,gender,shift,leaderboard_team')
               ]).then(function(results){
-                console.log('[Cache] Phase 2 background refresh complete. Re-rendering...');
-                cacheSet('ranking_acts_v2', results[0]);
-                cacheSet('ranking_reg', results[1]);
-                load(true);
+                function doReload() {
+                  if (_touchInteracting) {
+                    console.log('[Cache] User is interacting, deferring background reload...');
+                    setTimeout(doReload, 300);
+                  } else {
+                    console.log('[Cache] Phase 2 background refresh complete. Re-rendering...');
+                    cacheSet('ranking_acts_v2', results[0]);
+                    cacheSet('ranking_reg', results[1]);
+                    load(true);
+                  }
+                }
+                doReload();
               }).catch(function(e){console.warn('[Cache] Ranking background refresh failed:', e);});
             }, 500);
           }
@@ -3201,15 +3217,17 @@ function showTab(tab){
   safeToggleClass('bnav-you', 'active', tab==='you');
 
   // rings + metrics now inside dashboard tab — no separate show/hide needed
-  if(tab==='leaderboard'&&!_lbLoaded){
-    _lbLoaded=true;
-    if(_lbReady){lbRender();}  // data already loaded — instant render
-    else{lbBoot();}             // fallback: Phase 2 not done yet, fetch directly
-  }
+  setTimeout(function() {
+    if(tab==='leaderboard'&&!_lbLoaded){
+      _lbLoaded=true;
+      if(_lbReady){lbRender();}  // data already loaded — instant render
+      else{lbBoot();}             // fallback: Phase 2 not done yet, fetch directly
+    }
 
-  if (tab === 'dashboard') {
-    triggerRingAnimation();
-  }
+    if (tab === 'dashboard') {
+      triggerRingAnimation();
+    }
+  }, 320);
 }
 
 // ── Swipe Gesture for Tab Navigation ──────────────────────────────────────
@@ -3219,6 +3237,7 @@ function showTab(tab){
   var _swipeDir = null;
 
   document.addEventListener('touchstart', function(e){
+    setTouchInteracting(true);
     touchStartX = e.changedTouches[0].clientX;
     touchStartY = e.changedTouches[0].clientY;
     _swipeDir = null; // reset each new touch
@@ -3253,6 +3272,7 @@ function showTab(tab){
   }, { passive: false });
 
   document.addEventListener('touchend', function(e){
+    setTouchInteracting(false);
     if (_swipeDir !== 'h') return; // wasn't a horizontal swipe
     if (touchStartY > window.innerHeight - 80) return; // bottom nav zone
 
@@ -3267,6 +3287,11 @@ function showTab(tab){
       // Swipe right → previous tab
       if (idx > 0) showTab(TAB_ORDER[idx - 1]);
     }
+    _swipeDir = null;
+  }, { passive: true });
+
+  document.addEventListener('touchcancel', function(e){
+    setTouchInteracting(false);
     _swipeDir = null;
   }, { passive: true });
 })();
@@ -3367,6 +3392,21 @@ function refreshData(isPull){
 // ── Leaderboard shared vars (declared here so Phase 1 can populate them) ──
 var LB_ME=null,LB_REG=[],LB_ACTS=[],LB_currentTab='shift';
 var LB_SCORES={};
+var _touchInteracting = false;
+var _touchTimeout = null;
+
+function setTouchInteracting(interacting) {
+  if (interacting) {
+    _touchInteracting = true;
+    if (_touchTimeout) { clearTimeout(_touchTimeout); _touchTimeout = null; }
+  } else {
+    if (_touchTimeout) clearTimeout(_touchTimeout);
+    _touchTimeout = setTimeout(function() {
+      _touchInteracting = false;
+      _touchTimeout = null;
+    }, 400); // 400ms buffer after touch end to let transition finish
+  }
+}
 
 function precomputeLBScores() {
   LB_SCORES = {};
