@@ -627,10 +627,10 @@
     .bnav-item.active{color:var(--brand);}
     
     @media (max-width: 480px) {
-      .bnav-label {
+      .bottom-nav.nav-five-tabs .bnav-label {
         display: none;
       }
-      .bnav-item {
+      .bottom-nav.nav-five-tabs .bnav-item {
         padding: 14px 6px 14px;
       }
     }
@@ -1576,6 +1576,7 @@ document.addEventListener('click', function(e) {
     <span class="bnav-label">Leaderboard</span>
   </a>
   <a class="bnav-item" id="bnav-feed" href="#" onclick="showTab('feed');return false;" style="display:none;">
+    <div id="feed-unread-badge" style="display:none;position:absolute;top:8px;left:calc(50% + 6px);width:8px;height:8px;background:#f97316;border:1.5px solid var(--surface);border-radius:50%;z-index:10;"></div>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
     <span class="bnav-label">Announcement</span>
   </a>
@@ -2343,6 +2344,9 @@ async function load(isBackgroundRefresh) {
     var allActs=[],allRegRes=[];
     if(Array.isArray(cfgRows))cfgRows.forEach(function(row){if(row.config_key==='bonus_points')CONFIG_LB.bonus=row.config_value.map(function(b){return{km:Number(b.km),points:Number(b.points||b.pts||0)};});if(row.config_key==='base_points')CONFIG_LB.basePer_km=parseFloat(row.config_value.per_km||1);if(row.config_key==='base_points_per_km')CONFIG_LB.basePer_km=parseFloat(row.config_value)||1;if(row.config_key==='announcements_enabled'){CONFIG_LB.announcements_enabled=(row.config_value===true||row.config_value==='true');}});
     initializeFeedTab(CONFIG_LB.announcements_enabled);
+    if (CONFIG_LB.announcements_enabled) {
+      loadFeed().catch(function(e) { console.warn('Failed initial loadFeed:', e); });
+    }
     CHALLENGES_LB=Array.isArray(chRows)?chRows:[];
     SPECIAL_DAYS_LB=Array.isArray(sdRows)?sdRows.map(function(x){return x.special_date;}):[];
     var regs=regJsonData; var reg=Array.isArray(regs)&&regs.length?regs[0]:{};
@@ -3243,6 +3247,7 @@ function initializeFeedTab(enabled) {
   var track = document.getElementById('tab-track');
   var bnavFeed = document.getElementById('bnav-feed');
   var tabFeed = document.getElementById('tab-feed');
+  var bnav = document.querySelector('.bottom-nav');
   
   if (enabled) {
     if (TAB_ORDER.indexOf('feed') === -1) {
@@ -3250,6 +3255,7 @@ function initializeFeedTab(enabled) {
     }
     if (bnavFeed) bnavFeed.style.display = '';
     if (tabFeed) tabFeed.classList.remove('hidden-tab');
+    if (bnav) bnav.classList.add('nav-five-tabs');
   } else {
     var idx = TAB_ORDER.indexOf('feed');
     if (idx !== -1) {
@@ -3257,6 +3263,7 @@ function initializeFeedTab(enabled) {
     }
     if (bnavFeed) bnavFeed.style.display = 'none';
     if (tabFeed) tabFeed.classList.add('hidden-tab');
+    if (bnav) bnav.classList.remove('nav-five-tabs');
   }
   
   // Adjust track and content widths
@@ -3275,12 +3282,12 @@ var _feedData = [];
 
 async function loadFeed() {
   var list = document.getElementById('feed-list');
-  if (!list) return;
-
-  list.innerHTML = `
-    <div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div><div class="skeleton skel-line short"></div></div>
-    <div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div><div class="skeleton skel-line short"></div></div>
-  `;
+  if (list) {
+    list.innerHTML = `
+      <div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div><div class="skeleton skel-line short"></div></div>
+      <div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div><div class="skeleton skel-line short"></div></div>
+    `;
+  }
 
   try {
     var athleteId = currentSession ? currentSession.athleteId : '';
@@ -3288,13 +3295,34 @@ async function loadFeed() {
     var d = await res.json();
     if (d.success && Array.isArray(d.feed)) {
       _feedData = d.feed;
-      renderFeed();
+      if (list) {
+        renderFeed();
+      }
+      
+      var lastViewedStr = localStorage.getItem('ag_last_viewed_announcements') || '';
+      var lastViewedTime = lastViewedStr ? new Date(lastViewedStr).getTime() : 0;
+      if (_currentTab === 'feed') {
+        lastViewedTime = Date.now();
+        localStorage.setItem('ag_last_viewed_announcements', new Date(lastViewedTime).toISOString());
+      }
+      var hasNew = _feedData.some(function(item) {
+        var itemTime = item.created_at ? new Date(item.created_at).getTime() : 0;
+        return itemTime > lastViewedTime;
+      });
+      var badgeEl = document.getElementById('feed-unread-badge');
+      if (badgeEl) {
+        badgeEl.style.display = hasNew ? 'block' : 'none';
+      }
     } else {
-      list.innerHTML = '<div class="empty-state"><div class="icon">📢</div><p>No announcements yet. Check back later!</p></div>';
+      if (list) {
+        list.innerHTML = '<div class="empty-state"><div class="icon">📢</div><p>No announcements yet. Check back later!</p></div>';
+      }
     }
   } catch(e) {
     console.warn('Failed to load feed:', e);
-    list.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>Could not load announcements.</p></div>';
+    if (list) {
+      list.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>Could not load announcements.</p></div>';
+    }
   }
 }
 
@@ -3482,6 +3510,12 @@ function showTab(tab){
   _currentTab = tab;
   var idx = TAB_ORDER.indexOf(tab);
 
+  if (tab === 'feed') {
+    localStorage.setItem('ag_last_viewed_announcements', new Date().toISOString());
+    var badgeEl = document.getElementById('feed-unread-badge');
+    if (badgeEl) badgeEl.style.display = 'none';
+  }
+
   var track = document.getElementById('tab-track');
   if (track) {
     var stepPct = 100 / (TAB_ORDER.length || 4);
@@ -3512,8 +3546,7 @@ function showTab(tab){
       else{lbBoot();}             // fallback: Phase 2 not done yet, fetch directly
     }
 
-    if(tab==='feed'&&!_feedLoaded){
-      _feedLoaded=true;
+    if(tab==='feed'){
       loadFeed();
     }
 
@@ -4213,6 +4246,203 @@ async function checkMilestoneNotifications(athleteId, currentRank, currentPoints
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ trigger_key: mKey, athlete_id: athleteId })
         }).catch(function(err){});
+      }
+    }
+
+    // Filter valid activities for new milestones
+    var validActs = myActs.filter(function(a) { 
+      return !a.is_flagged && !a.is_deleted; 
+    });
+    validActs.forEach(function(a) {
+      a.base_km = parseFloat(a.distance_meters || 0) / 1000;
+    });
+
+    // 1. Distance Clubs: 100, 200, 300 KM total distance
+    var totalKm = validActs.reduce(function(sum, a) { return sum + a.base_km; }, 0);
+    var keyClubs = 'agprev_prev_clubs_' + athleteId;
+    var prevClubsRaw = localStorage.getItem(keyClubs);
+    var prevClubs = prevClubsRaw ? JSON.parse(prevClubsRaw) : [];
+
+    var clubsToCheck = [
+      { key: 'club_100', thresh: 100, title: '100 KM Club' },
+      { key: 'club_200', thresh: 200, title: '200 KM Club' },
+      { key: 'club_300', thresh: 300, title: '300 KM Club' }
+    ];
+
+    for (var i = 0; i < clubsToCheck.length; i++) {
+      var club = clubsToCheck[i];
+      if (totalKm >= club.thresh) {
+        var alreadyNotifiedDb = _notificationsList.some(function(n) {
+          return n.title && n.title.indexOf(club.title) !== -1;
+        });
+        if (prevClubs.indexOf(club.key) === -1 && !alreadyNotifiedDb) {
+          await fetch(BACKEND + '/push/trigger', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ trigger_key: club.key, athlete_id: athleteId })
+          }).catch(function(err){});
+          prevClubs.push(club.key);
+          localStorage.setItem(keyClubs, JSON.stringify(prevClubs));
+        }
+      }
+    }
+
+    // 2. Active Day Streaks: 7, 14, 21 Days
+    var activeDates = {};
+    validActs.forEach(function(a) {
+      var d = (a.activity_date || '').split('T')[0];
+      if (d) activeDates[d] = true;
+    });
+    var sortedActiveDates = Object.keys(activeDates).sort();
+
+    var longestStreak = 0;
+    if (sortedActiveDates.length > 0) {
+      var currentStreak = 1;
+      longestStreak = 1;
+      for (var i = 1; i < sortedActiveDates.length; i++) {
+        var prev = new Date(sortedActiveDates[i - 1]);
+        var curr = new Date(sortedActiveDates[i]);
+        var diffMs = curr.getTime() - prev.getTime();
+        var diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+        if (diffDays === 1) {
+          currentStreak++;
+        } else if (diffDays > 1) {
+          if (currentStreak > longestStreak) {
+            longestStreak = currentStreak;
+          }
+          currentStreak = 1;
+        }
+      }
+      if (currentStreak > longestStreak) {
+        longestStreak = currentStreak;
+      }
+    }
+
+    var keyStreaks = 'agprev_prev_streaks_' + athleteId;
+    var prevStreaksRaw = localStorage.getItem(keyStreaks);
+    var prevStreaks = prevStreaksRaw ? JSON.parse(prevStreaksRaw) : [];
+
+    var streaksToCheck = [
+      { key: 'streak_7', thresh: 7, title: '7-Day Active Streak' },
+      { key: 'streak_14', thresh: 14, title: '14-Day Active Streak' },
+      { key: 'streak_21', thresh: 21, title: '21-Day Active Streak' }
+    ];
+
+    for (var i = 0; i < streaksToCheck.length; i++) {
+      var streak = streaksToCheck[i];
+      if (longestStreak >= streak.thresh) {
+        var alreadyNotifiedDb = _notificationsList.some(function(n) {
+          return n.title && n.title.indexOf(streak.title) !== -1;
+        });
+        if (prevStreaks.indexOf(streak.key) === -1 && !alreadyNotifiedDb) {
+          await fetch(BACKEND + '/push/trigger', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ trigger_key: streak.key, athlete_id: athleteId })
+          }).catch(function(err){});
+          prevStreaks.push(streak.key);
+          localStorage.setItem(keyStreaks, JSON.stringify(prevStreaks));
+        }
+      }
+    }
+
+    // 3. Single Activity Milestones: 10+, 15+, 21+ KM
+    var maxSingleKm = 0;
+    validActs.forEach(function(a) {
+      if (a.base_km > maxSingleKm) {
+        maxSingleKm = a.base_km;
+      }
+    });
+
+    var keySingles = 'agprev_prev_singles_' + athleteId;
+    var prevSinglesRaw = localStorage.getItem(keySingles);
+    var prevSingles = prevSinglesRaw ? JSON.parse(prevSinglesRaw) : [];
+
+    var singlesToCheck = [
+      { key: 'single_10k', thresh: 10, title: 'Double-Digit Walk' },
+      { key: 'single_15k', thresh: 15, title: 'Super-Distance Walk' },
+      { key: 'single_21k', thresh: 21, title: 'Half-Marathon Walk' }
+    ];
+
+    for (var i = 0; i < singlesToCheck.length; i++) {
+      var single = singlesToCheck[i];
+      if (maxSingleKm >= single.thresh) {
+        var alreadyNotifiedDb = _notificationsList.some(function(n) {
+          return n.title && n.title.indexOf(single.title) !== -1;
+        });
+        if (prevSingles.indexOf(single.key) === -1 && !alreadyNotifiedDb) {
+          var categoryActs = validActs.filter(function(a) { return a.base_km >= single.thresh; });
+          var maxAct = categoryActs.reduce(function(prev, curr) {
+            return (prev.base_km > curr.base_km) ? prev : curr;
+          });
+          var distStr = maxAct.base_km.toFixed(2);
+          
+          await fetch(BACKEND + '/push/trigger', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ trigger_key: single.key, athlete_id: athleteId, vars: { distance: distStr } })
+          }).catch(function(err){});
+          prevSingles.push(single.key);
+          localStorage.setItem(keySingles, JSON.stringify(prevSingles));
+        }
+      }
+    }
+
+    // 4. Consecutive Daily Distance Streaks: 10+, 15+, 21+ KM daily for 3 consecutive days
+    var dailyDistances = {};
+    validActs.forEach(function(a) {
+      var d = (a.activity_date || '').split('T')[0];
+      if (d) {
+        dailyDistances[d] = (dailyDistances[d] || 0) + a.base_km;
+      }
+    });
+
+    var dailyStreaksToCheck = [
+      { key: 'daily_10k_3', thresh: 10, title: '10 KM Daily Streak' },
+      { key: 'daily_15k_3', thresh: 15, title: '15 KM Daily Streak' },
+      { key: 'daily_21k_3', thresh: 21, title: '21 KM Daily Streak' }
+    ];
+
+    var keyDailyStreaks = 'agprev_prev_daily_streaks_' + athleteId;
+    var prevDailyStreaksRaw = localStorage.getItem(keyDailyStreaks);
+    var prevDailyStreaks = prevDailyStreaksRaw ? JSON.parse(prevDailyStreaksRaw) : [];
+
+    for (var i = 0; i < dailyStreaksToCheck.length; i++) {
+      var ds = dailyStreaksToCheck[i];
+      var hasStreak = (function(dailyDist, thresh) {
+        var days = Object.keys(dailyDist).sort();
+        if (days.length < 3) return false;
+        for (var j = 0; j <= days.length - 3; j++) {
+          var d1 = days[j];
+          var d2 = days[j+1];
+          var d3 = days[j+2];
+          if (dailyDist[d1] >= thresh && dailyDist[d2] >= thresh && dailyDist[d3] >= thresh) {
+            var date1 = new Date(d1);
+            var date2 = new Date(d2);
+            var date3 = new Date(d3);
+            var diff1 = Math.round((date2.getTime() - date1.getTime()) / (1000 * 60 * 60 * 24));
+            var diff2 = Math.round((date3.getTime() - date2.getTime()) / (1000 * 60 * 60 * 24));
+            if (diff1 === 1 && diff2 === 1) {
+              return true;
+            }
+          }
+        }
+        return false;
+      })(dailyDistances, ds.thresh);
+
+      if (hasStreak) {
+        var alreadyNotifiedDb = _notificationsList.some(function(n) {
+          return n.title && n.title.indexOf(ds.title) !== -1;
+        });
+        if (prevDailyStreaks.indexOf(ds.key) === -1 && !alreadyNotifiedDb) {
+          await fetch(BACKEND + '/push/trigger', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ trigger_key: ds.key, athlete_id: athleteId })
+          }).catch(function(err){});
+          prevDailyStreaks.push(ds.key);
+          localStorage.setItem(keyDailyStreaks, JSON.stringify(prevDailyStreaks));
+        }
       }
     }
 
