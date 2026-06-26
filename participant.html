@@ -2017,9 +2017,10 @@ function calcFullPts(myActs, gender, shift) {
     if (!mb) return;
     totalChallenge += mb;
     var d = (a.activity_date || '').split('T')[0];
-    if (dayBreakdown[d]) dayBreakdown[d].challenges.push({name:'Manual bonus', pts:mb, actId:a.strava_activity_id});
+    var mbName = a.description || 'Manual bonus';
+    if (dayBreakdown[d]) dayBreakdown[d].challenges.push({name:mbName, pts:mb, actId:a.strava_activity_id});
     if (!actBreakdown[a.strava_activity_id]) actBreakdown[a.strava_activity_id] = {challenges:[]};
-    actBreakdown[a.strava_activity_id].challenges.push({name:'Manual bonus', pts:mb});
+    actBreakdown[a.strava_activity_id].challenges.push({name:mbName, pts:mb});
   });
 
   totalChallenge = parseFloat(totalChallenge.toFixed(2));
@@ -2641,7 +2642,7 @@ async function load(isBackgroundRefresh) {
           if (!isBackgroundRefresh) {
             setTimeout(function(){
               Promise.all([
-                fetchAll(SUPABASE_URL+'/rest/v1/activities?is_deleted=is.false&select=strava_activity_id,strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,elevation_gain'),
+                fetchAll(SUPABASE_URL+'/rest/v1/activities?is_deleted=is.false&select=strava_activity_id,strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,elevation_gain,description'),
                 fetchAll(SUPABASE_URL+'/rest/v1/registration?select=strava_athlete_id,full_name,gender,shift,leaderboard_team')
               ]).then(function(results){
                 console.log('[Cache] Phase 2 background refresh complete. Re-rendering...');
@@ -2654,7 +2655,7 @@ async function load(isBackgroundRefresh) {
         } else {
           console.log('[Cache] Cache miss — fetching Phase 2 from Supabase...');
           var fetched = await Promise.all([
-            fetchAll(SUPABASE_URL+'/rest/v1/activities?is_deleted=is.false&select=strava_activity_id,strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,elevation_gain'),
+            fetchAll(SUPABASE_URL+'/rest/v1/activities?is_deleted=is.false&select=strava_activity_id,strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,elevation_gain,description'),
             fetchAll(SUPABASE_URL+'/rest/v1/registration?select=strava_athlete_id,full_name,gender,shift,leaderboard_team')
           ]);
           allActsRaw = fetched[0]; cacheSet('ranking_acts_v2', allActsRaw);
@@ -2947,20 +2948,49 @@ async function load(isBackgroundRefresh) {
     (function renderChallenges(){
       var chCard=document.getElementById('challenges-card');
       if(!chCard)return;
-      if(!CHALLENGES_LB.length){
+
+      // Map standard challenges
+      var combined = CHALLENGES_LB.map(function(ch) {
+        return {
+          id: ch.id,
+          name: ch.name,
+          start_date: ch.start_date,
+          end_date: ch.end_date,
+          bonus_points: parseFloat(ch.bonus_points) || 0,
+          is_manual: false
+        };
+      });
+
+      // Scan participant's activities for manual bonuses
+      myActs.forEach(function(a) {
+        var mb = parseFloat(a.manual_bonus) || 0;
+        if (mb > 0) {
+          var date = (a.activity_date || '').split('T')[0];
+          combined.push({
+            id: 'manual_' + a.strava_activity_id,
+            name: a.description || 'Manual bonus',
+            start_date: date,
+            end_date: date,
+            bonus_points: mb,
+            is_manual: true
+          });
+        }
+      });
+
+      if(!combined.length){
         chCard.innerHTML='<p style="font-size:12px;color:var(--muted);padding:14px">No challenges configured.</p>';
         return;
       }
       chCard.innerHTML='';
-      var sortedCh=CHALLENGES_LB.slice().sort(function(a,b){return (b.start_date||'').localeCompare(a.start_date||'');});
+      var sortedCh = combined.sort(function(a,b){return (b.start_date||'').localeCompare(a.start_date||'');});
       sortedCh.slice(0,8).forEach(function(ch,ci2){
-        var key='ch_'+(ch.id||ci2);
+        var key = ch.is_manual ? ch.id : 'ch_'+(ch.id||ci2);
         var ep=fullPts.earnedPts||{};
         var ec=fullPts.earnedChallenges||{};
-        var earned=!!ec[key];
+        var earned = ch.is_manual ? true : !!ec[key];
         if(!earned){var allDB=fullPts.dayBreakdown||{};for(var day in allDB){if(allDB[day].challenges&&allDB[day].challenges.some(function(x){return x.name===ch.name;})){earned=true;break;}}}
         if(!earned){var ab=fullPts.actBreakdown||{};for(var actId in ab){if(ab[actId].challenges&&ab[actId].challenges.some(function(x){return x.name===ch.name;})){earned=true;break;}}}
-        var displayPts=earned&&ep[key]?ep[key]:Number(ch.bonus_points)||0;
+        var displayPts = ch.is_manual ? ch.bonus_points : (earned&&ep[key]?ep[key]:Number(ch.bonus_points)||0);
         var today2=new Date().toISOString().split('T')[0];
         var missed=!earned&&ch.end_date&&ch.end_date<today2;
         var statusCls=earned?'won':missed?'missed':'avail';
@@ -4152,7 +4182,7 @@ async function lbBoot(){
     showSkeletons();
     var [regAll,actsAll]=await Promise.all([
       fetchAll(SUPABASE_URL+'/rest/v1/registration?select=strava_athlete_id,full_name,gender,shift,leaderboard_team'),
-      fetchAll(SUPABASE_URL+'/rest/v1/activities?is_deleted=is.false&select=strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,elevation_gain')
+      fetchAll(SUPABASE_URL+'/rest/v1/activities?is_deleted=is.false&select=strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,elevation_gain,description')
     ]);
     LB_REG=regAll; LB_ACTS=actsAll;
     // LB_ME already set from Phase 1 reg; CONFIG_LB already set from Phase 1 config
