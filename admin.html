@@ -373,6 +373,8 @@
     .badge-flag { background: #FEF2F2; color: #DC2626; }
     .badge-ok   { background: #ECFDF5; color: #059669; }
     .badge-info { background: #EFF6FF; color: #3B82F6; }
+    .badge-warning { background: #FFFBEB; color: #D97706; }
+
 
     /* ─── Recent Activities Card ─── */
     .card {
@@ -1178,7 +1180,7 @@ async function checkAllSystemsHealth() {
 
   const nowStr = new Date().toLocaleString('en-IN');
 
-  function updateUI(service, ok, latency, reason) {
+  function updateUI(service, ok, latency, reason, customStatus) {
     const badge = document.getElementById(`health-${service}-badge`);
     const checked = document.getElementById(`health-${service}-checked`);
     const latencyEl = document.getElementById(`health-${service}-latency`);
@@ -1210,20 +1212,41 @@ async function checkAllSystemsHealth() {
 
     if (ok) {
       if (badge) {
-        badge.textContent = 'ONLINE';
-        badge.className = 'health-status-badge badge-ok';
+        if (customStatus) {
+          badge.textContent = customStatus.text;
+          badge.className = 'health-status-badge ' + (customStatus.className || 'badge-ok');
+        } else {
+          badge.textContent = 'ONLINE';
+          badge.className = 'health-status-badge badge-ok';
+        }
       }
       if (latencyEl) latencyEl.textContent = latency !== null ? `${latency}ms` : '—';
       
       const lastDown = localStorage.getItem(`health_${service}_last_down`);
       if (downEl) downEl.textContent = lastDown || 'None';
       
-      const lastReason = localStorage.getItem(`health_${service}_down_reason`);
-      if (lastReason && reasonEl && reasonBox) {
-        reasonEl.textContent = lastReason;
-        reasonBox.style.display = 'flex';
-      } else if (reasonBox) {
-        reasonBox.style.display = 'none';
+      if (customStatus && reason) {
+        if (reasonEl && reasonBox) {
+          reasonEl.textContent = reason;
+          reasonEl.style.color = '#D97706';
+          const labelSpan = reasonBox.querySelector('span');
+          if (labelSpan) labelSpan.textContent = 'Status Note:';
+          reasonBox.style.display = 'flex';
+        }
+      } else {
+        if (reasonEl) reasonEl.style.color = '#DC2626';
+        if (reasonBox) {
+          const labelSpan = reasonBox.querySelector('span');
+          if (labelSpan) labelSpan.textContent = 'Outage Reason:';
+        }
+        
+        const lastReason = localStorage.getItem(`health_${service}_down_reason`);
+        if (lastReason && reasonEl && reasonBox) {
+          reasonEl.textContent = lastReason;
+          reasonBox.style.display = 'flex';
+        } else if (reasonBox) {
+          reasonBox.style.display = 'none';
+        }
       }
     } else {
       if (badge) {
@@ -1236,8 +1259,15 @@ async function checkAllSystemsHealth() {
       localStorage.setItem(`health_${service}_down_reason`, reason || 'Unknown Error');
       
       if (downEl) downEl.textContent = nowStr;
-      if (reasonEl) reasonEl.textContent = reason || 'Unknown Error';
-      if (reasonBox) reasonBox.style.display = 'flex';
+      if (reasonEl) {
+        reasonEl.textContent = reason || 'Unknown Error';
+        reasonEl.style.color = '#DC2626';
+      }
+      if (reasonBox) {
+        const labelSpan = reasonBox.querySelector('span');
+        if (labelSpan) labelSpan.textContent = 'Outage Reason:';
+        reasonBox.style.display = 'flex';
+      }
     }
   }
 
@@ -1260,6 +1290,7 @@ async function checkAllSystemsHealth() {
   // 2. Check Supabase DB
   const startSupabase = performance.now();
   let supabaseOk = false, supabaseReason = '', latencySupabase = null;
+  let supabaseCustomStatus = null;
   try {
     const res = await fetch(SUPABASE_URL + '/rest/v1/registration?limit=1', { headers: HDR });
     latencySupabase = Math.round(performance.now() - startSupabase);
@@ -1269,9 +1300,26 @@ async function checkAllSystemsHealth() {
       supabaseReason = `HTTP ${res.status}: ${res.statusText}`;
     }
   } catch (err) {
-    supabaseReason = err.message || 'Network Error';
+    // Direct check failed, fallback to backend proxy check
+    try {
+      const fallbackRes = await fetch(_BACKEND_URL + '/health');
+      if (fallbackRes.ok) {
+        const fallbackData = await fallbackRes.json();
+        if (fallbackData.success && fallbackData.database === 'online') {
+          supabaseOk = true;
+          supabaseReason = 'CORS/Adblocker blocked direct fetch (bypassed via Server)';
+          supabaseCustomStatus = { text: 'ONLINE (VIA SERVER)', className: 'badge-warning' };
+        } else {
+          supabaseReason = fallbackData.error || 'Database reported offline by backend';
+        }
+      } else {
+        supabaseReason = `Direct check failed (${err.message}) and Backend fallback returned status ${fallbackRes.status}`;
+      }
+    } catch (fallbackErr) {
+      supabaseReason = `Direct check failed (${err.message}) and Backend fallback failed (${fallbackErr.message})`;
+    }
   }
-  updateUI('supabase', supabaseOk, latencySupabase, supabaseReason);
+  updateUI('supabase', supabaseOk, latencySupabase, supabaseReason, supabaseCustomStatus);
 
   // 3. Check GitHub API
   const startGithub = performance.now();
