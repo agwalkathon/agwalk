@@ -203,30 +203,15 @@ tr:hover td{background:#FAFAFA}
       </div>
 
       <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;margin-bottom:16px;">
-        <!-- Overall Quota 15m -->
-        <div style="background:rgba(0,0,0,0.015);border:1px solid var(--border);border-radius:8px;padding:12px;">
-          <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Overall Rate Limit (15-Min)</div>
-          <div style="font-size:13px;font-weight:500;color:var(--text-secondary);" id="limit-overall-15m-desc">Last 15 Minutes: -- Remaining (Limit 600 Requests)</div>
-          <div style="height:4px;background:rgba(0,0,0,0.06);border-radius:2px;margin-top:8px;overflow:hidden;">
-            <div id="bar-overall-15m" style="height:100%;width:0%;background:#fc5200;transition:width 0.3s;"></div>
-          </div>
-        </div>
-
-        <!-- Overall Quota 24h -->
-        <div style="background:rgba(0,0,0,0.015);border:1px solid var(--border);border-radius:8px;padding:12px;">
-          <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Overall Rate Limit (Daily)</div>
-          <div style="font-size:13px;font-weight:500;color:var(--text-secondary);" id="limit-overall-24h-desc">Per Day: -- Remaining (Limit 6,000 requests)</div>
-          <div style="height:4px;background:rgba(0,0,0,0.06);border-radius:2px;margin-top:8px;overflow:hidden;">
-            <div id="bar-overall-24h" style="height:100%;width:0%;background:#fc5200;transition:width 0.3s;"></div>
-          </div>
-        </div>
-
         <!-- Read Quota 15m -->
         <div style="background:rgba(0,0,0,0.015);border:1px solid var(--border);border-radius:8px;padding:12px;">
           <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Read Rate Limit (15-Min)</div>
           <div style="font-size:13px;font-weight:500;color:var(--text-secondary);" id="limit-read-15m-desc">Last 15 Minutes: -- Remaining (Limit 300 Requests)</div>
-          <div style="height:4px;background:rgba(0,0,0,0.06);border-radius:2px;margin-top:8px;overflow:hidden;">
-            <div id="bar-read-15m" style="height:100%;width:0%;background:#3b82f6;transition:width 0.3s;"></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+            <span id="pct-val-read-15m" style="font-size:12px;font-weight:700;color:var(--text-primary);min-width:38px;text-align:right;">0%</span>
+            <div style="flex:1;height:6px;background:rgba(0,0,0,0.06);border-radius:3px;overflow:hidden;">
+              <div id="bar-read-15m" style="height:100%;width:0%;background:#3b82f6;transition:width 0.3s;"></div>
+            </div>
           </div>
         </div>
 
@@ -234,8 +219,35 @@ tr:hover td{background:#FAFAFA}
         <div style="background:rgba(0,0,0,0.015);border:1px solid var(--border);border-radius:8px;padding:12px;">
           <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Read Rate Limit (Daily)</div>
           <div style="font-size:13px;font-weight:500;color:var(--text-secondary);" id="limit-read-24h-desc">Per Day: -- Remaining (Limit 3,000 requests)</div>
-          <div style="height:4px;background:rgba(0,0,0,0.06);border-radius:2px;margin-top:8px;overflow:hidden;">
-            <div id="bar-read-24h" style="height:100%;width:0%;background:#3b82f6;transition:width 0.3s;"></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+            <span id="pct-val-read-24h" style="font-size:12px;font-weight:700;color:var(--text-primary);min-width:38px;text-align:right;">0%</span>
+            <div style="flex:1;height:6px;background:rgba(0,0,0,0.06);border-radius:3px;overflow:hidden;">
+              <div id="bar-read-24h" style="height:100%;width:0%;background:#3b82f6;transition:width 0.3s;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Overall Quota 15m -->
+        <div style="background:rgba(0,0,0,0.015);border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Overall Rate Limit (15-Min)</div>
+          <div style="font-size:13px;font-weight:500;color:var(--text-secondary);" id="limit-overall-15m-desc">Last 15 Minutes: -- Remaining (Limit 600 Requests)</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+            <span id="pct-val-overall-15m" style="font-size:12px;font-weight:700;color:var(--text-primary);min-width:38px;text-align:right;">0%</span>
+            <div style="flex:1;height:6px;background:rgba(0,0,0,0.06);border-radius:3px;overflow:hidden;">
+              <div id="bar-overall-15m" style="height:100%;width:0%;background:#fc5200;transition:width 0.3s;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Overall Quota 24h -->
+        <div style="background:rgba(0,0,0,0.015);border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Overall Rate Limit (Daily)</div>
+          <div style="font-size:13px;font-weight:500;color:var(--text-secondary);" id="limit-overall-24h-desc">Per Day: -- Remaining (Limit 6,000 requests)</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+            <span id="pct-val-overall-24h" style="font-size:12px;font-weight:700;color:var(--text-primary);min-width:38px;text-align:right;">0%</span>
+            <div style="flex:1;height:6px;background:rgba(0,0,0,0.06);border-radius:3px;overflow:hidden;">
+              <div id="bar-overall-24h" style="height:100%;width:0%;background:#fc5200;transition:width 0.3s;"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -500,6 +512,11 @@ async function updateRateLimitDashboard() {
       document.getElementById('bar-overall-24h').style.width = `${pctOverall24}%`;
       document.getElementById('bar-read-15m').style.width = `${pctRead15}%`;
       document.getElementById('bar-read-24h').style.width = `${pctRead24}%`;
+
+      document.getElementById('pct-val-overall-15m').textContent = `${Math.round(pctOverall15)}%`;
+      document.getElementById('pct-val-overall-24h').textContent = `${Math.round(pctOverall24)}%`;
+      document.getElementById('pct-val-read-15m').textContent = `${Math.round(pctRead15)}%`;
+      document.getElementById('pct-val-read-24h').textContent = `${Math.round(pctRead24)}%`;
 
       // Queue Status
       const qStatus = document.getElementById('queue-status');
