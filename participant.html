@@ -837,7 +837,111 @@
   #ptr-indicator.ptr-ready .ptr-arrow { transform: rotate(180deg); }
   @keyframes ptr-spin { to { transform: rotate(360deg); } }
 
-  
+  /* ── Updates / Feed Tab ── */
+  .feed-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .feed-card:active {
+    transform: scale(0.985);
+  }
+  .feed-card.type-milestone {
+    border-left: 3px solid var(--gold);
+    background: linear-gradient(135deg, rgba(255,208,0,0.03) 0%, var(--surface) 100%);
+  }
+  .feed-card.type-achievement {
+    border-left: 3px solid var(--brand);
+    background: linear-gradient(135deg, rgba(232,98,42,0.03) 0%, var(--surface) 100%);
+  }
+  .feed-card.type-broadcast {
+    border-left: 3px solid var(--purple);
+    background: linear-gradient(135deg, rgba(167,139,250,0.03) 0%, var(--surface) 100%);
+  }
+  .feed-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .feed-card-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .feed-card-meta {
+    flex: 1;
+    min-width: 0;
+  }
+  .feed-card-title {
+    font-size: 14.5px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 0.3px;
+  }
+  .feed-card-time {
+    font-size: 10.5px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .feed-card-body {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 14px;
+    word-wrap: break-word;
+  }
+  .feed-card-body strong {
+    color: #fff;
+    font-weight: 700;
+  }
+  .feed-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    padding-top: 12px;
+  }
+  .feed-react-btn {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    padding: 6px 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    user-select: none;
+  }
+  .feed-react-btn:active {
+    transform: scale(0.9);
+  }
+  .feed-react-btn.active {
+    background: var(--brand-dim);
+    border-color: rgba(232,98,42,0.3);
+    color: var(--brand);
+  }
+  .feed-react-btn .emoji {
+    font-size: 14px;
+  }
+  .feed-react-btn .count {
+    font-variant-numeric: tabular-nums;
+  }
 </style>
 </head>
 <body>
@@ -1251,6 +1355,17 @@ document.addEventListener('click', function(e) {
   </div>
 </div>
 
+<!-- Updates tab -->
+<div class="content" id="tab-feed" style="display:none;">
+<div class="max-w">
+  <div class="sec">Updates & Achievements</div>
+  <div id="feed-list">
+    <div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div><div class="skeleton skel-line short"></div></div>
+    <div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div><div class="skeleton skel-line short"></div></div>
+  </div>
+</div>
+</div>
+
 <!-- You tab -->
 <div class="content" id="tab-you">
 <div class="max-w">
@@ -1442,6 +1557,10 @@ document.addEventListener('click', function(e) {
   <a class="bnav-item" id="bnav-leaderboard" href="#" onclick="showTab('leaderboard');return false;">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
     Leaderboard
+  </a>
+  <a class="bnav-item" id="bnav-feed" href="#" onclick="showTab('feed');return false;" style="display:none;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    Updates
   </a>
   <a class="bnav-item" id="bnav-you" href="#" onclick="showTab('you');return false;">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
@@ -2177,8 +2296,6 @@ async function load(isBackgroundRefresh) {
           doReload();
         }).catch(function(e){console.warn('[Cache] Background refresh failed:', e);});
       }, 200);
-    }
-
     var regJsonData, myActs, cfgRows, chRows, sdRows, medalData;
     if (_allFromCache) {
       console.log('[Cache] Serving Phase 1 from cache ✓');
@@ -2206,7 +2323,8 @@ async function load(isBackgroundRefresh) {
       medalData   = await medalRes.json(); cacheSet('medals', medalData);
     }
     var allActs=[],allRegRes=[];
-    if(Array.isArray(cfgRows))cfgRows.forEach(function(row){if(row.config_key==='bonus_points')CONFIG_LB.bonus=row.config_value.map(function(b){return{km:Number(b.km),points:Number(b.points||b.pts||0)};});if(row.config_key==='base_points')CONFIG_LB.basePer_km=parseFloat(row.config_value.per_km)||1;if(row.config_key==='base_points_per_km')CONFIG_LB.basePer_km=parseFloat(row.config_value)||1;});
+    if(Array.isArray(cfgRows))cfgRows.forEach(function(row){if(row.config_key==='bonus_points')CONFIG_LB.bonus=row.config_value.map(function(b){return{km:Number(b.km),points:Number(b.points||b.pts||0)};});if(row.config_key==='base_points')CONFIG_LB.basePer_km=parseFloat(row.config_value.per_km||1);if(row.config_key==='base_points_per_km')CONFIG_LB.basePer_km=parseFloat(row.config_value)||1;if(row.config_key==='announcements_enabled'){CONFIG_LB.announcements_enabled=(row.config_value===true||row.config_value==='true');}});
+    initializeFeedTab(CONFIG_LB.announcements_enabled);
     CHALLENGES_LB=Array.isArray(chRows)?chRows:[];
     SPECIAL_DAYS_LB=Array.isArray(sdRows)?sdRows.map(function(x){return x.special_date;}):[];
     var regs=regJsonData; var reg=Array.isArray(regs)&&regs.length?regs[0]:{};
@@ -3103,6 +3221,156 @@ async function load(isBackgroundRefresh) {
   }
 }
 
+function initializeFeedTab(enabled) {
+  var track = document.getElementById('tab-track');
+  var bnavFeed = document.getElementById('bnav-feed');
+  var tabFeed = document.getElementById('tab-feed');
+  
+  if (enabled) {
+    if (TAB_ORDER.indexOf('feed') === -1) {
+      TAB_ORDER.splice(3, 0, 'feed');
+    }
+    if (bnavFeed) bnavFeed.style.display = '';
+    if (tabFeed) tabFeed.style.display = 'block';
+  } else {
+    var idx = TAB_ORDER.indexOf('feed');
+    if (idx !== -1) {
+      TAB_ORDER.splice(idx, 1);
+    }
+    if (bnavFeed) bnavFeed.style.display = 'none';
+    if (tabFeed) tabFeed.style.display = 'none';
+  }
+  
+  // Adjust track and content widths
+  if (track) {
+    track.style.width = (TAB_ORDER.length * 100) + '%';
+    var contents = track.querySelectorAll('.content');
+    var contentWidth = (100 / TAB_ORDER.length) + '%';
+    contents.forEach(function(el) {
+      el.style.width = contentWidth;
+    });
+  }
+}
+
+var _feedLoaded = false;
+var _feedData = [];
+
+async function loadFeed() {
+  var list = document.getElementById('feed-list');
+  if (!list) return;
+
+  list.innerHTML = `
+    <div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div><div class="skeleton skel-line short"></div></div>
+    <div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div><div class="skeleton skel-line short"></div></div>
+  `;
+
+  try {
+    var athleteId = currentSession ? currentSession.athleteId : '';
+    var res = await fetch(BACKEND + '/announcements?athlete_id=' + encodeURIComponent(athleteId));
+    var d = await res.json();
+    if (d.success && Array.isArray(d.feed)) {
+      _feedData = d.feed;
+      renderFeed();
+    } else {
+      list.innerHTML = '<div class="empty-state"><div class="icon">📢</div><p>No updates yet. Check back later!</p></div>';
+    }
+  } catch(e) {
+    console.warn('Failed to load feed:', e);
+    list.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>Could not load updates.</p></div>';
+  }
+}
+
+function renderFeed() {
+  var list = document.getElementById('feed-list');
+  if (!list) return;
+  if (!_feedData.length) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">📢</div><p>No updates yet. Check back later!</p></div>';
+    return;
+  }
+
+  list.innerHTML = _feedData.map(function(item) {
+    var timeStr = timeAgo(item.created_at);
+    var emojis = [
+      { type: 'like', char: '👍' },
+      { type: 'fire', char: '🔥' },
+      { type: 'clap', char: '👏' },
+      { type: 'power', char: '💪' }
+    ];
+    
+    var reactionButtonsHtml = emojis.map(function(emo) {
+      var count = item.reaction_counts[emo.type] || 0;
+      var active = item.my_reactions.indexOf(emo.type) > -1;
+      var activeClass = active ? 'active' : '';
+      return `
+        <button class="feed-react-btn ${activeClass}" onclick="reactToAnnouncement('${item.id}', '${emo.type}')">
+          <span class="emoji">${emo.char}</span>
+          <span class="count">${count}</span>
+        </button>
+      `;
+    }).join('');
+
+    var iconHtml = '📢';
+    if (item.type === 'milestone') iconHtml = '🏅';
+    else if (item.type === 'achievement') iconHtml = '🏆';
+    else if (item.type === 'birthday') iconHtml = '🎂';
+
+    return `
+      <div class="feed-card type-${item.type}">
+        <div class="feed-card-header">
+          <div class="feed-card-icon">${iconHtml}</div>
+          <div class="feed-card-meta">
+            <div class="feed-card-title">${esc(item.title)}</div>
+            <div class="feed-card-time">${timeStr}</div>
+          </div>
+        </div>
+        <div class="feed-card-body">
+          ${item.body}
+        </div>
+        <div class="feed-card-actions">
+          ${reactionButtonsHtml}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function reactToAnnouncement(announcementId, reactionType) {
+  var athleteId = currentSession ? currentSession.athleteId : '';
+  if (!athleteId) return;
+
+  var item = _feedData.find(function(x) { return x.id === announcementId; });
+  if (item) {
+    var idx = item.my_reactions.indexOf(reactionType);
+    if (idx > -1) {
+      item.my_reactions.splice(idx, 1);
+      if (item.reaction_counts[reactionType] > 0) item.reaction_counts[reactionType]--;
+    } else {
+      item.my_reactions.push(reactionType);
+      item.reaction_counts[reactionType] = (item.reaction_counts[reactionType] || 0) + 1;
+    }
+    renderFeed();
+  }
+
+  try {
+    var res = await fetch(BACKEND + '/announcements/react', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        announcement_id: announcementId,
+        athlete_id: athleteId,
+        reaction_type: reactionType
+      })
+    });
+    var d = await res.json();
+    if (!d.success) {
+      loadFeed();
+    }
+  } catch(e) {
+    console.warn('Failed to react:', e);
+    loadFeed();
+  }
+}
+
 function renderActivities(acts,dayBreakdown,actBreakdown,gender) {
   dayBreakdown=dayBreakdown||{}; actBreakdown=actBreakdown||{};
   var list=document.getElementById('act-list');
@@ -3198,7 +3466,8 @@ function showTab(tab){
 
   var track = document.getElementById('tab-track');
   if (track) {
-    track.style.transform = 'translate3d(' + (-idx * 25) + '%, 0, 0)';
+    var stepPct = 100 / (TAB_ORDER.length || 4);
+    track.style.transform = 'translate3d(' + (-idx * stepPct) + '%, 0, 0)';
   }
 
   TAB_ORDER.forEach(function(t){
@@ -3214,6 +3483,7 @@ function showTab(tab){
   safeToggleClass('bnav-dashboard', 'active', tab==='dashboard');
   safeToggleClass('bnav-activities', 'active', tab==='activities');
   safeToggleClass('bnav-leaderboard', 'active', tab==='leaderboard');
+  safeToggleClass('bnav-feed', 'active', tab==='feed');
   safeToggleClass('bnav-you', 'active', tab==='you');
 
   // rings + metrics now inside dashboard tab — no separate show/hide needed
@@ -3222,6 +3492,11 @@ function showTab(tab){
       _lbLoaded=true;
       if(_lbReady){lbRender();}  // data already loaded — instant render
       else{lbBoot();}             // fallback: Phase 2 not done yet, fetch directly
+    }
+
+    if(tab==='feed'&&!_feedLoaded){
+      _feedLoaded=true;
+      loadFeed();
     }
 
     if (tab === 'dashboard') {
