@@ -2296,6 +2296,7 @@ async function load(isBackgroundRefresh) {
           doReload();
         }).catch(function(e){console.warn('[Cache] Background refresh failed:', e);});
       }, 200);
+    }
     var regJsonData, myActs, cfgRows, chRows, sdRows, medalData;
     if (_allFromCache) {
       console.log('[Cache] Serving Phase 1 from cache ✓');
