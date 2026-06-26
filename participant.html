@@ -3273,6 +3273,27 @@ function updateInAppNotificationBanner() {
   var banner = document.getElementById('inapp-notification-banner');
   if (!banner) return;
 
+  // ── Priority 0: Strava Connection Alert (High Priority) ──
+  if (window.isStravaConnected === false) {
+    var key = 'strava_not_connected_alert';
+    if (!_bannerDismissed(key)) {
+      var html = '<div class="banner-card type-warning" style="cursor: pointer; border-left: 4px solid #FC6100;" onclick="window.handleStravaConnect(event)">' +
+        '<button class="banner-dismiss-btn" onclick="dismissInAppBanner(event)" title="Dismiss">✕</button>' +
+        '<div class="banner-meta">' +
+          '<span style="font-size:18px;">🧡</span>' +
+          '<span class="banner-type-pill warning" style="background: rgba(252,97,0,0.15); color: #FC6100; border: 1px solid rgba(252,97,0,0.3); font-weight:700;">Action Required</span>' +
+        '</div>' +
+        '<div class="banner-title" style="margin-top:8px; font-weight:800; color:#fff;">Connect your Strava account</div>' +
+        '<div class="banner-body" style="font-size:12px; color:rgba(255,255,255,0.75); margin-top:4px; line-height:1.4;">Your account is not connected yet. Click here to link Strava and sync your walks/runs automatically.</div>' +
+        '<div style="margin-top:12px; display:inline-flex; align-items:center; gap:8px; background:#FC6100; color:#fff; font-size:11.5px; font-weight:700; padding:8px 14px; border-radius:6px; box-shadow:0 2px 10px rgba(252,97,0,0.25);">Connect Now</div>' +
+      '</div>';
+      banner.setAttribute('data-banner-key', key);
+      banner.innerHTML = html;
+      banner.style.display = 'block';
+      return;
+    }
+  }
+
   // ── Priority 1: Latest unread backend notification ──
   var unread = _notificationsList.filter(function(n) { return !n.is_read; });
   for (var i = 0; i < unread.length; i++) {
@@ -3388,7 +3409,21 @@ function renderNotifications() {
   var emptyEl = document.getElementById('notif-empty');
   if (!listEl || !emptyEl) return;
 
-  var unreadCount = _notificationsList.filter(function(n) { return !n.is_read; }).length;
+  // Clone list to append virtual notifications if needed
+  var displayList = [].concat(_notificationsList);
+
+  if (window.isStravaConnected === false) {
+    displayList.unshift({
+      id: 'virtual-strava-connect',
+      title: '⚠️ Connect your Strava account',
+      body: 'Link your Strava account now to start syncing your walks/runs automatically.',
+      created_at: new Date().toISOString(),
+      is_read: false,
+      is_virtual: true
+    });
+  }
+
+  var unreadCount = displayList.filter(function(n) { return !n.is_read; }).length;
   
   if (badge) {
     if (unreadCount > 0) {
@@ -3398,22 +3433,30 @@ function renderNotifications() {
     }
   }
 
-  if (_notificationsList.length === 0) {
+  if (displayList.length === 0) {
     listEl.innerHTML = '';
     listEl.style.display = 'none';
     emptyEl.style.display = 'block';
   } else {
     emptyEl.style.display = 'none';
     listEl.style.display = 'block';
-    listEl.innerHTML = _notificationsList.map(function(n) {
-      var emoji = getNotifEmoji(n.title, n.body);
-      var timeStr = timeAgo(n.created_at);
-      return '<div style="display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer;" onclick="if(\'' + n.url + '\' && \'' + n.url + '\' !== \'null\' && \'' + n.url + '\' !== \'undefined\') { window.location.href=\'' + n.url + '\'; }">' +
+    listEl.innerHTML = displayList.map(function(n) {
+      var emoji = n.is_virtual ? '🧡' : getNotifEmoji(n.title, n.body);
+      var timeStr = n.is_virtual ? 'Action Required' : timeAgo(n.created_at);
+      
+      var clickHandler = '';
+      if (n.is_virtual) {
+        clickHandler = 'window.handleStravaConnect(event);';
+      } else {
+        clickHandler = 'if(\'' + n.url + '\' && \'' + n.url + '\' !== \'null\' && \'' + n.url + '\' !== \'undefined\') { window.location.href=\'' + n.url + '\'; }';
+      }
+
+      return '<div style="display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer;" onclick="' + clickHandler + '">' +
         '<div style="background: rgba(252,97,0,0.12); color: var(--brand); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; margin-top: 1px;">' + emoji + '</div>' +
         '<div style="flex: 1; min-width: 0;">' +
           '<div style="font-size: 12.5px; font-weight: 600; color: #fff; line-height: 1.3; word-wrap: break-word;">' + esc(n.title) + '</div>' +
           '<div style="font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.3; word-wrap: break-word;">' + esc(n.body) + '</div>' +
-          '<div style="font-size: 9.5px; color: var(--label); margin-top: 4px;">' + timeStr + '</div>' +
+          '<div style="font-size: 9.5px; color: ' + (n.is_virtual ? '#FC6100' : 'var(--label)') + '; margin-top: 4px; font-weight: ' + (n.is_virtual ? '600' : 'normal') + ';">' + timeStr + '</div>' +
         '</div>' +
       '</div>';
     }).join('');
