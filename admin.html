@@ -558,6 +558,7 @@
     }
     .health-card {
       transition: all 0.2s ease;
+      cursor: pointer;
     }
     .health-card:hover {
       background: rgba(255,255,255,0.02) !important;
@@ -571,6 +572,71 @@
     }
     .spin {
       animation: spin 1s linear infinite;
+    }
+
+    /* Health Logs Modal Styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.show {
+      display: flex;
+    }
+    .modal {
+      background: var(--card-bg, #fff);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      border-radius: 12px;
+      padding: 24px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: var(--shadow-lg, 0 10px 25px -5px rgba(0,0,0,0.1));
+      margin: 20px;
+      position: relative;
+    }
+    .modal h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-top: 0;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .modal-close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 18px;
+    }
+    .log-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      border-bottom: 1px dashed var(--border);
+      padding: 8px 0;
+    }
+    .log-item:last-child {
+      border-bottom: none;
+    }
+    .log-status-ok {
+      color: #10B981;
+      font-weight: 600;
+      font-size: 11px;
+    }
+    .log-status-err {
+      color: #EF4444;
+      font-weight: 600;
+      font-size: 11px;
     }
   </style>
 </head>
@@ -682,7 +748,7 @@
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:16px;">
           
           <!-- Render Backend Card -->
-          <div class="health-card" style="border:1px solid var(--border);border-radius:10px;padding:15px;background:rgba(255,255,255,0.01);">
+          <div class="health-card" onclick="showServiceLogs('backend')" style="border:1px solid var(--border);border-radius:10px;padding:15px;background:rgba(255,255,255,0.01);">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
               <span style="font-weight:700;font-size:13px;color:var(--text-primary);display:flex;align-items:center;gap:6px;">
                 <i class="ti ti-cpu" style="color:var(--brand);font-size:16px;"></i> Backend (Render)
@@ -706,11 +772,17 @@
                 <span style="font-size:10px;text-transform:uppercase;font-weight:700;color:var(--text-muted);">Outage Reason:</span>
                 <span id="health-backend-reason" style="color:#DC2626;font-size:11px;word-break:break-all;">-</span>
               </div>
+              <!-- Wake Up Backend Button -->
+              <div id="backend-wakeup-container" style="margin-top:10px;display:none;">
+                <button id="btn-wakeup-backend" onclick="wakeUpBackend(event)" style="width:100%;font-size:11px;font-weight:600;padding:6px 8px;border-radius:6px;background:rgba(232,98,42,0.1);color:var(--brand);border:1px solid rgba(232,98,42,0.2);cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:6px;font-family:var(--font);">
+                  <i class="ti ti-coffee"></i> Wake Up Backend
+                </button>
+              </div>
             </div>
           </div>
 
           <!-- Supabase DB Card -->
-          <div class="health-card" style="border:1px solid var(--border);border-radius:10px;padding:15px;background:rgba(255,255,255,0.01);">
+          <div class="health-card" onclick="showServiceLogs('supabase')" style="border:1px solid var(--border);border-radius:10px;padding:15px;background:rgba(255,255,255,0.01);">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
               <span style="font-weight:700;font-size:13px;color:var(--text-primary);display:flex;align-items:center;gap:6px;">
                 <i class="ti ti-database" style="color:#059669;font-size:16px;"></i> Supabase DB
@@ -738,7 +810,7 @@
           </div>
 
           <!-- GitHub API Card -->
-          <div class="health-card" style="border:1px solid var(--border);border-radius:10px;padding:15px;background:rgba(255,255,255,0.01);">
+          <div class="health-card" onclick="showServiceLogs('github')" style="border:1px solid var(--border);border-radius:10px;padding:15px;background:rgba(255,255,255,0.01);">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
               <span style="font-weight:700;font-size:13px;color:var(--text-primary);display:flex;align-items:center;gap:6px;">
                 <i class="ti ti-brand-github" style="color:#7C3AED;font-size:16px;"></i> GitHub API
@@ -766,7 +838,7 @@
           </div>
 
           <!-- Strava Gateway Card -->
-          <div class="health-card" style="border:1px solid var(--border);border-radius:10px;padding:15px;background:rgba(255,255,255,0.01);">
+          <div class="health-card" onclick="showServiceLogs('strava')" style="border:1px solid var(--border);border-radius:10px;padding:15px;background:rgba(255,255,255,0.01);">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
               <span style="font-weight:700;font-size:13px;color:var(--text-primary);display:flex;align-items:center;gap:6px;">
                 <i class="ti ti-brand-strava" style="color:#FC4C02;font-size:16px;"></i> Strava Sync
@@ -1046,6 +1118,13 @@ load();
 checkAllSystemsHealth();
 setInterval(checkAllSystemsHealth, 30000);
 
+const healthHistory = {
+  backend: [],
+  supabase: [],
+  github: [],
+  strava: []
+};
+
 async function checkAllSystemsHealth() {
   const refreshBtn = document.getElementById('btn-refresh-health');
   if (refreshBtn) {
@@ -1064,6 +1143,26 @@ async function checkAllSystemsHealth() {
     const reasonBox = document.getElementById(`health-${service}-reason-box`);
 
     if (checked) checked.textContent = nowStr;
+
+    // Log history
+    if (!healthHistory[service]) healthHistory[service] = [];
+    healthHistory[service].push({
+      timestamp: new Date().toLocaleTimeString('en-IN'),
+      ok: ok,
+      latency: latency,
+      reason: reason
+    });
+    if (healthHistory[service].length > 20) {
+      healthHistory[service].shift();
+    }
+
+    // Toggle Backend wake-up button visibility
+    if (service === 'backend') {
+      const wakeupContainer = document.getElementById('backend-wakeup-container');
+      if (wakeupContainer) {
+        wakeupContainer.style.display = ok ? 'none' : 'block';
+      }
+    }
 
     if (ok) {
       if (badge) {
@@ -1203,6 +1302,14 @@ async function checkAllSystemsHealth() {
               reasonBox.style.display = 'none';
             }
           }
+          // Log Strava history
+          healthHistory.strava.push({
+            timestamp: new Date().toLocaleTimeString('en-IN'),
+            ok: !data.killSwitchActive && isWorking,
+            latency: null,
+            reason: (data.status && data.status.lastError) ? data.status.lastError : (data.killSwitchActive ? 'Suspended' : null)
+          });
+          if (healthHistory.strava.length > 20) healthHistory.strava.shift();
         } else {
           stravaReason = data.error || 'Failed to fetch status';
           updateUI('strava', false, null, stravaReason);
@@ -1221,6 +1328,108 @@ async function checkAllSystemsHealth() {
     refreshBtn.disabled = false;
     refreshBtn.innerHTML = '<i class="ti ti-refresh"></i> Refresh Status';
   }
+}
+
+let wakeupInterval = null;
+async function wakeUpBackend(e) {
+  if (e) e.stopPropagation();
+  const btn = document.getElementById('btn-wakeup-backend');
+  if (!btn || btn.disabled) return;
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader spin"></i> Waking up... (approx. 50s)';
+
+  // Trigger wakeup request in the background
+  fetch(_BACKEND_URL + '/').catch(() => {});
+
+  if (wakeupInterval) clearInterval(wakeupInterval);
+  let attempts = 0;
+  wakeupInterval = setInterval(async () => {
+    attempts++;
+    try {
+      const res = await fetch(_BACKEND_URL + '/');
+      if (res.ok) {
+        clearInterval(wakeupInterval);
+        wakeupInterval = null;
+        btn.innerHTML = '<i class="ti ti-check"></i> Backend Awake!';
+        btn.style.background = 'rgba(16, 185, 129, 0.1)';
+        btn.style.color = '#10B981';
+        btn.style.border = '1px solid rgba(16, 185, 129, 0.2)';
+        
+        // Refresh status immediately
+        checkAllSystemsHealth();
+        
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="ti ti-coffee"></i> Wake Up Backend';
+          btn.style.background = 'rgba(232,98,42,0.1)';
+          btn.style.color = 'var(--brand)';
+          btn.style.border = '1px solid rgba(232,98,42,0.2)';
+        }, 3000);
+        return;
+      }
+    } catch (err) {}
+
+    if (attempts >= 12) { // 60 seconds timeout
+      clearInterval(wakeupInterval);
+      wakeupInterval = null;
+      btn.disabled = false;
+      btn.innerHTML = '<i class="ti ti-alert-triangle"></i> Timeout - Retry?';
+      btn.style.background = 'rgba(239, 68, 68, 0.1)';
+      btn.style.color = '#EF4444';
+      btn.style.border = '1px solid rgba(239, 68, 68, 0.2)';
+    }
+  }, 5000);
+}
+
+function showServiceLogs(service) {
+  const serviceNames = {
+    backend: 'Backend (Render)',
+    supabase: 'Supabase DB',
+    github: 'GitHub API',
+    strava: 'Strava API Status'
+  };
+
+  const name = serviceNames[service] || service;
+  const titleSpan = document.getElementById('health-modal-service-name');
+  if (titleSpan) titleSpan.textContent = name;
+
+  const contentEl = document.getElementById('health-modal-content');
+  if (contentEl) {
+    contentEl.innerHTML = '';
+    const logs = healthHistory[service] || [];
+    if (logs.length === 0) {
+      contentEl.innerHTML = '<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:20px;">No logs recorded yet. Waiting for next health check...</div>';
+    } else {
+      [...logs].reverse().forEach(log => {
+        const statusText = log.ok ? 'ONLINE' : 'OFFLINE';
+        const statusClass = log.ok ? 'log-status-ok' : 'log-status-err';
+        const latencyText = log.latency !== null ? `${log.latency}ms` : '—';
+        
+        const item = document.createElement('div');
+        item.className = 'log-item';
+        item.innerHTML = `
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:500;margin-bottom:2px;">
+            <span style="color:var(--text-secondary);">${log.timestamp}</span>
+            <span class="${statusClass}">${statusText}</span>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);display:flex;justify-content:space-between;gap:8px;">
+            <span>Latency: ${latencyText}</span>
+            ${log.reason ? `<span style="color:#EF4444;text-align:right;max-width:70%;word-break:break-all;">Error: ${log.reason}</span>` : ''}
+          </div>
+        `;
+        contentEl.appendChild(item);
+      });
+    }
+  }
+
+  const modal = document.getElementById('health-logs-modal');
+  if (modal) modal.classList.add('show');
+}
+
+function closeHealthLogsModal() {
+  const modal = document.getElementById('health-logs-modal');
+  if (modal) modal.classList.remove('show');
 }
 
 // ── Realtime ──
@@ -1293,7 +1502,28 @@ async function checkAllSystemsHealth() {
 
   connect();
 })();
+
+// Close health modal if clicked outside
+document.getElementById('health-logs-modal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeHealthLogsModal();
+  }
+});
 </script>
+
+  <!-- Service Logs Modal -->
+  <div class="modal-overlay" id="health-logs-modal">
+    <div class="modal">
+      <button class="modal-close-btn" onclick="closeHealthLogsModal()">&times;</button>
+      <h3 id="health-modal-title">
+        <i class="ti ti-history" style="color:var(--brand);margin-right:4px;"></i> <span id="health-modal-service-name">Service</span> History Logs
+      </h3>
+      <div id="health-modal-content" style="max-height: 300px; overflow-y: auto; margin-top: 16px;">
+        <!-- Log items dynamically loaded -->
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
 
