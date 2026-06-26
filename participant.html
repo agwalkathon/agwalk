@@ -201,6 +201,87 @@
     .ring-need{font-size:12px;font-weight:500;color:var(--muted);margin-top:4px;text-align:center;line-height:1.3;}
     .ring-need.done{color:var(--green);}
 
+    /* ── In-App Notification Banner ── */
+    @keyframes bannerSlideIn {
+      from { opacity:0; transform:translateY(-12px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes bannerSlideOut {
+      from { opacity:1; transform:translateY(0); max-height:200px; }
+      to   { opacity:0; transform:translateY(-8px); max-height:0; padding:0; margin:0; }
+    }
+    #inapp-notification-banner {
+      display:none;
+      animation: bannerSlideIn 0.3s ease forwards;
+      margin-bottom:14px;
+    }
+    #inapp-notification-banner.hiding {
+      animation: bannerSlideOut 0.3s ease forwards;
+      overflow:hidden;
+    }
+    .banner-card {
+      border-radius:var(--radius-sm);
+      padding:13px 14px;
+      position:relative;
+      border-left:3px solid var(--brand);
+      background:linear-gradient(135deg,rgba(232,98,42,0.10) 0%,rgba(26,29,32,0.95) 60%);
+      border:1px solid rgba(232,98,42,0.22);
+      border-left:3px solid var(--brand);
+      backdrop-filter:blur(8px);
+      box-shadow:0 4px 20px rgba(0,0,0,0.35);
+    }
+    .banner-card.type-broadcast {
+      border-left-color:#7C3AED;
+      background:linear-gradient(135deg,rgba(124,58,237,0.12) 0%,rgba(26,29,32,0.95) 60%);
+      border-color:rgba(124,58,237,0.25); border-left-color:#7C3AED;
+    }
+    .banner-card.type-recovery {
+      border-left-color:#22C55E;
+      background:linear-gradient(135deg,rgba(34,197,94,0.10) 0%,rgba(26,29,32,0.95) 60%);
+      border-color:rgba(34,197,94,0.22); border-left-color:#22C55E;
+    }
+    .banner-card.type-insight {
+      border-left-color:#60A5FA;
+      background:linear-gradient(135deg,rgba(96,165,250,0.10) 0%,rgba(26,29,32,0.95) 60%);
+      border-color:rgba(96,165,250,0.22); border-left-color:#60A5FA;
+    }
+    .banner-dismiss-btn {
+      position:absolute; top:9px; right:9px;
+      background:rgba(255,255,255,0.08); border:none; cursor:pointer;
+      width:24px; height:24px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      color:rgba(255,255,255,0.55); font-size:14px; font-weight:700;
+      transition:background 0.15s, color 0.15s;
+      font-family:var(--font);
+      line-height:1; padding:0;
+    }
+    .banner-dismiss-btn:hover { background:rgba(255,255,255,0.18); color:#fff; }
+    .banner-meta { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+    .banner-type-pill {
+      font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:1px;
+      padding:2px 7px; border-radius:20px; border:1px solid currentColor; opacity:0.8;
+    }
+    .banner-type-pill.broadcast { color:#A78BFA; }
+    .banner-type-pill.recovery  { color:#22C55E; }
+    .banner-type-pill.insight   { color:#60A5FA; }
+    .banner-title {
+      font-size:13px; font-weight:800; color:#fff; line-height:1.3;
+      padding-right:28px;
+    }
+    .banner-body {
+      font-size:12px; color:rgba(255,255,255,0.68); margin-top:4px; line-height:1.5;
+    }
+    .banner-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+    .banner-chip {
+      display:flex; align-items:center; gap:5px;
+      background:rgba(255,255,255,0.07); border-radius:20px;
+      padding:5px 10px; font-size:11.5px; font-weight:600; color:#fff;
+      border:1px solid rgba(255,255,255,0.1);
+    }
+    .banner-time {
+      font-size:10px; color:rgba(255,255,255,0.35); margin-top:6px;
+    }
+
     /* ── Big metric trio ── */
     .metric-trio{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
     .metric-box{
@@ -909,7 +990,12 @@ document.addEventListener('click', function(e) {
     </div>
   </div>
 
-  <!-- Recovery Suggestion -->
+  <!-- ── In-App Notification Banner (after rings) ── -->
+  <div id="inapp-notification-banner">
+    <!-- dynamically filled by updateInAppNotificationBanner() -->
+  </div>
+
+  <!-- Recovery Suggestion (hidden — data now feeds banner) -->
   <div id="recovery-card-wrap" style="display:none;">
     <div class="sec">Recovery Tips</div>
     <div class="recovery-card">
@@ -2340,6 +2426,31 @@ async function load(isBackgroundRefresh) {
       }
     });
 
+    // Dynamic insight for banner
+    (function() {
+      var todayStr = new Date().toISOString().split('T')[0];
+      var iKey = 'insight_' + todayStr;
+      var emoji, title, body;
+      if (myPts >= goldThresh) {
+        emoji = '🥇'; title = 'Gold Medal Achieved!';
+        body = 'Outstanding! You\'ve crossed the Gold threshold with ' + myPts.toFixed(0) + ' pts. Keep it up!';
+      } else if (myPts >= silverThresh) {
+        var need = (goldThresh - myPts).toFixed(0);
+        emoji = '🥈'; title = 'Silver Medal — Gold is close!';
+        body = 'You need just ' + need + ' more pts to unlock Gold. Push a little harder!';
+      } else if (myPts >= bronzeThresh) {
+        var need = (silverThresh - myPts).toFixed(0);
+        emoji = '🥉'; title = 'Bronze Medal Achieved!';
+        body = 'Great start! ' + need + ' pts more gets you Silver. Keep walking!';
+      } else {
+        var need = (bronzeThresh - myPts).toFixed(0);
+        emoji = '🏃'; title = 'On your way to Bronze!';
+        body = 'Walk ' + need + ' more pts to earn your first medal. You can do it!';
+      }
+      _activeInsight = { key: iKey, emoji: emoji, title: title, body: body };
+      updateInAppNotificationBanner();
+    })();
+
     // ── Phase 2: ranking data in background (with cache) ────────────────────
     (async function loadRanking(){
       try{
@@ -2587,7 +2698,14 @@ async function load(isBackgroundRefresh) {
       chipsEl.innerHTML=chips.map(function(c){
         return '<div class="recovery-chip" title="'+c.c+'">'+c.e+' '+c.t+'</div>';
       }).join('');
-      wrap.style.display='block';
+      // Feed banner
+      _activeRecovery = {
+        key: 'recovery_' + lastDate,
+        title: 'Recovery Tips · ' + lastKm.toFixed(1) + ' km ' + whenLabel,
+        sub: intensity + ' — take care of your body today',
+        chips: chips
+      };
+      updateInAppNotificationBanner();
     })();
     // ─────────────────────────────────────────────────────────────────────────
 
@@ -3070,6 +3188,124 @@ function clearPWACache(){
 }
 
 var _notificationsList = [];
+var _activeRecovery = null;   // {key, title, sub, chips}
+var _activeInsight  = null;   // {key, title, body, emoji}
+
+/* ── In-App Notification Banner ─────────────────────────────────────────────
+ * Priority: 1) Unread backend notification  2) Recovery tip  3) Dynamic insight
+ * Each item is keyed to localStorage so a dismissed item stays hidden until
+ * it changes (notifications use their DB id, recovery/insight use a daily key).
+ */
+function _bannerDismissed(key) {
+  try { return localStorage.getItem('agwalk_banner_dismiss_' + key) === '1'; } catch(e) { return false; }
+}
+function _markBannerDismissed(key) {
+  try { localStorage.setItem('agwalk_banner_dismiss_' + key, '1'); } catch(e) {}
+}
+
+function dismissInAppBanner(e) {
+  if (e) e.stopPropagation();
+  var banner = document.getElementById('inapp-notification-banner');
+  if (!banner) return;
+  // Read which key is currently shown
+  var key = banner.getAttribute('data-banner-key') || '';
+  if (key) _markBannerDismissed(key);
+  // Slide out, then re-evaluate (might show the next item)
+  banner.classList.add('hiding');
+  setTimeout(function() {
+    banner.classList.remove('hiding');
+    banner.style.display = 'none';
+    banner.removeAttribute('data-banner-key');
+    updateInAppNotificationBanner();
+  }, 320);
+}
+
+function _buildBannerHtml(type, pillLabel, emoji, title, body, chips, key, timeStr) {
+  var chipsHtml = '';
+  if (chips && chips.length) {
+    chipsHtml = '<div class="banner-chips">' +
+      chips.map(function(c){
+        return '<div class="banner-chip" title="' + (c.c||'') + '">' + c.e + ' ' + c.t + '</div>';
+      }).join('') + '</div>';
+  }
+  var timeHtml = timeStr ? '<div class="banner-time">' + timeStr + '</div>' : '';
+  return '<div class="banner-card type-' + type + '">' +
+    '<button class="banner-dismiss-btn" onclick="dismissInAppBanner(event)" title="Dismiss">✕</button>' +
+    '<div class="banner-meta">' +
+      '<span style="font-size:18px;">' + emoji + '</span>' +
+      '<span class="banner-type-pill ' + type + '">' + pillLabel + '</span>' +
+    '</div>' +
+    '<div class="banner-title">' + title + '</div>' +
+    '<div class="banner-body">' + body + '</div>' +
+    chipsHtml +
+    timeHtml +
+  '</div>';
+}
+
+function updateInAppNotificationBanner() {
+  var banner = document.getElementById('inapp-notification-banner');
+  if (!banner) return;
+
+  // ── Priority 1: Latest unread backend notification ──
+  var unread = _notificationsList.filter(function(n) { return !n.is_read; });
+  for (var i = 0; i < unread.length; i++) {
+    var n = unread[i];
+    var key = 'notif_' + (n.id || n.created_at || i);
+    if (_bannerDismissed(key)) continue;
+    // Determine emoji & type
+    var t = ((n.title||'') + ' ' + (n.body||'')).toLowerCase();
+    var isBroadcast = t.indexOf('broadcast') !== -1 || t.indexOf('update') !== -1 || t.indexOf('admin') !== -1;
+    var type = isBroadcast ? 'broadcast' : 'insight';
+    var pillLabel = isBroadcast ? '📢 Broadcast' : '🔔 Notification';
+    var emoji = getNotifEmoji(n.title, n.body);
+    var timeStr = timeAgo(n.created_at);
+    var html = _buildBannerHtml(type, pillLabel, emoji, esc(n.title), esc(n.body), null, key, timeStr);
+    banner.setAttribute('data-banner-key', key);
+    banner.innerHTML = html;
+    banner.style.display = 'block';
+    return;
+  }
+
+  // ── Priority 2: Active recovery suggestion ──
+  if (_activeRecovery) {
+    var rKey = _activeRecovery.key;
+    if (!_bannerDismissed(rKey)) {
+      var html = _buildBannerHtml(
+        'recovery', '🔋 Recovery', '🏃',
+        _activeRecovery.title,
+        _activeRecovery.sub,
+        _activeRecovery.chips,
+        rKey, null
+      );
+      banner.setAttribute('data-banner-key', rKey);
+      banner.innerHTML = html;
+      banner.style.display = 'block';
+      return;
+    }
+  }
+
+  // ── Priority 3: Dynamic insight ──
+  if (_activeInsight) {
+    var iKey = _activeInsight.key;
+    if (!_bannerDismissed(iKey)) {
+      var html = _buildBannerHtml(
+        'insight', '💡 Insight', _activeInsight.emoji,
+        _activeInsight.title,
+        _activeInsight.body,
+        null, iKey, null
+      );
+      banner.setAttribute('data-banner-key', iKey);
+      banner.innerHTML = html;
+      banner.style.display = 'block';
+      return;
+    }
+  }
+
+  // Nothing to show
+  banner.style.display = 'none';
+  banner.innerHTML = '';
+  banner.removeAttribute('data-banner-key');
+}
 
 async function loadNotifications() {
   try {
@@ -3155,6 +3391,7 @@ function renderNotifications() {
       '</div>';
     }).join('');
   }
+  updateInAppNotificationBanner();
 }
 
 async function clearNotifications(e) {
