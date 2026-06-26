@@ -3215,7 +3215,7 @@ function showTab(tab){
 // ── Swipe Gesture for Tab Navigation ──────────────────────────────────────
 (function(){
   var touchStartX = 0, touchStartY = 0;
-  var MIN_SWIPE_X = 55;   // minimum horizontal px to count as a swipe
+  var MIN_SWIPE_X = 40;   // minimum horizontal px to count as a swipe (lowered from 55 for responsiveness)
   var _swipeDir = null;
 
   document.addEventListener('touchstart', function(e){
@@ -3235,9 +3235,9 @@ function showTab(tab){
     var absDy = Math.abs(dy);
 
     if (_swipeDir === null) {
-      // Decide direction as early as 3 pixels of movement to block vertical scroll before it starts
-      if (absDx > 3 || absDy > 3) {
-        if (absDx > absDy * 0.8) {
+      // Wait until finger moves at least 8px before locking direction (filters accidental wiggles)
+      if (absDx > 8 || absDy > 8) {
+        if (absDx > absDy * 1.2) {
           _swipeDir = 'h';
         } else {
           _swipeDir = 'v';
