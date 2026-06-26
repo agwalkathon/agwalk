@@ -3123,7 +3123,7 @@ function renderActivities(acts,dayBreakdown,actBreakdown,gender) {
         '<div class="whoop-stat-item"><span class="whoop-stat-val">' + rawKm.toFixed(1) + '</span><span class="whoop-stat-lbl">KM</span></div>' +
         '<div class="whoop-stat-item"><span class="whoop-stat-val">' + (daySteps >= 1000 ? (daySteps/1000).toFixed(1).replace('.0','') + 'k' : daySteps) + '</span><span class="whoop-stat-lbl">STEPS</span></div>' +
         '<div class="whoop-stat-item"><span class="whoop-stat-val">' + actCountStr.replace('x', '') + '</span><span class="whoop-stat-lbl">ACTS</span></div>' +
-        (chPts > 0 ? '<div class="whoop-stat-item"><span class="whoop-stat-val" style="color:#ff9800;">🏅 +' + Math.round(chPts) + '</span><span class="whoop-stat-lbl">CH PTS</span></div>' : '') +
+        (chPts > 0 ? '<div class="whoop-stat-item"><span class="whoop-stat-val" style="color:#ff9800;">🎯 +' + Math.round(chPts) + '</span><span class="whoop-stat-lbl">challenge Pt</span></div>' : '') +
       '</div>' +
       '<div class="date-chevron">▼</div>';
     dateRow.addEventListener('click',(function(id){return function(){toggleDay(id);}})('dg-'+gi));
@@ -3155,7 +3155,7 @@ function renderActivities(acts,dayBreakdown,actBreakdown,gender) {
         '<div class="act-tile-right">'+
           '<div class="act-tile-dist">'+km+' <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:lowercase;margin-left:2px;">km</span></div>'+
           '<div class="act-tile-flag '+(isFlag?'flag-bad':'flag-valid')+'">'+(isFlag?'⚑ Flagged':'✓ Valid')+'</div>'+
-          (actChPts > 0 ? '<div class="act-tile-chpts" style="font-size:11px;font-weight:800;color:#ff9800;margin-top:4px;">🏅 +' + Math.round(actChPts) + ' pts</div>' : '') +
+          (actChPts > 0 ? '<div class="act-tile-chpts" style="font-size:11px;font-weight:800;color:#ff9800;margin-top:4px;">🎯 +' + Math.round(actChPts) + ' pts</div>' : '') +
         '</div>'+
         '<div class="act-tile-bar '+tc+'"></div>';
       inner.appendChild(item);
