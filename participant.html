@@ -607,19 +607,33 @@
       position:fixed;bottom:0;left:0;right:0;
       background:var(--surface);
       border-top:1px solid var(--border);
-      display:grid;grid-template-columns:1fr 1fr 1fr 1fr;
+      display:grid;
+      grid-auto-flow: column;
+      grid-auto-columns: 1fr;
       padding-bottom:max(14px,env(safe-area-inset-bottom));
       z-index:200;
     }
     .bnav-item{
       display:flex;flex-direction:column;align-items:center;
       padding:12px 6px 4px;text-decoration:none;
-      color:var(--muted);font-size:9.5px;font-weight:700;
-      letter-spacing:0.5px;text-transform:uppercase;gap:5px;
+      color:var(--muted);gap:5px;
       transition:color 0.15s;position:relative;
+    }
+    .bnav-label {
+      font-size:9.5px;font-weight:700;
+      letter-spacing:0.5px;text-transform:uppercase;
     }
     .bnav-item svg{width:22px;height:22px;stroke-width:2;}
     .bnav-item.active{color:var(--brand);}
+    
+    @media (max-width: 480px) {
+      .bnav-label {
+        display: none;
+      }
+      .bnav-item {
+        padding: 14px 6px 14px;
+      }
+    }
 
 
     .points,.distance,.rank,td,th{font-variant-numeric:tabular-nums;}
@@ -1361,7 +1375,7 @@ document.addEventListener('click', function(e) {
 <!-- Updates tab -->
 <div class="content hidden-tab" id="tab-feed">
 <div class="max-w">
-  <div class="sec">Updates & Achievements</div>
+  <div class="sec">Announcement</div>
   <div id="feed-list">
     <div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div><div class="skeleton skel-line short"></div></div>
     <div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div><div class="skeleton skel-line short"></div></div>
@@ -1551,23 +1565,23 @@ document.addEventListener('click', function(e) {
 <nav class="bottom-nav">
   <a class="bnav-item active" id="bnav-dashboard" href="#" onclick="showTab('dashboard');return false;">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-    Dashboard
+    <span class="bnav-label">Dashboard</span>
   </a>
   <a class="bnav-item" id="bnav-activities" href="#" onclick="showTab('activities');return false;">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-    Activities
+    <span class="bnav-label">Activities</span>
   </a>
   <a class="bnav-item" id="bnav-leaderboard" href="#" onclick="showTab('leaderboard');return false;">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-    Leaderboard
+    <span class="bnav-label">Leaderboard</span>
   </a>
   <a class="bnav-item" id="bnav-feed" href="#" onclick="showTab('feed');return false;" style="display:none;">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    Updates
+    <span class="bnav-label">Announcement</span>
   </a>
   <a class="bnav-item" id="bnav-you" href="#" onclick="showTab('you');return false;">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-    You
+    <span class="bnav-label">You</span>
   </a>
 </nav>
 
@@ -3276,11 +3290,11 @@ async function loadFeed() {
       _feedData = d.feed;
       renderFeed();
     } else {
-      list.innerHTML = '<div class="empty-state"><div class="icon">📢</div><p>No updates yet. Check back later!</p></div>';
+      list.innerHTML = '<div class="empty-state"><div class="icon">📢</div><p>No announcements yet. Check back later!</p></div>';
     }
   } catch(e) {
     console.warn('Failed to load feed:', e);
-    list.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>Could not load updates.</p></div>';
+    list.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>Could not load announcements.</p></div>';
   }
 }
 
@@ -3288,7 +3302,7 @@ function renderFeed() {
   var list = document.getElementById('feed-list');
   if (!list) return;
   if (!_feedData.length) {
-    list.innerHTML = '<div class="empty-state"><div class="icon">📢</div><p>No updates yet. Check back later!</p></div>';
+    list.innerHTML = '<div class="empty-state"><div class="icon">📢</div><p>No announcements yet. Check back later!</p></div>';
     return;
   }
 
