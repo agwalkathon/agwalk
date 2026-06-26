@@ -2698,6 +2698,7 @@ async function load(isBackgroundRefresh) {
         // Feed leaderboard tab from same data — no extra API calls
         LB_REG=allRegRaw;
         LB_ACTS=allActsRaw;
+        precomputeLBScores();
         if(LB_ME){_lbReady=true;lbRender();}
       }catch(e2){console.warn('Ranking load failed:',e2);return;}
 
@@ -3365,6 +3366,25 @@ function refreshData(isPull){
 
 // ── Leaderboard shared vars (declared here so Phase 1 can populate them) ──
 var LB_ME=null,LB_REG=[],LB_ACTS=[],LB_currentTab='shift';
+var LB_SCORES={};
+
+function precomputeLBScores() {
+  LB_SCORES = {};
+  if (!LB_REG || !LB_REG.length) return;
+  
+  var actsByAthlete = {};
+  LB_ACTS.forEach(function(a) {
+    var aid = String(a.strava_athlete_id);
+    if (!actsByAthlete[aid]) actsByAthlete[aid] = [];
+    actsByAthlete[aid].push(a);
+  });
+  
+  LB_REG.forEach(function(p) {
+    var aid = String(p.strava_athlete_id);
+    var pActs = actsByAthlete[aid] || [];
+    LB_SCORES[aid] = calcFullPts(pActs, p.gender, p.shift);
+  });
+}
 
 // Gender-aware medal helper — mirrors ag-leaderboard getMedal().
 // Uses medalData loaded in Phase 1 (falls back to defaults if not yet loaded).
@@ -3390,14 +3410,13 @@ function renderStanding() {
 
     var allReg=LB_REG,myGenderN=norm(reg.gender),myShiftN=norm(reg.shift);
     var myTeamN=norm(reg.leaderboard_team),isNight=myShiftN.indexOf('night')>-1,isFemale=myGenderN==='female'||myGenderN==='f';
-    var allActsMap={};
-    LB_ACTS.forEach(function(a){if(!allActsMap[a.strava_athlete_id])allActsMap[a.strava_athlete_id]=[];allActsMap[a.strava_athlete_id].push(a);});
-
-    // rankIn uses calcFullPts so standing card rank matches leaderboard rank exactly
+    // rankIn uses LB_SCORES so standing card rank matches leaderboard rank exactly
     function rankIn(peers){
       var scored=peers.map(function(p){
-        var acts=allActsMap[p.strava_athlete_id]||[];
-        return{id:p.strava_athlete_id,pts:calcFullPts(acts,p.gender,p.shift).total};
+        var aid = String(p.strava_athlete_id);
+        var score = LB_SCORES[aid];
+        var total = score ? score.total : 0;
+        return{id:p.strava_athlete_id,pts:total};
       }).filter(function(x){return x.pts>0;}).sort(function(a,b){return b.pts-a.pts;});
       var pos=scored.findIndex(function(x){return String(x.id)===String(athleteId);});
       return pos>=0?pos+1:null;
@@ -3933,7 +3952,9 @@ load().finally(function(){ hideSplash(); });
 function computeTeamExclusions(){
   function boardRows(filterFn){
     return LB_REG.filter(filterFn).map(function(p){
-      return {p:p,pts:calcFullPts(LB_ACTS.filter(function(a){return String(a.strava_athlete_id)===String(p.strava_athlete_id);}),p.gender,p.shift)};
+      var aid = String(p.strava_athlete_id);
+      var score = LB_SCORES[aid] || {total:0, km:0, distPts:0, bonusPts:0, challengePts:0};
+      return {p:p,pts:score};
     }).filter(function(r){return r.pts.total>0;}).sort(function(a,b){return b.pts.total-a.pts.total;});
   }
   var dsF = boardRows(function(p){var g=norm(p.gender),s=norm(p.shift);return g==='female'&&s.indexOf('day')>-1;});
@@ -3954,7 +3975,11 @@ function getRows(mode){
   if(!LB_ME)return[];
   var myGender=norm(LB_ME.gender),myShift=norm(LB_ME.shift),myTeam=norm(LB_ME.leaderboard_team),isNight=myShift.indexOf('night')>-1,isFemale=myGender==='female'||myGender==='f';
   var filtered=LB_REG.filter(function(p){var pg=norm(p.gender),ps=norm(p.shift),pt=norm(p.leaderboard_team),pIsFemale=pg==='female'||pg==='f';if(pIsFemale!==isFemale)return false;if(mode==='team')return pt===myTeam;return ps.indexOf('night')>-1===isNight;});
-  var rows=filtered.map(function(p){return{p:p,pts:calcFullPts(LB_ACTS.filter(function(a){return String(a.strava_athlete_id)===String(p.strava_athlete_id);}),p.gender,p.shift)};}).filter(function(r){return r.pts.total>0;}).sort(function(a,b){return b.pts.total-a.pts.total;});
+  var rows=filtered.map(function(p){
+    var aid = String(p.strava_athlete_id);
+    var score = LB_SCORES[aid] || {total:0, km:0, distPts:0, bonusPts:0, challengePts:0};
+    return {p:p,pts:score};
+  }).filter(function(r){return r.pts.total>0;}).sort(function(a,b){return b.pts.total-a.pts.total;});
   // Apply team exclusions for team tab
   if(mode==='team'){
     var excl=computeTeamExclusions();
@@ -4225,8 +4250,18 @@ function lbRender(){
         var cutoff=new Date();cutoff.setDate(cutoff.getDate()-7);
         var cutoffStr=getISTDate(cutoff.toISOString());
         var oldActs=LB_ACTS.filter(function(a){return getISTDate(a.activity_date)<=cutoffStr;});
+        var oldActsMap={};
+        oldActs.forEach(function(a){
+          var aid=String(a.strava_athlete_id);
+          if(!oldActsMap[aid])oldActsMap[aid]=[];
+          oldActsMap[aid].push(a);
+        });
         var myGd=norm(LB_ME.gender),myShd=norm(LB_ME.shift),isNd=myShd.indexOf('night')>-1,isFd=myGd==='female'||myGd==='f';
-        var oldRows=LB_REG.filter(function(q){var pg=norm(q.gender),ps=norm(q.shift),pt=norm(q.leaderboard_team),pIsFemale=pg==='female'||pg==='f';if(pIsFemale!==isFd)return false;return LB_currentTab==='team'?pt===norm(LB_ME.leaderboard_team):ps.indexOf('night')>-1===isNd;}).map(function(q){return{id:String(q.strava_athlete_id),pts:calcFullPts(oldActs.filter(function(a){return String(a.strava_athlete_id)===String(q.strava_athlete_id);}),q.gender,q.shift).total};}).filter(function(r){return r.pts>0;}).sort(function(a,b){return b.pts-a.pts;});
+        var oldRows=LB_REG.filter(function(q){var pg=norm(q.gender),ps=norm(q.shift),pt=norm(q.leaderboard_team),pIsFemale=pg==='female'||pg==='f';if(pIsFemale!==isFd)return false;return LB_currentTab==='team'?pt===norm(LB_ME.leaderboard_team):ps.indexOf('night')>-1===isNd;}).map(function(q){
+          var aid=String(q.strava_athlete_id);
+          var acts=oldActsMap[aid]||[];
+          return{id:aid,pts:calcFullPts(acts,q.gender,q.shift).total};
+        }).filter(function(r){return r.pts>0;}).sort(function(a,b){return b.pts-a.pts;});
         var oldRank=oldRows.findIndex(function(r){return r.id===String(meId);})+1;
         var rmEl=document.getElementById('lb-rank-move');
         if(rmEl&&curRank>0){
@@ -4257,6 +4292,7 @@ async function lbBoot(){
       fetchAll(SUPABASE_URL+'/rest/v1/activities?is_deleted=is.false&select=strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,elevation_gain,description')
     ]);
     LB_REG=regAll; LB_ACTS=actsAll;
+    precomputeLBScores();
     // LB_ME already set from Phase 1 reg; CONFIG_LB already set from Phase 1 config
     _lbReady=true;
     lbRender();
