@@ -549,7 +549,7 @@ async function loadActivities() {
   var baseUrl = SB_URL+'/rest/v1/activities?is_deleted=eq.false'
     +'&activity_date=gte.2026-06-01T00:00:00'
     +'&activity_date=lte.2026-06-30T23:59:59'
-    +'&select=strava_athlete_id,distance_meters,sport_type,activity_date,avg_speed,elevation_gain,strava_activity_id,is_flagged,manual_bonus,activity_name'
+    +'&select=strava_athlete_id,distance_meters,sport_type,activity_date,avg_speed,elevation_gain,strava_activity_id,is_flagged,manual_bonus,activity_name,start_time'
     +'&order=id.asc';
   var allActs = [];
   var pageSize = 1000;
@@ -627,11 +627,24 @@ function checkChallenge(act, c) {
 
   // Start time criteria — activity must start AT OR BEFORE this time
   if (c.start_time_criteria) {
-    var timeStr = (act.activity_date || '').split('T')[1] || '';
-    // Skip imported activities (placeholder 06:30:00)
-    if (!timeStr || timeStr.startsWith('06:30:00')) return true;
-    var parts    = c.start_time_criteria.split(':');
-    var critMins = parseInt(parts[0]) * 60 + parseInt(parts[1] || 0);
+    // If it's an imported activity (no start_time stored, or it has common placeholder times), skip the time check
+    var timeStr = act.start_time || (act.activity_date || '').split('T')[1] || '';
+    if (!timeStr || timeStr.startsWith('06:30:00') || timeStr.startsWith('17:30:00') || timeStr.startsWith('18:30:00')) {
+      return true;
+    }
+    
+    // Clean up AM/PM in criteria if present
+    var critStr = c.start_time_criteria.toUpperCase();
+    var isPM = critStr.indexOf('PM') > -1;
+    var isAM = critStr.indexOf('AM') > -1;
+    var cleanCrit = critStr.replace('AM', '').replace('PM', '').trim();
+    
+    var parts = cleanCrit.split(':');
+    var hr = parseInt(parts[0]) || 0;
+    if (isPM && hr < 12) hr += 12;
+    if (isAM && hr === 12) hr = 0;
+    var critMins = hr * 60 + parseInt(parts[1] || 0);
+    
     var tParts   = timeStr.split(':');
     var actMins  = parseInt(tParts[0]) * 60 + parseInt(tParts[1] || 0);
     if (actMins > critMins) return false;
