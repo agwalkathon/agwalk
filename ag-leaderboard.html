@@ -415,6 +415,28 @@ var SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJl
 var HDR = { apikey: SB_ANON, Authorization: 'Bearer '+SB_ANON };
 
 var _BU='https://walkathon-backend-hv9j.onrender.com';function authGuard(){var t=sessionStorage.getItem('wk_admin_token');if(!t){window.location.href='admin-login.html';return;}try{var p=JSON.parse(atob(t.split('.')[1]));if(p.exp&&p.exp*1000<Date.now()){sessionStorage.removeItem('wk_admin_token');window.location.href='admin-login.html';}}catch(e){sessionStorage.removeItem('wk_admin_token');window.location.href='admin-login.html';}}function logout(){sessionStorage.removeItem('wk_admin_token');sessionStorage.removeItem('wk_admin');window.location.href='admin-login.html';}
+function getISTDate(d) {
+  if (!d) return '';
+  try {
+    var dt = new Date(d);
+    if (isNaN(dt.getTime())) return '';
+    var localTime = dt.getTime() + (5.5 * 60 * 60 * 1000); // Add 5.5 hours for IST
+    var istDate = new Date(localTime);
+    var y = istDate.getUTCFullYear();
+    var m = ('0' + (istDate.getUTCMonth() + 1)).slice(-2);
+    var dayVal = ('0' + istDate.getUTCDate()).slice(-2);
+    return y + '-' + m + '-' + dayVal;
+  } catch (e) {
+    return d.split('T')[0];
+  }
+}
+function getActDate(a) {
+  if (!a) return '';
+  if (a.activity_date_time_ist) {
+    return a.activity_date_time_ist.split(/[T ]/)[0];
+  }
+  return getISTDate(a.activity_date);
+}
 authGuard();
 
 var currentBoard = 'dayshift-male';
@@ -547,7 +569,7 @@ async function loadActivities() {
   var baseUrl = SB_URL+'/rest/v1/activities?is_deleted=eq.false'
     +'&activity_date=gte.2026-06-01T00:00:00'
     +'&activity_date=lte.2026-06-30T23:59:59'
-    +'&select=strava_athlete_id,distance_meters,sport_type,activity_date,avg_speed,elevation_gain,strava_activity_id,is_flagged,manual_bonus,activity_name,start_time,description'
+    +'&select=strava_athlete_id,distance_meters,sport_type,activity_date,avg_speed,elevation_gain,strava_activity_id,is_flagged,manual_bonus,activity_name,start_time,description,activity_date_time_ist'
     +'&order=id.asc';
   var allActs = [];
   var pageSize = 1000;
@@ -591,7 +613,7 @@ function calcBonus(km) {
 // Check if an activity qualifies for a challenge
 function checkChallenge(act, c) {
   // Date range
-  var actDate = (act.activity_date || '').split('T')[0];
+  var actDate = getActDate(act);
   if (!actDate) return false;
   if (actDate < c.start_date || actDate > c.end_date) return false;
 
@@ -689,7 +711,7 @@ function calcPoints(acts, athleteId, gender, shift) {
   // ── Step 2: group by day ────────────────────────────────────────
   var byDay = {};
   myActs.forEach(function(a) {
-    var d = (a.activity_date || '').split('T')[0];
+    var d = getActDate(a);
     if (!d) return;
     if (!byDay[d]) byDay[d] = [];
     byDay[d].push(a);
@@ -990,7 +1012,7 @@ function calcPoints(acts, athleteId, gender, shift) {
           challengeNames.push(cName);
           processedManualActIds.add(String(a.strava_activity_id));
           
-          var d = (a.activity_date || '').split('T')[0];
+          var d = getActDate(a);
           if (dayBreakdown[d]) {
             dayBreakdown[d].challenges.push({name: cName, pts: bp, actId: a.strava_activity_id});
           }
@@ -1031,7 +1053,7 @@ function calcPoints(acts, athleteId, gender, shift) {
       myActs.forEach(function(a) {
         if (checkChallenge(a, c)) {
           earned += bp;
-          var d = (a.activity_date || '').split('T')[0];
+          var d = getActDate(a);
           if (dayBreakdown[d]) dayBreakdown[d].challenges.push({name: cName, pts: bp, actId: a.strava_activity_id});
           if (!actBreakdown[a.strava_activity_id]) actBreakdown[a.strava_activity_id] = {challenges:[]};
           actBreakdown[a.strava_activity_id].challenges.push({name: cName, pts: bp});
@@ -1050,7 +1072,7 @@ function calcPoints(acts, athleteId, gender, shift) {
       myActs.forEach(function(a) {
         if (checkChallenge(a, c)) {
           earned += bp;
-          var d = (a.activity_date || '').split('T')[0];
+          var d = getActDate(a);
           if (dayBreakdown[d]) dayBreakdown[d].challenges.push({name: cName, pts: bp, actId: a.strava_activity_id});
           if (!actBreakdown[a.strava_activity_id]) actBreakdown[a.strava_activity_id] = {challenges:[]};
           actBreakdown[a.strava_activity_id].challenges.push({name: cName, pts: bp});
@@ -1094,7 +1116,7 @@ function calcPoints(acts, athleteId, gender, shift) {
         if (checkChallenge(myActs[i], c)) {
           awarded = true;
           awardedActId = myActs[i].strava_activity_id;
-          awardedDay = (myActs[i].activity_date || '').split('T')[0];
+          awardedDay = getActDate(myActs[i]);
           break;
         }
       }
@@ -1120,7 +1142,7 @@ function calcPoints(acts, athleteId, gender, shift) {
     var mb = parseFloat(a.manual_bonus) || 0;
     if (!mb) return;
     totalChallenge += mb;
-    var d = (a.activity_date || '').split('T')[0];
+    var d = getActDate(a);
     var mbName = a.description || 'Manual bonus';
     if (dayBreakdown[d]) dayBreakdown[d].challenges.push({name: mbName, pts: mb, actId: a.strava_activity_id});
     if (!actBreakdown[a.strava_activity_id]) actBreakdown[a.strava_activity_id] = {challenges:[]};
@@ -1541,7 +1563,7 @@ function exportActivitiesCSV() {
   // Map activities to rows
   var dataRows = allActivities.map(function(a) {
     var p = regMap[String(a.strava_athlete_id).trim()] || {};
-    var date = (a.activity_date || '').split('T')[0] || '';
+    var date = getActDate(a) || '';
     var dist = a.distance_meters ? (a.distance_meters / 1000).toFixed(2) : '0.00';
     
     // Pull challenge breakdown from calculated state
