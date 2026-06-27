@@ -854,19 +854,19 @@
   html, body { overscroll-behavior-y: contain; }
   #ptr-indicator {
     position: fixed;
-    top: -64px;
+    top: 0;
     left: 0; right: 0;
-    height: 56px;
+    height: 50px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: #1e2130;
-    z-index: 9999;
-    transition: top 0.2s ease, opacity 0.2s ease, transform 0.1s ease;
+    z-index: 150; /* Behind header (200) but above content */
+    transition: opacity 0.2s ease, transform 0.1s ease;
     opacity: 0;
     pointer-events: none;
   }
-  #ptr-indicator.ptr-visible { top: 0; opacity: 1; }
+  #ptr-indicator.ptr-visible { opacity: 1; }
   .ptr-spinner {
     width: 22px; height: 22px;
     border: 3px solid rgba(99,102,241,0.25);
@@ -4167,6 +4167,9 @@ function refreshData(isPull){
   if (isPull) {
     var ptr = document.getElementById('ptr-indicator');
     if (ptr) {
+      var headerEl = document.querySelector('.header');
+      var headerHeight = headerEl ? headerEl.offsetHeight : 60;
+      ptr.style.transform = 'translateY(' + headerHeight + 'px)';
       ptr.classList.add('ptr-visible', 'ptr-loading');
     }
     load().finally(function(){
@@ -4198,10 +4201,13 @@ function refreshData(isPull){
       return;
     }
 
-    // Only active if we are scrolled to the top of the active tab and touch starts in the header region
+    var headerEl = document.querySelector('.header');
+    var headerHeight = headerEl ? headerEl.offsetHeight : 60;
+
+    // Only active if scrolled to top and touch starts below the header (Rings area)
     var activeContent = document.getElementById('tab-' + _currentTab);
     var isAtTop = activeContent ? activeContent.scrollTop === 0 : true;
-    if (isAtTop && e.touches.length === 1 && e.touches[0].clientY <= 80) {
+    if (isAtTop && e.touches.length === 1 && e.touches[0].clientY > headerHeight && e.touches[0].clientY < headerHeight + 150) {
       ptrStartY = e.touches[0].clientY;
       ptrActive = true;
     } else {
@@ -4223,9 +4229,11 @@ function refreshData(isPull){
         ptrIndicator.classList.remove('ptr-ready');
       }
       
-      // Pull down visual displacement (dampened)
+      // Pull down visual displacement (dampened) starting below header
+      var headerEl = document.querySelector('.header');
+      var headerHeight = headerEl ? headerEl.offsetHeight : 60;
       var yTranslate = Math.min(diff * 0.5, 45); 
-      ptrIndicator.style.transform = 'translateY(' + yTranslate + 'px)';
+      ptrIndicator.style.transform = 'translateY(' + (headerHeight + yTranslate) + 'px)';
 
       // Prevent default browser refresh/behavior
       if (e.cancelable) {
@@ -4241,6 +4249,9 @@ function refreshData(isPull){
     var diff = currentY - ptrStartY;
 
     if (diff >= ptrThreshold) {
+      var headerEl = document.querySelector('.header');
+      var headerHeight = headerEl ? headerEl.offsetHeight : 60;
+      ptrIndicator.style.transform = 'translateY(' + headerHeight + 'px)';
       refreshData(true);
     } else {
       ptrIndicator.style.transform = '';
