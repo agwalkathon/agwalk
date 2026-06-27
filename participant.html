@@ -3803,9 +3803,10 @@ function showDateDetails(dateStr) {
 
     var isFlag = a.is_flagged;
     var cardId = 'dac-' + a.strava_activity_id;
+    var expandByDefault = (dayActs.length === 1);
 
     html +=
-      '<div class="detail-act-card" id="' + cardId + '">' +
+      '<div class="detail-act-card' + (expandByDefault ? ' open' : '') + '" id="' + cardId + '">' +
         // Collapsed Header
         '<div class="detail-act-hdr" onclick="toggleActCard(\'' + a.strava_activity_id + '\')">' +
           '<div class="detail-act-hdr-left">' +
@@ -3858,6 +3859,10 @@ function showDateDetails(dateStr) {
 
   contentEl.innerHTML = html;
   detailsView.classList.add('visible');
+
+  if (dayActs.length === 1) {
+    loadSplitsForActivity(dayActs[0].strava_activity_id);
+  }
 }
 
 function toggleActCard(actId) {
@@ -3887,6 +3892,9 @@ async function loadSplitsForActivity(actId) {
       return;
     }
 
+    var hasHR = splits.some(function(s) { return s.average_heartrate !== null && s.average_heartrate !== undefined && s.average_heartrate > 0; });
+    var hasCadence = splits.some(function(s) { return s.average_cadence !== null && s.average_cadence !== undefined && s.average_cadence > 0; });
+
     var tableHtml = 
       '<div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Splits (per km)</div>' +
       '<div class="splits-table-wrapper" style="overflow-x:auto; border:1px solid var(--border); border-radius:8px; background:rgba(0,0,0,0.15);">' +
@@ -3896,8 +3904,8 @@ async function loadSplitsForActivity(actId) {
               '<th style="padding:8px 10px;">Split #</th>' +
               '<th style="padding:8px 10px;">Distance</th>' +
               '<th style="padding:8px 10px;">Pace</th>' +
-              '<th style="padding:8px 10px; text-align:center;">Avg HR</th>' +
-              '<th style="padding:8px 10px; text-align:center;">Cadence</th>' +
+              (hasHR ? '<th style="padding:8px 10px; text-align:center;">Avg HR</th>' : '') +
+              (hasCadence ? '<th style="padding:8px 10px; text-align:center;">Cadence</th>' : '') +
             '</tr>' +
           '</thead>' +
           '<tbody>';
@@ -3912,17 +3920,23 @@ async function loadSplitsForActivity(actId) {
         if (sec === 60) { min++; sec = 0; }
         paceStr = min + ':' + (sec < 10 ? '0' : '') + sec + ' /km';
       }
-      var hrVal = s.average_heartrate ? Math.round(s.average_heartrate) + ' bpm' : '—';
-      var cadVal = s.average_cadence ? Math.round(s.average_cadence) + ' rpm' : '—';
 
       tableHtml += 
         '<tr style="border-bottom:1px solid var(--border);">' +
           '<td style="padding:8px 10px; font-weight:700; color:var(--text-secondary);">#' + s.split_number + '</td>' +
           '<td style="padding:8px 10px;">' + distKm + '</td>' +
-          '<td style="padding:8px 10px; color:var(--brand); font-weight:600;">' + paceStr + '</td>' +
-          '<td style="padding:8px 10px; text-align:center;">' + hrVal + '</td>' +
-          '<td style="padding:8px 10px; text-align:center;">' + cadVal + '</td>' +
-        '</tr>';
+          '<td style="padding:8px 10px; color:var(--brand); font-weight:600;">' + paceStr + '</td>';
+
+      if (hasHR) {
+        var hrVal = s.average_heartrate ? Math.round(s.average_heartrate) + ' bpm' : '—';
+        tableHtml += '<td style="padding:8px 10px; text-align:center;">' + hrVal + '</td>';
+      }
+      if (hasCadence) {
+        var cadVal = s.average_cadence ? Math.round(s.average_cadence) + ' rpm' : '—';
+        tableHtml += '<td style="padding:8px 10px; text-align:center;">' + cadVal + '</td>';
+      }
+
+      tableHtml += '</tr>';
     });
 
     tableHtml += '</tbody></table></div>';
