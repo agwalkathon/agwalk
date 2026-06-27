@@ -851,16 +851,22 @@
 
   
   /* Pull to Refresh */
-  html, body { overscroll-behavior-y: contain; }
+  html, body { overscroll-behavior: none; }
+  .content { overscroll-behavior-y: contain; }
   #ptr-indicator {
     position: fixed;
     top: 0;
-    left: 0; right: 0;
-    height: 50px;
+    left: 50%;
+    transform: translate(-50%, 0);
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #1e2130;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #1e2130;
     z-index: 150; /* Behind header (200) but above content */
     transition: opacity 0.2s ease, transform 0.1s ease;
     opacity: 0;
@@ -868,8 +874,8 @@
   }
   #ptr-indicator.ptr-visible { opacity: 1; }
   .ptr-spinner {
-    width: 22px; height: 22px;
-    border: 3px solid rgba(99,102,241,0.25);
+    width: 18px; height: 18px;
+    border: 2.5px solid rgba(232,98,42,0.25);
     border-top-color: #E8622A;
     border-radius: 50%;
     animation: ptr-spin 0.7s linear infinite;
@@ -878,10 +884,14 @@
   #ptr-indicator.ptr-loading .ptr-spinner { display: block; }
   #ptr-indicator.ptr-loading .ptr-arrow { display: none; }
   .ptr-arrow {
-    font-size: 20px;
+    font-size: 18px;
+    font-weight: bold;
     color: #E8622A;
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: transform 0.2s ease;
+    line-height: 1;
   }
   #ptr-indicator.ptr-ready .ptr-arrow { transform: rotate(180deg); }
   @keyframes ptr-spin { to { transform: rotate(360deg); } }
@@ -4169,7 +4179,7 @@ function refreshData(isPull){
     if (ptr) {
       var headerEl = document.querySelector('.header');
       var headerHeight = headerEl ? headerEl.offsetHeight : 60;
-      ptr.style.transform = 'translateY(' + headerHeight + 'px)';
+      ptr.style.transform = 'translate(-50%, ' + (headerHeight + 8) + 'px)';
       ptr.classList.add('ptr-visible', 'ptr-loading');
     }
     load().finally(function(){
@@ -4233,7 +4243,7 @@ function refreshData(isPull){
       var headerEl = document.querySelector('.header');
       var headerHeight = headerEl ? headerEl.offsetHeight : 60;
       var yTranslate = Math.min(diff * 0.5, 45); 
-      ptrIndicator.style.transform = 'translateY(' + (headerHeight + yTranslate) + 'px)';
+      ptrIndicator.style.transform = 'translate(-50%, ' + (headerHeight + yTranslate) + 'px)';
 
       // Prevent default browser refresh/behavior
       if (e.cancelable) {
@@ -4251,7 +4261,7 @@ function refreshData(isPull){
     if (diff >= ptrThreshold) {
       var headerEl = document.querySelector('.header');
       var headerHeight = headerEl ? headerEl.offsetHeight : 60;
-      ptrIndicator.style.transform = 'translateY(' + headerHeight + 'px)';
+      ptrIndicator.style.transform = 'translate(-50%, ' + (headerHeight + 8) + 'px)';
       refreshData(true);
     } else {
       ptrIndicator.style.transform = '';
