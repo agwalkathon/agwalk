@@ -5893,7 +5893,26 @@ function lbRefresh(){showSkeletons();if(_lbReady){lbRender();}else{lbBoot();}}
         var reg = await navigator.serviceWorker.ready;
         var sub = await reg.pushManager.getSubscription();
 
-        if (sub) {
+        var s = currentSession || JSON.parse(localStorage.getItem('wk_user') || '{}');
+        var athleteId = s.athleteId || '';
+        
+        var dbSubExists = false;
+        if (athleteId) {
+          try {
+            var dbRes = await fetch(SUPABASE_URL + '/rest/v1/push_subscriptions?athlete_id=eq.' + athleteId + '&select=id', {
+              headers: HDR
+            });
+            var dbJson = await dbRes.json();
+            if (dbJson && dbJson.length > 0) {
+              dbSubExists = true;
+            }
+          } catch(e) {
+            console.error('[Push] Failed to check database subscription:', e);
+            dbSubExists = !!sub; // Fallback
+          }
+        }
+
+        if (dbSubExists && sub) {
           card.style.display = 'flex';
           desc.textContent = 'Push alerts are active 🟢';
           btn.textContent = 'Active';
@@ -5902,7 +5921,6 @@ function lbRefresh(){showSkeletons();if(_lbReady){lbRender();}else{lbBoot();}}
           btn.style.cursor = 'pointer';
           btn.onclick = disablePushNotifications;
           if (forceModal) forceModal.style.display = 'none';
-          sendSubscriptionToBackend(sub);
         } else {
           card.style.display = 'flex';
           if (Notification.permission === 'denied') {
@@ -5994,7 +6012,10 @@ function lbRefresh(){showSkeletons();if(_lbReady){lbRender();}else{lbBoot();}}
           await sendSubscriptionToBackend(sub);
           desc.textContent = 'Push alerts are active 🟢';
           btn.textContent = 'Active';
+          btn.disabled = false;
           btn.style.background = '#059669';
+          btn.style.cursor = 'pointer';
+          btn.onclick = disablePushNotifications;
         } else {
           throw new Error('Subscription returned null');
         }
