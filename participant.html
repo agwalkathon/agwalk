@@ -1706,7 +1706,7 @@ document.addEventListener('click', function(e) {
 <!-- Updates tab -->
 <div class="content hidden-tab" id="tab-feed">
 <div class="max-w">
-  <div class="sec">Announcement</div>
+  <div class="sec">Feed</div>
   <div id="feed-list">
     <div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div><div class="skeleton skel-line short"></div></div>
     <div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div><div class="skeleton skel-line short"></div></div>
@@ -1909,7 +1909,7 @@ document.addEventListener('click', function(e) {
   <a class="bnav-item" id="bnav-feed" href="#" onclick="showTab('feed');return false;" style="display:none;">
     <div id="feed-unread-badge" style="display:none;position:absolute;top:8px;left:calc(50% + 6px);width:8px;height:8px;background:#f97316;border:1.5px solid var(--surface);border-radius:50%;z-index:10;"></div>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    <span class="bnav-label">Announcement</span>
+    <span class="bnav-label">Feed</span>
   </a>
   <a class="bnav-item" id="bnav-you" href="#" onclick="showTab('you');return false;">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
@@ -3694,13 +3694,13 @@ async function loadFeed(isSilent) {
       }
     } else {
       if (list && !isSilent) {
-        list.innerHTML = '<div class="empty-state"><div class="icon">📢</div><p>No announcements yet. Check back later!</p></div>';
+        list.innerHTML = '<div class="empty-state"><div class="icon">📢</div><p>No updates in the feed yet. Check back later!</p></div>';
       }
     }
   } catch(e) {
     console.warn('Failed to load feed:', e);
     if (list && !isSilent) {
-      list.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>Could not load announcements.</p></div>';
+      list.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>Could not load feed.</p></div>';
     }
   }
 }
@@ -3729,7 +3729,7 @@ function renderFeed() {
   var list = document.getElementById('feed-list');
   if (!list) return;
   if (!_feedData.length) {
-    list.innerHTML = '<div class="empty-state"><div class="icon">📢</div><p>No announcements yet. Check back later!</p></div>';
+    list.innerHTML = '<div class="empty-state"><div class="icon">📢</div><p>No updates in the feed yet. Check back later!</p></div>';
     return;
   }
 
