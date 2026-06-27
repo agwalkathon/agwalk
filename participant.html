@@ -1057,6 +1057,15 @@
     box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     transition: all 0.2s ease;
   }
+  .detail-act-card.flagged {
+    background: rgba(239, 68, 68, 0.04);
+    border-color: rgba(239, 68, 68, 0.25);
+    border-left: 3px solid #ef4444;
+    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.05);
+  }
+  .detail-act-card.flagged .detail-act-hdr:active {
+    background: rgba(239, 68, 68, 0.06);
+  }
   .detail-act-hdr {
     display: flex;
     align-items: center;
@@ -3759,6 +3768,11 @@ function renderActivities(acts,dayBreakdown,actBreakdown,gender) {
     var dateRow=document.createElement('div'); dateRow.className='date-row';
     
     var dayTotal = parseFloat((db.distPts + db.bonusPts + chPts).toFixed(2));
+    var hasFlagged = dayActs.some(function(a){ return a.is_flagged; });
+    var actValHtml = hasFlagged ? 
+      '<span class="whoop-stat-val" style="color: #EF4444;">' + dayActs.length + ' (Flagged)</span>' : 
+      '<span class="whoop-stat-val">' + dayActs.length + '</span>';
+
     dateRow.innerHTML =
       '<div class="whoop-date-box">' +
         '<span class="whoop-date-num">' + dN + '</span>' +
@@ -3766,7 +3780,7 @@ function renderActivities(acts,dayBreakdown,actBreakdown,gender) {
       '</div>' +
       '<div style="flex:1; display:flex; flex-direction:column; margin-left:12px; min-width:0; align-items:stretch;">' +
         '<div class="whoop-stats-box" style="margin-left:0; width:100%; justify-content:flex-end;">' +
-          '<div class="whoop-stat-item"><span class="whoop-stat-val">' + actCountStr.replace('x', '') + '</span><span class="whoop-stat-lbl">ACTS</span></div>' +
+          '<div class="whoop-stat-item">' + actValHtml + '<span class="whoop-stat-lbl">ACTS</span></div>' +
           '<div class="whoop-stat-item"><span class="whoop-stat-val">' + daySteps.toLocaleString('en-IN') + '</span><span class="whoop-stat-lbl">STEPS</span></div>' +
           '<div class="whoop-stat-item"><span class="whoop-stat-val">' + rawKm.toFixed(1) + '</span><span class="whoop-stat-lbl">KM</span></div>' +
         '</div>' +
@@ -3872,7 +3886,7 @@ function showDateDetails(dateStr) {
     });
 
     html +=
-      '<div class="detail-act-card' + (expandByDefault ? ' open' : '') + '" id="' + cardId + '">' +
+      '<div class="detail-act-card' + (isFlag ? ' flagged' : '') + (expandByDefault ? ' open' : '') + '" id="' + cardId + '">' +
         // Collapsed Header
         '<div class="detail-act-hdr" onclick="toggleActCard(\'' + a.strava_activity_id + '\')">' +
           '<div class="detail-act-hdr-left">' +
@@ -3888,6 +3902,18 @@ function showDateDetails(dateStr) {
         '</div>' +
         // Expanded Body
         '<div class="detail-act-body">' +
+          '<div class="detail-status-row" style="margin-bottom: 12px; margin-top: 0;">' +
+            '<div style="display: flex; align-items: center; justify-content: space-between;">' +
+              '<span class="detail-label" style="margin-bottom: 0;">Activity Status</span>' +
+              '<span class="status-badge ' + (isFlag ? 'invalid' : 'valid') + '" style="align-self: auto;">' + (isFlag ? '⚑ Invalid' : '✓ Valid') + '</span>' +
+            '</div>' +
+            (isFlag ? 
+            '<div style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">' +
+              '<span class="detail-label">Flag Reason</span>' +
+              '<span class="flag-reason-text" style="margin-top: 0;">' + esc(a.flag_reason || 'Under review') + '</span>' +
+            '</div>' : '') +
+          '</div>' +
+          '<div class="detail-divider" style="margin: 12px 0;"></div>' +
           '<div class="detail-grid">' +
             gridHtml +
           '</div>' +
@@ -3897,18 +3923,6 @@ function showDateDetails(dateStr) {
             '<div style="padding:16px 0;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;">' +
               '<i class="ti ti-loader spin"></i> Loading splits…' +
             '</div>' +
-          '</div>' +
-          '<div class="detail-divider"></div>' +
-          '<div class="detail-status-row">' +
-            '<div class="detail-item">' +
-              '<span class="detail-label">Activity Status</span>' +
-              '<span class="status-badge ' + (isFlag ? 'invalid' : 'valid') + '">' + (isFlag ? '⚑ Invalid' : '✓ Valid') + '</span>' +
-            '</div>' +
-            (isFlag ? 
-            '<div class="detail-item" style="margin-top: 4px;">' +
-              '<span class="detail-label">Flag Reason</span>' +
-              '<span class="flag-reason-text">' + esc(a.flag_reason || 'Under review') + '</span>' +
-            '</div>' : '') +
           '</div>' +
         '</div>' +
       '</div>';
