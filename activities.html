@@ -468,6 +468,24 @@ td button.btn:last-child { margin-right: 0; }
               </optgroup>
             </select>
           </div>
+          <div class="filter-group">
+            <label>Date From</label>
+            <input type="date" id="flagged-date-from" onchange="applyFlaggedFilters()">
+          </div>
+          <div class="filter-group">
+            <label>Date To</label>
+            <input type="date" id="flagged-date-to" onchange="applyFlaggedFilters()">
+          </div>
+          <div class="filter-group">
+            <label>Activity ID</label>
+            <input type="text" id="flagged-id-search" placeholder="Search by Activity ID..." oninput="applyFlaggedFilters()">
+          </div>
+          <div class="filter-group" id="reviewed-filter-group" style="display: flex; align-items: flex-end;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; margin-bottom: 8px; font-size:12px; color:var(--text-primary); text-transform:none; letter-spacing:0;">
+              <input type="checkbox" id="flagged-reviewed-chk" onchange="applyFlaggedFilters()" style="width:18px; height:18px; cursor:pointer; margin-right:4px;">
+              Show Already Reviewed
+            </label>
+          </div>
         </div>
         <div class="filter-actions">
           <button class="btn btn-ghost" onclick="clearFlaggedFilters()">Clear Filters</button>
@@ -481,6 +499,7 @@ td button.btn:last-child { margin-right: 0; }
           <span id="bulk-count-msg"><span class="bulk-selected-count" id="bulk-selected-num">0</span> items selected</span>
           <div style="margin-left:auto; display:flex; gap:8px;">
             <button class="btn btn-success" id="btn-bulk-clear" onclick="doBulkAction('unflag')">✅ Clear Selected</button>
+            <button class="btn btn-primary" id="btn-bulk-review" style="background:#3b82f6; border-color:#3b82f6;" onclick="doBulkAction('review')">👁️ Review Selected</button>
             <button class="btn btn-danger" id="btn-bulk-delete" onclick="doBulkAction('delete')">🗑️ Delete Selected</button>
             <button class="btn btn-primary" id="btn-bulk-restore" style="display:none" onclick="doBulkAction('restore')">↩️ Restore Selected</button>
           </div>
@@ -499,11 +518,12 @@ td button.btn:last-child { margin-right: 0; }
                   <th>Distance</th>
                   <th>Pace</th>
                   <th>Flag reason</th>
+                  <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="flagged-body">
-                <tr class="loading-row"><td colspan="9">Loading...</td></tr>
+                <tr class="loading-row"><td colspan="10">Loading...</td></tr>
               </tbody>
             </table>
           </div>
@@ -827,7 +847,8 @@ async function loadActivities(){
       var r=rm[String(a.strava_athlete_id).trim()];
       var actUrl='https://www.strava.com/activities/'+a.strava_activity_id;
       var athleteName=r&&r.full_name?r.full_name:'Unknown';
-      var statusBadge=a.is_flagged?'<span class="badge badge-invalid" style="cursor:pointer" onclick="openModal('+a.id+')">🚩 '+esc(a.flag_reason||'Flagged')+'</span>':'<span class="badge badge-valid" style="cursor:pointer" onclick="openModal('+a.id+')">✅ Valid</span>';
+      var isRev = a.is_reviewed === true || a.is_reviewed === 'true';
+      var statusBadge=a.is_flagged?'<span class="badge badge-invalid" style="cursor:pointer; background:' + (isRev ? '#F3F4F6; color:#4B5563; border-color:#D1D5DB;' : '#FFE4E6; color:#E11D48; border-color:#FDA4AF;') + '" onclick="openModal('+a.id+')">🚩 '+esc(a.flag_reason||'Flagged')+(isRev ? ' (Reviewed)' : ' (Pending)')+'</span>':'<span class="badge badge-valid" style="cursor:pointer" onclick="openModal('+a.id+')">✅ Valid</span>';
       return'<tr class="activity-row" data-strava-id="'+a.strava_activity_id+'" data-device="'+esc(a.device_name||'—')+'" data-elapsed="'+(a.elapsed_time_seconds?fmtDur(a.elapsed_time_seconds):'—')+'" data-avg-hr="'+(a.avg_heart_rate?a.avg_heart_rate.toFixed(0)+' bpm':'—')+'" data-max-hr="'+(a.max_heart_rate?a.max_heart_rate.toFixed(0)+' bpm':'—')+'" data-calories="'+(a.calories?a.calories.toFixed(0)+' kcal':'—')+'" data-steps="'+(a.steps||'—')+'" data-flagged="'+(a.is_flagged?'Yes':'No')+'" data-flag-reason="'+esc(a.flag_reason||'—')+'" data-deleted="'+(a.is_deleted?'Yes':'No')+'" data-bonus="'+(a.manual_bonus||0)+' points"><td id="status-cell-'+a.id+'" data-reason="'+esc(a.flag_reason||'')+'">'+statusBadge+'</td><td>'+fmtUTCDateTime(a.activity_date,a.start_time)+'</td><td>'+fmtActivityIST(a)+'</td><td><a href="https://www.strava.com/athletes/'+a.strava_athlete_id+'" target="_blank" class="ath">'+esc(athleteName)+'</a></td><td style="max-width:190px"><a href="'+actUrl+'" target="_blank" class="act-link" title="'+esc(a.activity_name||'')+'" style="display:inline-block;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(a.activity_name||'—')+'</a></td><td class="editable" data-edit="type" data-id="'+a.id+'" data-val="'+esc(a.sport_type||'')+'" title="Double-click to edit"><span class="badge '+bc(a.sport_type)+'">'+esc(a.sport_type||'—')+'</span></td><td class="editable" data-edit="dist" data-id="'+a.id+'" data-val="'+(a.distance_meters||0)+'" title="Double-click to edit">'+(a.distance_meters?(a.distance_meters/1000).toFixed(2)+' km':'—')+'</td><td>'+(a.moving_time_seconds?fmtDur(a.moving_time_seconds):'—')+'</td><td>'+fmtPS(a.avg_speed,a.sport_type)+'</td><td>'+(a.elevation_gain?a.elevation_gain.toFixed(0)+' m':'—')+'</td><td>'+esc(a.device_name||'—')+'</td></tr>';
     }).join('');
     setTimeout(initScrollSync,100);
@@ -1007,7 +1028,9 @@ function switchTab(t){
     
     // Adjust filters and bulk action buttons based on Review vs Deleted
     document.getElementById('reason-filter-group').style.display = t==='review'?'block':'none';
+    document.getElementById('reviewed-filter-group').style.display = t==='review'?'flex':'none';
     document.getElementById('btn-bulk-clear').style.display = t==='review'?'inline-flex':'none';
+    document.getElementById('btn-bulk-review').style.display = t==='review'?'inline-flex':'none';
     document.getElementById('btn-bulk-delete').style.display = t==='review'?'inline-flex':'none';
     document.getElementById('btn-bulk-restore').style.display = t==='deleted'?'inline-flex':'none';
 
@@ -1062,13 +1085,38 @@ function applyFlaggedFilters() {
   var nameQuery = (document.getElementById('flagged-athlete-name').value || '').trim().toLowerCase();
   var sportQuery = document.getElementById('flagged-sport-filter').value;
   var reasonQuery = currentTab === 'review' ? document.getElementById('flagged-reason-filter').value : '';
+  
+  var dateFromQuery = document.getElementById('flagged-date-from').value;
+  var dateToQuery = document.getElementById('flagged-date-to').value;
+  var idQuery = (document.getElementById('flagged-id-search').value || '').trim();
+  var showReviewed = document.getElementById('flagged-reviewed-chk') ? document.getElementById('flagged-reviewed-chk').checked : false;
 
   filteredFlaggedActivities = allActivities.filter(function(a) {
+    if (currentTab === 'review') {
+      var isReviewed = a.is_reviewed === true || a.is_reviewed === 'true';
+      if (isReviewed && !showReviewed) return false;
+    }
+
     var r = regMap[String(a.strava_athlete_id).trim()];
     var name = r ? r.full_name : 'Unknown';
     if (nameQuery && name.toLowerCase().indexOf(nameQuery) === -1) return false;
     if (sportQuery && a.sport_type !== sportQuery) return false;
     if (reasonQuery && a.flag_reason !== reasonQuery) return false;
+
+    if (a.activity_date) {
+      var actDatePart = a.activity_date.substring(0, 10);
+      if (dateFromQuery && actDatePart < dateFromQuery) return false;
+      if (dateToQuery && actDatePart > dateToQuery) return false;
+    } else if (dateFromQuery || dateToQuery) {
+      return false;
+    }
+
+    if (idQuery) {
+      var sysId = String(a.id);
+      var stravaId = String(a.strava_activity_id || '');
+      if (sysId.indexOf(idQuery) === -1 && stravaId.indexOf(idQuery) === -1) return false;
+    }
+
     return true;
   });
 
@@ -1090,7 +1138,7 @@ function applyFlaggedFilters() {
   updateBulkBar();
 
   if (!filteredFlaggedActivities.length) {
-    document.getElementById('flagged-body').innerHTML = '<tr class="loading-row"><td colspan="9">No matching activities found</td></tr>';
+    document.getElementById('flagged-body').innerHTML = '<tr class="loading-row"><td colspan="10">No matching activities found</td></tr>';
     return;
   }
 
@@ -1098,13 +1146,30 @@ function applyFlaggedFilters() {
     var r = regMap[String(a.strava_athlete_id).trim()];
     var name = r ? r.full_name : 'Unknown';
     var safeReason = (a.flag_reason || '').replace(/'/g, "\\'");
+
+    var reviewBtn = '';
+    if (currentTab === 'review') {
+      var isRev = a.is_reviewed === true || a.is_reviewed === 'true';
+      reviewBtn = isRev
+        ? '<button class="btn" style="background:#e5e7eb; color:#374151;" onclick="toggleReviewStatus(' + a.id + ', false)">👁️ Unreview</button>'
+        : '<button class="btn btn-success" style="background:#3b82f6; border-color:#3b82f6;" onclick="toggleReviewStatus(' + a.id + ', true)">👁️ Reviewed</button>';
+    }
+
     var actions = currentTab === 'review'
       ? '<button class="btn btn-orange" onclick="openReviewModal(' + a.id + ',\'' + name.replace(/'/g, "\\'") + '\',\'' + safeReason + '\')">✏️ Edit</button>'
+        + reviewBtn
         + '<button class="btn btn-success" onclick="doAction(' + a.id + ',\'unflag\',\'\')">✅ Clear</button>'
         + '<button class="btn btn-danger" onclick="doAction(' + a.id + ',\'delete\',\'' + safeReason + '\')">🗑️ Delete</button>'
       : '<button class="btn btn-primary" onclick="doAction(' + a.id + ',\'restore\',\'\')">↩️ Restore</button>';
       
     var isChecked = bulkSelected[a.id] ? ' checked' : '';
+
+    var isRev = a.is_reviewed === true || a.is_reviewed === 'true';
+    var statusCellHtml = currentTab === 'review'
+      ? '<td>' + (isRev 
+          ? '<span class="badge" style="background:#F3F4F6; color:#6B7280; border:1px solid #D1D5DB; font-weight:600;">✓ Reviewed</span>' 
+          : '<span class="badge" style="background:#FFF1F2; color:#E11D48; border:1px solid #FDA4AF; font-weight:600;">⚑ Pending</span>') + '</td>'
+      : '<td><span class="badge" style="background:#FEF3C7; color:#D97706; border:1px solid #FCD34D; font-weight:600;">🗑️ Deleted</span></td>';
 
     return '<tr id="row-' + a.id + '">'
       + '<td style="text-align:center"><input type="checkbox" class="row-chk" data-id="' + a.id + '"' + isChecked + ' onchange="toggleRowSelect(' + a.id + ', this.checked)" style="cursor:pointer; width:15px; height:15px"></td>'
@@ -1115,6 +1180,7 @@ function applyFlaggedFilters() {
       + '<td>' + (a.distance_meters ? (a.distance_meters / 1000).toFixed(2) + ' km' : '—') + '</td>'
       + '<td>' + fmtPS(a.avg_speed, a.sport_type) + '</td>'
       + '<td><span class="flag-reason">' + (a.flag_reason || '—') + '</span></td>'
+      + statusCellHtml
       + '<td>' + actions + '</td>'
       + '</tr>';
   }).join('');
@@ -1124,6 +1190,10 @@ function clearFlaggedFilters() {
   document.getElementById('flagged-athlete-name').value = '';
   document.getElementById('flagged-sport-filter').value = '';
   document.getElementById('flagged-reason-filter').value = '';
+  if (document.getElementById('flagged-date-from')) document.getElementById('flagged-date-from').value = '';
+  if (document.getElementById('flagged-date-to')) document.getElementById('flagged-date-to').value = '';
+  if (document.getElementById('flagged-id-search')) document.getElementById('flagged-id-search').value = '';
+  if (document.getElementById('flagged-reviewed-chk')) document.getElementById('flagged-reviewed-chk').checked = false;
   applyFlaggedFilters();
 }
 
@@ -1165,10 +1235,23 @@ function updateBulkBar() {
 }
 
 async function doAction(id,action,reason){
-  await fetch(BACKEND_URL+'/flag',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({activity_id:id,action:action,flag_reason:reason})});
-  allActivities = allActivities.filter(function(a) { return a.id !== id; });
-  delete bulkSelected[id];
+  if (action === 'review' || action === 'unreview') {
+    await fetch(BACKEND_URL+'/flag',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({activity_id:id,action:action,flag_reason:reason})});
+    var act = allActivities.find(function(a) { return a.id === id; });
+    if (act) {
+      act.is_reviewed = (action === 'review');
+    }
+  } else {
+    await fetch(BACKEND_URL+'/flag',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({activity_id:id,action:action,flag_reason:reason})});
+    allActivities = allActivities.filter(function(a) { return a.id !== id; });
+    delete bulkSelected[id];
+  }
   applyFlaggedFilters();
+}
+
+function toggleReviewStatus(id, newStatus) {
+  var action = newStatus ? 'review' : 'unreview';
+  doAction(id, action, '');
 }
 
 async function doBulkAction(action) {
@@ -1191,6 +1274,9 @@ async function doBulkAction(action) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ activity_id: parseInt(id), action: action, flag_reason: reason })
       });
+      if (action === 'review' || action === 'unreview') {
+        if (act) act.is_reviewed = (action === 'review');
+      }
       success++;
     } catch(e) {
       console.error('Bulk item failed:', id, e);
@@ -1200,9 +1286,15 @@ async function doBulkAction(action) {
   }
   
   bar.innerHTML = origHtml;
-  bulkSelected = {};
-  alert('Bulk action completed. Successful updates: ' + success);
-  loadFlaggedData();
+  if (action !== 'review' && action !== 'unreview') {
+    bulkSelected = {};
+    alert('Bulk action completed. Successful updates: ' + success);
+    loadFlaggedData();
+  } else {
+    bulkSelected = {};
+    alert('Bulk review completed. Successful updates: ' + success);
+    applyFlaggedFilters();
+  }
 }
 
 async function recheckAll(){
