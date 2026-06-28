@@ -2244,6 +2244,88 @@
     margin-top: 1px;
   }
 
+  /* Profile Drawer CSS classes */
+  .profile-avatar-large {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 800;
+    margin: 8px auto 12px auto;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  }
+  .profile-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .profile-stat-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 12px 8px;
+    text-align: center;
+  }
+  .profile-stat-card .val {
+    font-size: 16px;
+    font-weight: 900;
+    color: #fff;
+  }
+  .profile-stat-card .lbl {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+  }
+  .feed-card-athlete-name {
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+  .feed-card-athlete-name:hover {
+    color: var(--brand) !important;
+    text-decoration: underline;
+  }
+  
+  .prof-pb-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .prof-pb-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+  }
+  .prof-pb-card .lbl {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .prof-pb-card .val {
+    font-size: 14px;
+    font-weight: 800;
+    color: #fff;
+    margin-top: 3px;
+  }
+  .prof-pb-card .sub {
+    font-size: 9.5px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
   /* ── Date Details View Screen ── */
   #date-details-view {
     position: fixed;
@@ -3087,6 +3169,93 @@ document.addEventListener('click', function(e) {
         <div id="detail-appreciation-box"></div>
       </div>
       
+    </div>
+  </div>
+
+  <!-- Participant Profile Detail Modal -->
+  <div id="profile-detail-modal" class="detail-modal">
+    <!-- Top Nav Bar -->
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:16px; border-bottom:1px solid rgba(255,255,255,0.05); position:sticky; top:0; background:#0E1012; z-index:10002;">
+      <button class="btn-back" onclick="closeProfileDetail()" style="background:none; border:none; color:var(--muted); font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Back
+      </button>
+      <div style="font-size:16px; font-weight:800; color:#fff; text-align:center;">Profile</div>
+      <div style="width:50px;"></div> <!-- placeholder for symmetry -->
+    </div>
+
+    <!-- Profile content -->
+    <div class="detail-content" style="padding-top:20px;">
+      <!-- Avatar & Basic Info -->
+      <div style="text-align:center; margin-bottom:24px;">
+        <div id="prof-avatar" class="profile-avatar-large">PM</div>
+        <div id="prof-name" style="font-size:20px; font-weight:900; color:#fff;">Prakash Mali</div>
+        <div id="prof-team-shift" style="font-size:12.5px; color:var(--muted); margin-top:4px;">Avengers &middot; India Shift</div>
+      </div>
+
+      <!-- Stats Cumulative Grid (No Total Points included) -->
+      <div class="profile-stats-row">
+        <div class="profile-stat-card">
+          <div class="val" id="prof-total-dist">—</div>
+          <div class="lbl">Total Distance</div>
+        </div>
+        <div class="profile-stat-card">
+          <div class="val" id="prof-total-steps">—</div>
+          <div class="lbl">Total Steps</div>
+        </div>
+        <div class="profile-stat-card">
+          <div class="val" id="prof-total-activities">—</div>
+          <div class="lbl">Activities</div>
+        </div>
+      </div>
+
+      <!-- Heatmap Calendar Grid -->
+      <div style="margin-bottom:24px;">
+        <div class="detail-metrics-title">Consistency Heatmap (June)</div>
+        <div class="card" style="padding:16px; background:rgba(255,255,255,0.01); border:1px solid rgba(255,255,255,0.05); margin-top:8px;">
+          <!-- Heatmap Grid -->
+          <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap:4px; font-size:9px; color:var(--muted); font-weight:600; text-align:center; margin-bottom:6px;">
+            <div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div><div>S</div>
+          </div>
+          <div class="heatmap-grid" id="prof-heatmap-grid"></div>
+        </div>
+      </div>
+
+      <!-- Personal Bests Grid -->
+      <div style="margin-bottom:24px;">
+        <div class="detail-metrics-title">Personal Bests</div>
+        <div class="prof-pb-row">
+          <div class="prof-pb-card">
+            <span class="lbl">Longest Activity</span>
+            <span class="val" id="prof-pb-longest">—</span>
+            <span class="sub">single session max</span>
+          </div>
+          <div class="prof-pb-card">
+            <span class="lbl">Best Pace</span>
+            <span class="val" id="prof-pb-pace">—</span>
+            <span class="sub">min/km · walk/run</span>
+          </div>
+          <div class="prof-pb-card">
+            <span class="lbl">Longest Duration</span>
+            <span class="val" id="prof-pb-duration">—</span>
+            <span class="sub">moving duration</span>
+          </div>
+          <div class="prof-pb-card">
+            <span class="lbl">Active Streak</span>
+            <span class="val" id="prof-pb-streak">—</span>
+            <span class="sub">consecutive days</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activities list -->
+      <div>
+        <div class="detail-metrics-title">Recent Activities</div>
+        <div id="prof-recent-activities" style="display:flex; flex-direction:column; gap:12px; margin-top:8px;">
+          <!-- dynamically rendered activity cards list -->
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -6023,9 +6192,9 @@ function renderFeed() {
       return `
         <div class="feed-card type-activity ${timeClass}">
           <div class="feed-card-header">
-            <div class="feed-card-avatar" style="${getAvatarStyle(athleteName)}">${initials}</div>
+            <div class="feed-card-avatar" onclick="openProfileDetail('${act.athlete_id}', event)" style="${getAvatarStyle(athleteName)}; cursor: pointer;">${initials}</div>
             <div class="feed-card-meta">
-              <div class="feed-card-athlete-name">${esc(athleteName)}</div>
+              <div class="feed-card-athlete-name" onclick="openProfileDetail('${act.athlete_id}', event)">${esc(athleteName)}</div>
               <div class="feed-card-time">${timeStr}${dateTimeStr ? ' &middot; ' + dateTimeStr : ''}${deviceText}</div>
             </div>
           </div>
@@ -6524,6 +6693,243 @@ function closeActivityDetail() {
       } catch(e) {}
       _activeDetailMap = null;
     }
+  }, 350);
+}
+
+function openProfileDetail(athleteId, event) {
+  if (event && event.target && (event.target.closest('button') || event.target.closest('a') || event.target.closest('.feed-react-btn'))) {
+    return;
+  }
+  if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+
+  document.getElementById('prof-name').innerText = 'Loading...';
+  document.getElementById('prof-team-shift').innerText = '—';
+  document.getElementById('prof-total-dist').innerText = '—';
+  document.getElementById('prof-total-steps').innerText = '—';
+  document.getElementById('prof-total-activities').innerText = '—';
+  document.getElementById('prof-pb-longest').innerText = '—';
+  document.getElementById('prof-pb-pace').innerText = '—';
+  document.getElementById('prof-pb-duration').innerText = '—';
+  document.getElementById('prof-pb-streak').innerText = '—';
+  document.getElementById('prof-heatmap-grid').innerHTML = '';
+  document.getElementById('prof-recent-activities').innerHTML = '<div style="font-size:13px; color:var(--muted); text-align:center; padding:20px;">Loading recent activities...</div>';
+
+  var modal = document.getElementById('profile-detail-modal');
+  modal.style.display = 'block';
+  setTimeout(function() {
+    modal.classList.add('open');
+  }, 10);
+
+  // 1. Fetch Profile Registration details
+  fetch(SUPABASE_URL + '/rest/v1/registration?strava_athlete_id=eq.' + athleteId + '&select=*', { headers: HDR })
+    .then(function(res) { return res.json(); })
+    .then(function(regRows) {
+      if (regRows && regRows.length > 0) {
+        var reg = regRows[0];
+        var athleteName = reg.full_name || 'Participant';
+        var initials = athleteName.split(' ').map(function(n){return n[0];}).join('').toUpperCase().slice(0, 2);
+        
+        var avatarEl = document.getElementById('prof-avatar');
+        avatarEl.innerText = initials;
+        avatarEl.setAttribute('style', getAvatarStyle(athleteName));
+        
+        document.getElementById('prof-name').innerText = athleteName;
+        document.getElementById('prof-team-shift').innerText = (reg.leaderboard_team || 'No Team') + ' · ' + (reg.shift || 'No Shift');
+      }
+    })
+    .catch(function(err) {
+      console.warn('Profile registration load error:', err);
+    });
+
+  // 2. Fetch June 2026 Activities
+  var url = SUPABASE_URL + '/rest/v1/activities?strava_athlete_id=eq.' + athleteId + '&is_deleted=is.false&activity_date=gte.2026-06-01&activity_date=lte.2026-06-30&order=activity_date.desc';
+  fetch(url, { headers: HDR })
+    .then(function(res) { return res.json(); })
+    .then(function(acts) {
+      if (!acts) acts = [];
+
+      var totalMeters = 0;
+      var totalSteps = 0;
+      var totalActsCount = acts.length;
+
+      var maxDistMeters = 0;
+      var minPaceSec = 999999;
+      var maxDurSec = 0;
+      var activeDates = {};
+
+      acts.forEach(function(a) {
+        var dist = a.distance_meters || 0;
+        var steps = a.steps || Math.round((dist / 1000) * 1350);
+        var dur = a.moving_time_seconds || 0;
+
+        totalMeters += dist;
+        totalSteps += steps;
+
+        if (dist > maxDistMeters) maxDistMeters = dist;
+        if (dist > 500 && dur > 0) {
+          var pSec = dur / (dist / 1000);
+          if (pSec < minPaceSec) minPaceSec = pSec;
+        }
+        if (dur > maxDurSec) maxDurSec = dur;
+
+        if (a.activity_date) {
+          var ymd = a.activity_date.slice(0, 10);
+          activeDates[ymd] = (activeDates[ymd] || 0) + (dist / 1000);
+        }
+      });
+
+      document.getElementById('prof-total-dist').innerText = (totalMeters / 1000).toFixed(2) + ' km';
+      document.getElementById('prof-total-steps').innerText = totalSteps.toLocaleString('en-IN');
+      document.getElementById('prof-total-activities').innerText = totalActsCount;
+
+      var pbLongestStr = '—';
+      if (maxDistMeters > 0) {
+        pbLongestStr = (maxDistMeters / 1000).toFixed(2) + ' km';
+      }
+      document.getElementById('prof-pb-longest').innerText = pbLongestStr;
+
+      var pbPaceStr = '—';
+      if (minPaceSec < 999999) {
+        var pMin = Math.floor(minPaceSec / 60);
+        var pSecRem = Math.round(minPaceSec % 60);
+        if (pSecRem < 10) pSecRem = '0' + pSecRem;
+        pbPaceStr = pMin + ':' + pSecRem + '/km';
+      }
+      document.getElementById('prof-pb-pace').innerText = pbPaceStr;
+
+      var pbDurStr = '—';
+      if (maxDurSec > 0) {
+        if (maxDurSec >= 3600) {
+          pbDurStr = Math.floor(maxDurSec / 3600) + 'h ' + Math.floor((maxDurSec % 3600) / 60) + 'm';
+        } else {
+          pbDurStr = Math.floor(maxDurSec / 60) + 'm';
+        }
+      }
+      document.getElementById('prof-pb-duration').innerText = pbDurStr;
+
+      // Active Streak
+      var activeCount = 0;
+      var currentDay = new Date();
+      for (var d = 0; d < 30; d++) {
+        var checkYMD = currentDay.toISOString().slice(0, 10);
+        if (activeDates[checkYMD]) {
+          activeCount++;
+          currentDay.setDate(currentDay.getDate() - 1);
+        } else {
+          if (d === 0) {
+            currentDay.setDate(currentDay.getDate() - 1);
+            var yesterdayYMD = currentDay.toISOString().slice(0, 10);
+            if (activeDates[yesterdayYMD]) {
+              activeCount++;
+              currentDay.setDate(currentDay.getDate() - 1);
+              continue;
+            }
+          }
+          break;
+        }
+      }
+      document.getElementById('prof-pb-streak').innerText = activeCount + ' days';
+
+      // Heatmap Grid
+      var grid = document.getElementById('prof-heatmap-grid');
+      grid.innerHTML = '';
+      for (var dayNum = 1; dayNum <= 30; dayNum++) {
+        var dateStr = '2026-06-' + (dayNum < 10 ? '0' + dayNum : dayNum);
+        var distVal = activeDates[dateStr] || 0;
+        
+        var cell = document.createElement('div');
+        cell.className = 'hm-cell';
+        cell.setAttribute('title', 'June ' + dayNum + ': ' + distVal.toFixed(2) + ' km');
+        
+        if (distVal > 0) {
+          cell.classList.add('active');
+          if (distVal >= 21) {
+            cell.style.background = 'var(--brand)';
+            cell.style.boxShadow = '0 0 6px var(--brand)';
+          } else if (distVal >= 15) {
+            cell.style.background = 'rgba(232, 98, 42, 0.9)';
+          } else if (distVal >= 10) {
+            cell.style.background = 'rgba(232, 98, 42, 0.7)';
+          } else if (distVal >= 8) {
+            cell.style.background = 'rgba(232, 98, 42, 0.5)';
+          } else {
+            cell.style.background = 'rgba(232, 98, 42, 0.3)';
+          }
+        } else {
+          cell.style.background = 'rgba(255, 255, 255, 0.05)';
+        }
+        grid.appendChild(cell);
+      }
+
+      // Recent 3 Activities list
+      var listContainer = document.getElementById('prof-recent-activities');
+      listContainer.innerHTML = '';
+      var recentActs = acts.slice(0, 3);
+      if (recentActs.length === 0) {
+        listContainer.innerHTML = '<div style="font-size:13px; color:var(--muted); text-align:center; padding:20px;">No recent activities logged this month.</div>';
+        return;
+      }
+      
+      recentActs.forEach(function(a) {
+        var distVal = ((a.distance_meters || 0) / 1000).toFixed(2);
+        var movingMins = Math.round((a.moving_time_seconds || 0) / 60);
+        var stepsVal = a.steps || Math.round((a.distance_meters / 1000) * 1350);
+        
+        var dateLabel = '—';
+        try {
+          var dt = new Date(a.activity_date);
+          dateLabel = dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+        } catch(e) {}
+        
+        var card = document.createElement('div');
+        card.style.background = 'rgba(255, 255, 255, 0.02)';
+        card.style.border = '1px solid rgba(255, 255, 255, 0.05)';
+        card.style.borderRadius = '10px';
+        card.style.padding = '12px 14px';
+        card.style.cursor = 'pointer';
+        card.style.display = 'flex';
+        card.style.alignItems = 'center';
+        card.style.justifyContent = 'space-between';
+        
+        var ann = _feedData.find(function(x) {
+          if (x.type === 'activity') {
+            try {
+              var bodyObj = JSON.parse(x.body);
+              return String(bodyObj.activity_id) === String(a.strava_activity_id);
+            } catch(err) {}
+          }
+          return false;
+        });
+        
+        var onclickAttr = '';
+        if (ann) {
+          onclickAttr = 'openActivityDetail(\'' + ann.id + '\', event)';
+        }
+        if (onclickAttr) {
+          card.setAttribute('onclick', onclickAttr);
+        }
+        
+        card.innerHTML = 
+          '<div>' +
+            '<div style="font-size:14px; font-weight:800; color:#fff;">' + esc(a.activity_name || 'Activity') + '</div>' +
+            '<div style="font-size:11.5px; color:var(--muted); margin-top:2px;">' + dateLabel + ' &middot; ' + distVal + ' km &middot; ' + movingMins + ' mins</div>' +
+          '</div>' +
+          '<div style="font-size:13px; font-weight:700; color:var(--brand); display:flex; align-items:center; gap:2px;">' +
+            '<span>' + stepsVal.toLocaleString('en-IN') + '</span> <span style="font-size:10px; color:var(--muted);">steps</span>' +
+          '</div>';
+        listContainer.appendChild(card);
+      });
+    })
+    .catch(function(err) {
+      console.warn('Profile activities load error:', err);
+    });
+}
+
+function closeProfileDetail() {
+  var modal = document.getElementById('profile-detail-modal');
+  modal.classList.remove('open');
+  setTimeout(function() {
+    modal.style.display = 'none';
   }, 350);
 }
 
