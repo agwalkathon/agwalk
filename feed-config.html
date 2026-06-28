@@ -263,6 +263,79 @@
         </div>
       </div>
 
+      <div class="card" style="margin-top:24px;">
+        <div class="card-head">
+          <div class="card-head-left"><span>⚙️</span><h2>Global Feed Customization</h2></div>
+        </div>
+        <div class="card-body">
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-title">Smart Pace Filtering</div>
+              <div class="toggle-desc">Automatically hide the pace field on Walk activity cards to keep the feed clean.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="rule-smart-pace">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-title">Display Calculated Steps</div>
+              <div class="toggle-desc">Show estimated steps for Walk, Run, and Hike activities on the feed.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="rule-show-steps">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-title">Display Elevation Gain</div>
+              <div class="toggle-desc">Show elevation stats on feed cards if the activity has elevation gain > 0.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="rule-show-elevation">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-title">Post-Specific Emoji Reactions</div>
+              <div class="toggle-desc">Enable customized sets of emojis (e.g. fire/crown/celebrate) tailored to activity/achievement type.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="rule-post-emojis">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-title">Priority Feed Sorting</div>
+              <div class="toggle-desc">Sort feed chronologically, using priority tie-breakers (Rank #1 > Medals > Clubs > Daily) for bulk syncs.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="rule-priority-sorting">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-title">Allow Private Profiles</div>
+              <div class="toggle-desc">Allow participants to set their profiles to Private and opt-out of the global social feed.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="rule-allow-private">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
       <div style="display:flex;align-items:center;margin-top:20px;">
         <button class="btn btn-primary" onclick="saveSettings()">💾 Save Settings</button>
         <span id="status-msg" class="status-msg"></span>
@@ -330,7 +403,13 @@
         allow_medals: true,
         allow_distance_clubs: true,
         allow_rank_top1: true,
-        allow_flagged_activities: false
+        allow_flagged_activities: false,
+        smart_pace_filter: true,
+        show_steps: true,
+        show_elevation: true,
+        post_specific_reactions: true,
+        priority_feed_sorting: true,
+        allow_private_profiles: true
       },
       filters: {
         minimum_activity_distance_km: 1.0,
@@ -359,6 +438,12 @@
         document.getElementById('rule-clubs').checked = !!config.rules.allow_distance_clubs;
         document.getElementById('rule-rank').checked = !!config.rules.allow_rank_top1;
         document.getElementById('rule-flagged').checked = !!config.rules.allow_flagged_activities;
+        document.getElementById('rule-smart-pace').checked = config.rules.smart_pace_filter !== false;
+        document.getElementById('rule-show-steps').checked = config.rules.show_steps !== false;
+        document.getElementById('rule-show-elevation').checked = config.rules.show_elevation !== false;
+        document.getElementById('rule-post-emojis').checked = config.rules.post_specific_reactions !== false;
+        document.getElementById('rule-priority-sorting').checked = config.rules.priority_feed_sorting !== false;
+        document.getElementById('rule-allow-private').checked = config.rules.allow_private_profiles !== false;
         document.getElementById('filter-min-dist').value = config.filters.minimum_activity_distance_km !== undefined ? config.filters.minimum_activity_distance_km : 1.0;
         
         var allowedSports = config.filters.allowed_sports || ["Walk", "Run", "Hike", "Ride"];
@@ -385,7 +470,13 @@
           allow_medals: document.getElementById('rule-medals').checked,
           allow_distance_clubs: document.getElementById('rule-clubs').checked,
           allow_rank_top1: document.getElementById('rule-rank').checked,
-          allow_flagged_activities: document.getElementById('rule-flagged').checked
+          allow_flagged_activities: document.getElementById('rule-flagged').checked,
+          smart_pace_filter: document.getElementById('rule-smart-pace').checked,
+          show_steps: document.getElementById('rule-show-steps').checked,
+          show_elevation: document.getElementById('rule-show-elevation').checked,
+          post_specific_reactions: document.getElementById('rule-post-emojis').checked,
+          priority_feed_sorting: document.getElementById('rule-priority-sorting').checked,
+          allow_private_profiles: document.getElementById('rule-allow-private').checked
         },
         filters: {
           minimum_activity_distance_km: parseFloat(document.getElementById('filter-min-dist').value || 0),
