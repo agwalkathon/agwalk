@@ -6208,16 +6208,16 @@ function renderFeed() {
       return `
         <div class="feed-card type-activity ${timeClass}" onclick="openActivityDetail('${item.id}', event)" style="cursor: pointer;">
           <div class="feed-card-header">
-            <div class="feed-card-avatar" onclick="openProfileDetail('${item.tagged_athlete_id}', event)" style="${getAvatarStyle(athleteName)}; cursor: pointer;">${initials}</div>
+            <div class="feed-card-avatar" onclick="openProfileDetail('${item.tagged_athlete_id}', event); event.stopPropagation();" style="${getAvatarStyle(athleteName)}; cursor: pointer;">${initials}</div>
             <div class="feed-card-meta">
-              <div class="feed-card-athlete-name" onclick="openProfileDetail('${item.tagged_athlete_id}', event)">${esc(athleteName)}</div>
+              <div class="feed-card-athlete-name" onclick="openProfileDetail('${item.tagged_athlete_id}', event); event.stopPropagation();">${esc(athleteName)}</div>
               <div class="feed-card-time">${timeStr}${dateTimeStr ? ' &middot; ' + dateTimeStr : ''}${deviceText}</div>
             </div>
           </div>
           <div class="feed-card-activity-info">
             <div class="feed-card-activity-title-row">
               <span class="sport-icon">${sportIcon}</span>
-              <span class="activity-title" onclick="openActivityDetail('${item.id}', event)">${esc(act.activity_name || 'Activity')}</span>
+              <span class="activity-title" onclick="openActivityDetail('${item.id}', event); event.stopPropagation();">${esc(act.activity_name || 'Activity')}</span>
             </div>
             ${descriptionHtml}
             ${appreciationHtml}
@@ -6556,6 +6556,7 @@ function openActivityDetail(id, event, isStravaId) {
       var mapWrap = document.getElementById('detail-map-container');
       if (act.summary_polyline) {
         mapWrap.style.display = 'block';
+        mapWrap.innerHTML = '<div id="detail-map" style="width: 100%; height: 100%;"></div>';
         if (_activeDetailMap) {
           try { _activeDetailMap.remove(); } catch(e) {}
           _activeDetailMap = null;
