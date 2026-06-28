@@ -563,22 +563,17 @@
     .pb-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
+      gap: 8px;
       margin-bottom: 16px;
     }
-    @media (max-width: 480px) {
-      .pb-grid {
-        grid-template-columns: 1fr;
-      }
-    }
     .pb-card {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.005) 100%);
+      background: rgba(255, 255, 255, 0.02);
       border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 16px;
-      padding: 16px;
+      border-radius: 10px;
+      padding: 10px 12px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 6px;
       position: relative;
       overflow: hidden;
       transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease, box-shadow 0.25s ease;
@@ -590,17 +585,17 @@
       transform: translateY(-2px);
       border-color: rgba(255, 255, 255, 0.15);
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+      background: rgba(255, 255, 255, 0.04);
     }
     .pb-card-header {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
     .pb-card-icon {
-      width: 30px;
-      height: 30px;
-      border-radius: 9px;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -611,27 +606,27 @@
       transform: scale(1.08);
     }
     .pb-card-label {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
       color: var(--label);
-      letter-spacing: 0.8px;
+      letter-spacing: 0.6px;
       text-transform: uppercase;
     }
     .pb-card-body {
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
-      min-height: 44px;
+      min-height: 36px;
     }
     .pb-card-val {
-      font-size: 22px;
+      font-size: 18px;
       font-weight: 800;
       letter-spacing: -0.5px;
     }
     .pb-card-sub {
-      font-size: 11px;
+      font-size: 9.5px;
       color: var(--label);
-      margin-top: 2px;
+      margin-top: 1px;
     }
     
     /* ── Activity Breakdown Chips ── */
@@ -2711,7 +2706,7 @@ document.addEventListener('click', function(e) {
   <div class="sec">PERSONAL BESTS</div>
   <div class="pb-grid">
     <!-- Longest Activity -->
-    <div class="pb-card" style="border-left: 3px solid #ffae00;">
+    <div class="pb-card">
       <div class="pb-card-header">
         <div class="pb-card-icon" style="background: rgba(255, 174, 0, 0.12); color: #ffae00;">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l4-8 4 4 4-8 4 8"/></svg>
@@ -2725,7 +2720,7 @@ document.addEventListener('click', function(e) {
     </div>
 
     <!-- Best Pace -->
-    <div class="pb-card" style="border-left: 3px solid var(--brand);">
+    <div class="pb-card">
       <div class="pb-card-header">
         <div class="pb-card-icon" style="background: rgba(232, 98, 42, 0.12); color: var(--brand);">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -2739,7 +2734,7 @@ document.addEventListener('click', function(e) {
     </div>
 
     <!-- Longest Session -->
-    <div class="pb-card" style="border-left: 3px solid var(--blue);">
+    <div class="pb-card">
       <div class="pb-card-header">
         <div class="pb-card-icon" style="background: rgba(96, 165, 250, 0.12); color: var(--blue);">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
@@ -2753,7 +2748,7 @@ document.addEventListener('click', function(e) {
     </div>
 
     <!-- Best Day -->
-    <div class="pb-card" style="border-left: 3px solid var(--green);">
+    <div class="pb-card">
       <div class="pb-card-header">
         <div class="pb-card-icon" style="background: rgba(34, 197, 94, 0.12); color: var(--green);">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
