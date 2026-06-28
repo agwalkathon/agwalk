@@ -1415,6 +1415,34 @@
   .feed-card.type-activity:hover {
     box-shadow: 0 8px 30px rgba(0,0,0,0.3), 0 0 15px rgba(16, 185, 129, 0.08);
   }
+  /* Time of Day Custom Feeds */
+  .feed-card.type-activity.time-morning {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.04) 0%, rgba(26, 29, 32, 0.65) 100%);
+    border-color: rgba(251, 191, 36, 0.12);
+    border-left-color: #FBBF24;
+  }
+  .feed-card.type-activity.time-morning:hover {
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3), 0 0 15px rgba(251, 191, 36, 0.08);
+    border-color: rgba(251, 191, 36, 0.22);
+  }
+  .feed-card.type-activity.time-evening {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.04) 0%, rgba(26, 29, 32, 0.65) 100%);
+    border-color: rgba(236, 72, 153, 0.12);
+    border-left-color: #EC4899;
+  }
+  .feed-card.type-activity.time-evening:hover {
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3), 0 0 15px rgba(236, 72, 153, 0.08);
+    border-color: rgba(236, 72, 153, 0.22);
+  }
+  .feed-card.type-activity.time-night {
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.04) 0%, rgba(26, 29, 32, 0.65) 100%);
+    border-color: rgba(96, 165, 250, 0.12);
+    border-left-color: #3B82F6;
+  }
+  .feed-card.type-activity.time-night:hover {
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3), 0 0 15px rgba(96, 165, 250, 0.08);
+    border-color: rgba(96, 165, 250, 0.22);
+  }
   .feed-card-header {
     display: flex;
     align-items: center;
@@ -2286,9 +2314,22 @@ document.addEventListener('click', function(e) {
 <div class="content hidden-tab" id="tab-feed">
 <div class="max-w">
   <div class="sec">Feed</div>
+  <div id="feed-highlights-row" style="display:none; margin-bottom: 16px;"></div>
   <div id="feed-list">
     <div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div><div class="skeleton skel-line short"></div></div>
     <div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div><div class="skeleton skel-line short"></div></div>
+  </div>
+  
+  <!-- Highlights Detail Modal -->
+  <div id="highlight-detail-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100dvh; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center; padding:24px;" onclick="this.style.display='none'">
+    <div class="modal-card" style="background:var(--surface); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:24px; max-width:400px; width:100%; box-shadow:0 12px 40px rgba(0,0,0,0.5); text-align:center; transform:scale(0.9); transition:transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); position:relative;" onclick="event.stopPropagation()">
+      <button style="position:absolute; top:12px; right:12px; background:none; border:none; color:var(--muted); font-size:18px; cursor:pointer;" onclick="document.getElementById('highlight-detail-modal').style.display='none'">✕</button>
+      <div id="highlight-modal-emoji" style="font-size:54px; margin-bottom:12px; filter:drop-shadow(0 0 10px rgba(255,255,255,0.15));">🔥</div>
+      <div id="highlight-modal-title" style="font-size:18px; font-weight:800; color:#fff; margin-bottom:6px; letter-spacing:0.3px;">Streak Leader!</div>
+      <div id="highlight-modal-subtitle" style="font-size:11px; font-weight:700; color:var(--brand); text-transform:uppercase; letter-spacing:1px; margin-bottom:14px;">12 Days Active</div>
+      <div id="highlight-modal-body" style="font-size:13.5px; color:rgba(255,255,255,0.7); line-height:1.5; margin-bottom:20px;">Prakash Mali is on fire with 12 consecutive days of activities! Keep it going!</div>
+      <button class="btn" style="width:100%; border:none; border-radius:10px; font-weight:700; padding:12px; background:linear-gradient(135deg, #FC6100 0%, #E8622A 100%); color:#fff; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px; box-shadow:0 4px 12px rgba(232,98,42,0.3);" onclick="triggerHighlightCheer()">Clap Support 👏</button>
+    </div>
   </div>
 </div>
 </div>
@@ -4366,10 +4407,165 @@ function getMilestoneWeight(title) {
   if (t.indexOf('10 km daily') > -1) return 5;
   return 1;
 }
+var _highlightsData = {};
 
+function renderFeedHighlights() {
+  var container = document.getElementById('feed-highlights-row');
+  if (!container) return;
+
+  if (!LB_REG || !LB_REG.length || !LB_ACTS || !LB_ACTS.length) {
+    container.style.display = 'none';
+    return;
+  }
+
+  var actsByAthlete = {};
+  LB_ACTS.forEach(function(a) {
+    var aid = String(a.strava_athlete_id);
+    if (!actsByAthlete[aid]) actsByAthlete[aid] = [];
+    actsByAthlete[aid].push(a);
+  });
+
+  var scored = LB_REG.map(function(p) {
+    var acts = actsByAthlete[p.strava_athlete_id] || [];
+    var totalKm = acts.reduce(function(s,a){return s+(a.distance_meters||0)/1000;}, 0);
+    var dayKm = {};
+    acts.forEach(function(a){var d=getActDate(a);if(d)dayKm[d]=(dayKm[d]||0)+(a.distance_meters||0)/1000;});
+    
+    var days = Object.keys(dayKm).sort(), streak=0, cur=0, prev=null;
+    days.forEach(function(d){if(prev){var diff=Math.round((new Date(d+'T12:00:00')-new Date(prev+'T12:00:00'))/86400000);cur=diff===1?cur+1:1;}else cur=1;streak=Math.max(streak,cur);prev=d;});
+    
+    return {
+      id: String(p.strava_athlete_id),
+      name: p.full_name || '—',
+      totalKm: totalKm,
+      streak: streak,
+      actCount: acts.length,
+      team: p.leaderboard_team || ''
+    };
+  }).filter(function(x){return x.totalKm > 0;});
+
+  if (!scored.length) {
+    container.style.display = 'none';
+    return;
+  }
+
+  var topDist = scored.slice().sort(function(a,b){return b.totalKm - a.totalKm;})[0];
+  var topStreak = scored.slice().sort(function(a,b){return b.streak - a.streak;})[0];
+  var topCount = scored.slice().sort(function(a,b){return b.actCount - a.actCount;})[0];
+
+  var teamDist = {};
+  scored.forEach(function(x) {
+    if (x.team) teamDist[x.team] = (teamDist[x.team] || 0) + x.totalKm;
+  });
+  var topTeamName = '';
+  var topTeamKm = 0;
+  Object.keys(teamDist).forEach(function(team) {
+    if (teamDist[team] > topTeamKm) {
+      topTeamKm = teamDist[team];
+      topTeamName = team;
+    }
+  });
+
+  _highlightsData = {
+    champ: topDist ? {
+      emoji: '🚶‍♂️',
+      title: 'Distance Champion',
+      subtitle: topDist.totalKm.toFixed(1) + ' km walked',
+      body: topDist.name + ' is leading the walkathon leaderboard with an outstanding total distance of ' + topDist.totalKm.toFixed(1) + ' km! Keep pacing the way!',
+      ringColor: '#FFD000'
+    } : null,
+    streak: topStreak && topStreak.streak > 0 ? {
+      emoji: '🔥',
+      title: 'Streak Master',
+      subtitle: topStreak.streak + ' Days Active',
+      body: topStreak.name + ' is on fire with a consecutive daily log streak of ' + topStreak.streak + ' days! Consistency wins!',
+      ringColor: '#E8622A'
+    } : null,
+    active: topCount ? {
+      emoji: '⚡',
+      title: 'Most Sessions Logged',
+      subtitle: topCount.actCount + ' Activities Logged',
+      body: topCount.name + ' has logged the highest frequency of workouts with ' + topCount.actCount + ' separate activity logs! True motivation!',
+      ringColor: '#60A5FA'
+    } : null,
+    team: topTeamName ? {
+      emoji: '🏆',
+      title: 'Dominant Team',
+      subtitle: topTeamName.replace(/^Team\s+/i, '') + ' · ' + Math.round(topTeamKm) + ' km',
+      body: topTeamName + ' is leading all groups today with a combined team total distance of ' + Math.round(topTeamKm) + ' km! Synergy wins!',
+      ringColor: '#A78BFA'
+    } : null
+  };
+
+  var html = '<div style="display:flex; gap:14px; overflow-x:auto; padding: 4px 4px 10px; margin-bottom:0; scrollbar-width: none; -ms-overflow-style: none;">';
+  var order = ['champ', 'streak', 'active', 'team'];
+  order.forEach(function(key) {
+    var data = _highlightsData[key];
+    if (!data) return;
+    var firstName = data.title.indexOf('Team') > -1 ? data.subtitle.split(' · ')[0] : data.body.split(' ')[0];
+    
+    html += `
+      <div class="highlight-bubble" onclick="openHighlightDetail('${key}')" style="display:flex; flex-direction:column; align-items:center; flex-shrink:0; cursor:pointer; width:70px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+        <div style="position:relative; width:52px; height:52px; border-radius:50%; background:rgba(255,255,255,0.02); display:flex; align-items:center; justify-content:center; border: 2.5px solid ${data.ringColor}; box-shadow: 0 0 10px ${data.ringColor}35; margin-bottom:6px;">
+          <span style="font-size:22px;">${data.emoji}</span>
+        </div>
+        <span style="font-size:10px; font-weight:700; color:#fff; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%;">${firstName}</span>
+        <span style="font-size:8px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%; text-align:center;">${data.title.split(' ')[0]}</span>
+      </div>
+    `;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+  container.style.display = 'block';
+}
+
+function openHighlightDetail(key) {
+  var data = _highlightsData[key];
+  if (!data) return;
+
+  document.getElementById('highlight-modal-emoji').textContent = data.emoji;
+  document.getElementById('highlight-modal-title').textContent = data.title;
+  document.getElementById('highlight-modal-subtitle').textContent = data.subtitle;
+  document.getElementById('highlight-modal-body').textContent = data.body;
+  document.getElementById('highlight-modal-subtitle').style.color = data.ringColor;
+
+  var btn = document.querySelector('#highlight-detail-modal button.btn');
+  if (btn) {
+    btn.innerHTML = 'Clap Support 👏';
+    btn.disabled = false;
+    btn.style.background = 'linear-gradient(135deg, #FC6100 0%, #E8622A 100%)';
+    btn.style.borderColor = '';
+    btn.style.boxShadow = '';
+  }
+
+  var modal = document.getElementById('highlight-detail-modal');
+  modal.style.display = 'flex';
+  var card = modal.querySelector('.modal-card');
+  card.style.transform = 'scale(0.9)';
+  setTimeout(function() {
+    card.style.transform = 'scale(1)';
+  }, 50);
+}
+
+function triggerHighlightCheer() {
+  triggerConfettiBurst(window.event);
+  var btn = document.querySelector('#highlight-detail-modal button.btn');
+  if (btn) {
+    btn.innerHTML = 'Cheered! 🎉';
+    btn.disabled = true;
+    btn.style.background = 'rgba(34, 197, 94, 0.2)';
+    btn.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+    btn.style.boxShadow = 'none';
+  }
+  setTimeout(function() {
+    var modal = document.getElementById('highlight-detail-modal');
+    if (modal) modal.style.display = 'none';
+  }, 1200);
+}
 function renderFeed() {
   var list = document.getElementById('feed-list');
   if (!list) return;
+  renderFeedHighlights();
   if (!_feedData.length) {
     list.innerHTML = '<div class="empty-state"><div class="icon">📢</div><p>No updates in the feed yet. Check back later!</p></div>';
     return;
@@ -4511,6 +4707,21 @@ function renderFeed() {
       var initials = athleteName.split(' ').map(function(n){return n[0];}).join('').toUpperCase().slice(0, 2);
       var deviceText = act.device_name ? ' via ' + act.device_name : '';
       
+      // Calculate time-of-day class
+      var localHour = 12;
+      try {
+        var dt = new Date(item.created_at);
+        localHour = dt.getHours();
+      } catch(e) {}
+      var timeClass = 'time-day';
+      if (localHour >= 5 && localHour < 9) {
+        timeClass = 'time-morning';
+      } else if (localHour >= 16 && localHour < 19) {
+        timeClass = 'time-evening';
+      } else if (localHour >= 19 || localHour < 5) {
+        timeClass = 'time-night';
+      }
+      
       var sportIcon = '🚶‍♂️';
       var sportLower = (act.sport_type || '').toLowerCase();
       if (sportLower.indexOf('run') > -1) sportIcon = '🏃‍♂️';
@@ -4549,7 +4760,7 @@ function renderFeed() {
       }
 
       return `
-        <div class="feed-card type-activity">
+        <div class="feed-card type-activity ${timeClass}">
           <div class="feed-card-header">
             <div class="feed-card-avatar">${initials}</div>
             <div class="feed-card-meta">
