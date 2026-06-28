@@ -529,7 +529,7 @@ td button.btn:last-child { margin-right: 0; }
       </div><div class="filter-actions"><button class="btn btn-primary" onclick="loadActivities()">Search</button><button class="btn btn-ghost" onclick="setDefaultTodayFilters();loadActivities();">Today</button><button class="btn btn-ghost" onclick="clearFilters()">Clear</button><button class="btn btn-ghost" id="export-btn" onclick="exportCSV()" style="display:none"><i class="ti ti-download"></i> Export CSV</button><span id="searching-indicator" style="display:none;align-items:center;gap:8px;font-size:13px;color:#888"><div class="spinner" style="width:18px;height:18px;border-width:2px"></div>Searching...</span></div></div>
       <div class="stats-grid" id="stats-row" style="display:none"><div class="stat-card"><div class="val" id="total-activities">—</div><div class="lbl">Activities found</div></div><div class="stat-card"><div class="val" id="total-distance">—</div><div class="lbl">Total km</div></div><div class="stat-card dark"><div class="val" id="total-participants">—</div><div class="lbl">Participants</div></div><div class="stat-card green"><div class="val" id="total-valid">—</div><div class="lbl">Valid</div></div><div class="stat-card red"><div class="val" id="total-flagged">—</div><div class="lbl">Flagged</div></div></div>
       <div id="flag-counts" style="display:none;margin-bottom:18px;gap:8px;flex-wrap:wrap"></div>
-      <div class="card"><div id="placeholder" class="empty"><div class="icon">🔍</div><p>Use filters above and click <strong>Search</strong> to load activities.</p></div><div id="results" style="display:none"><div class="result-count"><span id="result-count"></span></div><div class="scroll-top" id="scroll-top"><div class="scroll-top-inner" id="scroll-top-inner"></div></div><div class="table-wrap" id="table-wrap"><table id="main-table"><thead><tr><th>Status</th><th>Original Time (UTC)</th><th>IST Time</th><th>Participant Name</th><th>Activity Name</th><th>Type</th><th>Distance</th><th>Moving Time</th><th>Pace/Speed</th><th>Elevation</th><th>Device</th></tr></thead><tbody id="activities-body"></tbody></table></div></div></div>
+      <div class="card"><div id="placeholder" class="empty"><div class="icon">🔍</div><p>Use filters above and click <strong>Search</strong> to load activities.</p></div><div id="results" style="display:none"><div class="result-count"><span id="result-count"></span></div><div class="scroll-top" id="scroll-top"><div class="scroll-top-inner" id="scroll-top-inner"></div></div><div class="table-wrap" id="table-wrap"><table id="main-table"><thead><tr><th>Status</th><th>IST Time</th><th>Participant Name</th><th>Activity Name</th><th>Type</th><th>Distance</th><th>Moving Time</th><th>Pace/Speed</th><th>Device</th></tr></thead><tbody id="activities-body"></tbody></table></div></div></div>
     </div>
 
     <!-- Tab 2 & 4: Under Review / Deleted Workouts -->
@@ -1164,7 +1164,7 @@ async function loadActivities(){
   document.getElementById('results').style.display='block';
   document.getElementById('stats-row').style.display='none';
   document.getElementById('searching-indicator').style.display='flex';
-  document.getElementById('activities-body').innerHTML='<tr><td colspan="11"><div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:48px"><div style="width:28px;height:28px;border:3px solid #f0f0f0;border-top-color:#E8622A;border-radius:50%;animation:spin .8s linear infinite"></div><span style="color:#888;font-size:14px">Searching activities...</span></div></td></tr>';
+  document.getElementById('activities-body').innerHTML='<tr><td colspan="9"><div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:48px"><div style="width:28px;height:28px;border:3px solid #f0f0f0;border-top-color:#E8622A;border-radius:50%;animation:spin .8s linear infinite"></div><span style="color:#888;font-size:14px">Searching activities...</span></div></td></tr>';
   
   var df=document.getElementById('date-from').value;
   var dt=document.getElementById('date-to').value;
@@ -1247,7 +1247,7 @@ async function loadActivities(){
     document.getElementById('result-count').textContent=acts.length+' activit'+(acts.length===1?'y':'ies')+' found';
     
     if(!acts.length){
-      document.getElementById('activities-body').innerHTML='<tr><td colspan="11" style="text-align:center;padding:48px;color:#bbb">No activities match your filters</td></tr>';
+      document.getElementById('activities-body').innerHTML='<tr><td colspan="9" style="text-align:center;padding:48px;color:#bbb">No activities match your filters</td></tr>';
       document.getElementById('searching-indicator').style.display='none';
       return;
     }
@@ -1258,12 +1258,12 @@ async function loadActivities(){
       var athleteName=r&&r.full_name?r.full_name:'Unknown';
       var isRev = a.is_reviewed === true || a.is_reviewed === 'true';
       var statusBadge=a.is_flagged?'<span class="badge badge-invalid" style="cursor:pointer; background:' + (isRev ? '#F3F4F6; color:#4B5563; border-color:#D1D5DB;' : '#FFE4E6; color:#E11D48; border-color:#FDA4AF;') + '" title="' + esc(a.flag_reason || 'Flagged') + (isRev ? ' (Reviewed)' : ' (Pending)') + '" onclick="openModal('+a.id+')">🚩 '+esc(a.flag_reason||'Flagged')+(isRev ? ' (Reviewed)' : ' (Pending)')+'</span>':'<span class="badge badge-valid" style="cursor:pointer" title="Activity is Valid" onclick="openModal('+a.id+')">✅ Valid</span>';
-      return'<tr class="activity-row" data-strava-id="'+a.strava_activity_id+'" data-device="'+esc(a.device_name||'—')+'" data-elapsed="'+(a.elapsed_time_seconds?fmtDur(a.elapsed_time_seconds):'—')+'" data-avg-hr="'+(a.avg_heart_rate?a.avg_heart_rate.toFixed(0)+' bpm':'—')+'" data-max-hr="'+(a.max_heart_rate?a.max_heart_rate.toFixed(0)+' bpm':'—')+'" data-calories="'+(a.calories?a.calories.toFixed(0)+' kcal':'—')+'" data-steps="'+(a.steps||'—')+'" data-flagged="'+(a.is_flagged?'Yes':'No')+'" data-flag-reason="'+esc(a.flag_reason||'—')+'" data-deleted="'+(a.is_deleted?'Yes':'No')+'" data-bonus="'+(a.manual_bonus||0)+' points"><td id="status-cell-'+a.id+'" data-reason="'+esc(a.flag_reason||'')+'">'+statusBadge+'</td><td>'+fmtUTCDateTime(a.activity_date,a.start_time)+'</td><td>'+fmtActivityIST(a)+'</td><td><a href="https://www.strava.com/athletes/'+a.strava_athlete_id+'" target="_blank" class="ath">'+esc(athleteName)+'</a></td><td style="max-width:190px"><a href="'+actUrl+'" target="_blank" class="act-link" title="'+esc(a.activity_name||'')+'" style="display:inline-block;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(a.activity_name||'—')+'</a></td><td class="editable" data-edit="type" data-id="'+a.id+'" data-val="'+esc(a.sport_type||'')+'" title="Double-click to edit"><span class="badge '+bc(a.sport_type)+'">'+esc(a.sport_type||'—')+'</span></td><td class="editable" data-edit="dist" data-id="'+a.id+'" data-val="'+(a.distance_meters||0)+'" title="Double-click to edit">'+(a.distance_meters?(a.distance_meters/1000).toFixed(2)+' km':'—')+'</td><td>'+(a.moving_time_seconds?fmtDur(a.moving_time_seconds):'—')+'</td><td>'+fmtPS(a.avg_speed,a.sport_type)+'</td><td>'+(a.elevation_gain?a.elevation_gain.toFixed(0)+' m':'—')+'</td><td>'+esc(a.device_name||'—')+'</td></tr>';
+      return'<tr class="activity-row" data-strava-id="'+a.strava_activity_id+'" data-device="'+esc(a.device_name||'—')+'" data-elapsed="'+(a.elapsed_time_seconds?fmtDur(a.elapsed_time_seconds):'—')+'" data-avg-hr="'+(a.avg_heart_rate?a.avg_heart_rate.toFixed(0)+' bpm':'—')+'" data-max-hr="'+(a.max_heart_rate?a.max_heart_rate.toFixed(0)+' bpm':'—')+'" data-calories="'+(a.calories?a.calories.toFixed(0)+' kcal':'—')+'" data-steps="'+(a.steps||'—')+'" data-flagged="'+(a.is_flagged?'Yes':'No')+'" data-flag-reason="'+esc(a.flag_reason||'—')+'" data-deleted="'+(a.is_deleted?'Yes':'No')+'" data-bonus="'+(a.manual_bonus||0)+' points"><td id="status-cell-'+a.id+'" data-reason="'+esc(a.flag_reason||'')+'">'+statusBadge+'</td><td>'+fmtActivityIST(a)+'</td><td><a href="https://www.strava.com/athletes/'+a.strava_athlete_id+'" target="_blank" class="ath">'+esc(athleteName)+'</a></td><td style="max-width:190px"><a href="'+actUrl+'" target="_blank" class="act-link" title="'+esc(a.activity_name||'')+'" style="display:inline-block;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(a.activity_name||'—')+'</a></td><td class="editable" data-edit="type" data-id="'+a.id+'" data-val="'+esc(a.sport_type||'')+'" title="Double-click to edit"><span class="badge '+bc(a.sport_type)+'">'+esc(a.sport_type||'—')+'</span></td><td class="editable" data-edit="dist" data-id="'+a.id+'" data-val="'+(a.distance_meters||0)+'" title="Double-click to edit">'+(a.distance_meters?(a.distance_meters/1000).toFixed(2)+' km':'—')+'</td><td>'+(a.moving_time_seconds?fmtDur(a.moving_time_seconds):'—')+'</td><td>'+fmtPS(a.avg_speed,a.sport_type)+'</td><td>'+esc(a.device_name||'—')+'</td></tr>';
     }).join('');
     setTimeout(initScrollSync,100);
   }catch(e){
     console.error(e);
-    document.getElementById('activities-body').innerHTML='<tr><td colspan="11" style="text-align:center;padding:48px;color:#c62828">Error loading data. Please try again.</td></tr>';
+    document.getElementById('activities-body').innerHTML='<tr><td colspan="9" style="text-align:center;padding:48px;color:#c62828">Error loading data. Please try again.</td></tr>';
   }
   document.getElementById('searching-indicator').style.display='none';
 }
@@ -1314,18 +1314,25 @@ async function toggleRowSplits(row) {
   var del = row.getAttribute('data-deleted');
   var bon = row.getAttribute('data-bonus');
 
-  var metaHtml = '<div class="activity-metadata-grid">' +
-    '<div class="meta-item"><span class="meta-label">Device Name</span><span class="meta-value">' + esc(dev) + '</span></div>' +
-    '<div class="meta-item"><span class="meta-label">Elapsed Time</span><span class="meta-value">' + esc(ela) + '</span></div>' +
-    '<div class="meta-item"><span class="meta-label">Avg Heart Rate</span><span class="meta-value">' + esc(avghr) + '</span></div>' +
-    '<div class="meta-item"><span class="meta-label">Max Heart Rate</span><span class="meta-value">' + esc(maxhr) + '</span></div>' +
-    '<div class="meta-item"><span class="meta-label">Calories</span><span class="meta-value">' + esc(cal) + '</span></div>' +
-    '<div class="meta-item"><span class="meta-label">Steps</span><span class="meta-value">' + esc(steps) + '</span></div>' +
-    '<div class="meta-item"><span class="meta-label">Is Flagged</span><span class="meta-value">' + esc(flg) + '</span></div>' +
-    '<div class="meta-item"><span class="meta-label">Flag Reason</span><span class="meta-value">' + esc(flgr) + '</span></div>' +
-    '<div class="meta-item"><span class="meta-label">Is Deleted</span><span class="meta-value">' + esc(del) + '</span></div>' +
-    '<div class="meta-item"><span class="meta-label">Manual Bonus</span><span class="meta-value">' + esc(bon) + '</span></div>' +
-    '</div>';
+  function isValEmpty(val) {
+    if (val === null || val === undefined) return true;
+    var s = String(val).trim();
+    return s === '' || s === '-' || s === '—' || s === 'null' || s === '0 points';
+  }
+
+  var metaItems = [];
+  if (!isValEmpty(dev)) metaItems.push('<div class="meta-item"><span class="meta-label">Device Name</span><span class="meta-value">' + esc(dev) + '</span></div>');
+  if (!isValEmpty(ela)) metaItems.push('<div class="meta-item"><span class="meta-label">Elapsed Time</span><span class="meta-value">' + esc(ela) + '</span></div>');
+  if (!isValEmpty(avghr)) metaItems.push('<div class="meta-item"><span class="meta-label">Avg Heart Rate</span><span class="meta-value">' + esc(avghr) + '</span></div>');
+  if (!isValEmpty(maxhr)) metaItems.push('<div class="meta-item"><span class="meta-label">Max Heart Rate</span><span class="meta-value">' + esc(maxhr) + '</span></div>');
+  if (!isValEmpty(cal)) metaItems.push('<div class="meta-item"><span class="meta-label">Calories</span><span class="meta-value">' + esc(cal) + '</span></div>');
+  if (!isValEmpty(steps)) metaItems.push('<div class="meta-item"><span class="meta-label">Steps</span><span class="meta-value">' + esc(steps) + '</span></div>');
+  if (!isValEmpty(flg)) metaItems.push('<div class="meta-item"><span class="meta-label">Is Flagged</span><span class="meta-value">' + esc(flg) + '</span></div>');
+  if (!isValEmpty(flgr)) metaItems.push('<div class="meta-item"><span class="meta-label">Flag Reason</span><span class="meta-value">' + esc(flgr) + '</span></div>');
+  if (!isValEmpty(del)) metaItems.push('<div class="meta-item"><span class="meta-label">Is Deleted</span><span class="meta-value">' + esc(del) + '</span></div>');
+  if (!isValEmpty(bon)) metaItems.push('<div class="meta-item"><span class="meta-label">Manual Bonus</span><span class="meta-value">' + esc(bon) + '</span></div>');
+
+  var metaHtml = '<div class="activity-metadata-grid">' + metaItems.join('') + '</div>';
 
   if (next && next.classList && next.classList.contains('detail-row')) {
     var isHidden = next.style.display === 'none';
@@ -1339,7 +1346,7 @@ async function toggleRowSplits(row) {
   
   var detailRow = document.createElement('tr');
   detailRow.className = 'detail-row';
-  detailRow.innerHTML = '<td colspan="11">' + metaHtml + '<div class="splits-loading"><div class="spinner" style="width:14px;height:14px;border-width:2px;animation:spin .8s linear infinite"></div><span>Loading activity splits...</span></div></td>';
+  detailRow.innerHTML = '<td colspan="9">' + metaHtml + '<div class="splits-loading"><div class="spinner" style="width:14px;height:14px;border-width:2px;animation:spin .8s linear infinite"></div><span>Loading activity splits...</span></div></td>';
   
   row.parentNode.insertBefore(detailRow, row.nextSibling);
   
