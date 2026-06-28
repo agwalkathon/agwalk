@@ -55,7 +55,10 @@
     /* ── Header ── */
     .header{
       position:sticky;top:0;z-index:200;
-      background:var(--surface);border-bottom:1px solid var(--border);
+      background:rgba(26, 29, 32, 0.82);
+      backdrop-filter:blur(20px);
+      -webkit-backdrop-filter:blur(20px);
+      border-bottom:1px solid rgba(255,255,255,0.08);
       padding:max(14px,env(safe-area-inset-top)) 16px 14px;
       display:flex;align-items:center;
       justify-content:space-between;
