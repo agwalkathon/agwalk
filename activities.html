@@ -438,6 +438,36 @@ td button.btn:last-child { margin-right: 0; }
   border-color: var(--brand-mid) !important;
   box-shadow: var(--shadow-sm);
 }
+/* Toast Notification Style */
+.toast-notification {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  background-color: #10b981;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 9999;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+  font-family: 'Poppins', sans-serif;
+}
+.toast-notification.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.toast-notification.error {
+  background-color: #ef4444;
+}
 </style>
 </head>
 <body>
@@ -2374,10 +2404,30 @@ async function saveAutoFlagConfig() {
     }
     
     currentRulesConfig = configPayload;
-    alert('Auto-flagging rules saved successfully!');
+    showToast('Auto-flagging rules saved successfully!', false);
   } catch (err) {
-    alert('Failed to save configuration: ' + err.message);
+    showToast('Failed to save configuration: ' + err.message, true);
   }
+}
+
+function showToast(message, isError) {
+  var toast = document.getElementById('toast-notification');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast-notification';
+    toast.className = 'toast-notification';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  if (isError) {
+    toast.classList.add('error');
+  } else {
+    toast.classList.remove('error');
+  }
+  toast.classList.add('show');
+  setTimeout(function() {
+    toast.classList.remove('show');
+  }, 3000);
 }
 
 // ── Startup ──
