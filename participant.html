@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -7578,17 +7578,18 @@ function renderRows(rows, prevRanks) {
     if (rows.length >= 3 && i < 3) {
       return; // Skip top 3 standard rows since they are on the podium
     }
-    if (isMe && myRank > 3) {
-      return; // Skip rendering user at their actual position since they are pinned after Rank 3
-    }
-    
-    // Inject logged-in user standing after top 3 (index 3 of standard rows)
+
+    // Inject pinned "You" row BEFORE the isMe-skip so it fires even when viewer IS rank 4
     if (rows.length >= 3 && i === 3 && myRank > 3 && meRow && !pinnedAppended) {
       var pinnedEl = buildRowElement(meRow, myRank - 1, true);
       frag.appendChild(pinnedEl);
       pinnedAppended = true;
     }
-    
+
+    if (isMe && myRank > 3) {
+      return; // Skip rendering user at their actual position (already pinned above)
+    }
+
     var rowEl = buildRowElement(r, i, false);
     frag.appendChild(rowEl);
   });
