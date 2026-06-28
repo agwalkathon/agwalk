@@ -6583,7 +6583,7 @@ function openActivityDetail(id, event, isStravaId) {
 
     var stravaActId = id;
     if (!isStravaId) {
-      var item = _feedData.find(function(x) { return x.id === id; });
+      var item = _feedData.find(function(x) { return String(x.id) === String(id); });
       if (item) {
         var act = {};
         try { act = JSON.parse(item.body); } catch(e) {}
