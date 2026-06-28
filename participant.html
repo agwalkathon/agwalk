@@ -6208,9 +6208,9 @@ function renderFeed() {
       return `
         <div class="feed-card type-activity ${timeClass}">
           <div class="feed-card-header">
-            <div class="feed-card-avatar" onclick="openProfileDetail('${act.athlete_id}', event)" style="${getAvatarStyle(athleteName)}; cursor: pointer;">${initials}</div>
+            <div class="feed-card-avatar" onclick="openProfileDetail('${item.tagged_athlete_id}', event)" style="${getAvatarStyle(athleteName)}; cursor: pointer;">${initials}</div>
             <div class="feed-card-meta">
-              <div class="feed-card-athlete-name" onclick="openProfileDetail('${act.athlete_id}', event)">${esc(athleteName)}</div>
+              <div class="feed-card-athlete-name" onclick="openProfileDetail('${item.tagged_athlete_id}', event)">${esc(athleteName)}</div>
               <div class="feed-card-time">${timeStr}${dateTimeStr ? ' &middot; ' + dateTimeStr : ''}${deviceText}</div>
             </div>
           </div>
@@ -6964,23 +6964,8 @@ function openProfileDetail(athleteId, event) {
         card.style.alignItems = 'center';
         card.style.justifyContent = 'space-between';
         
-        var ann = _feedData.find(function(x) {
-          if (x.type === 'activity') {
-            try {
-              var bodyObj = JSON.parse(x.body);
-              return String(bodyObj.activity_id) === String(a.strava_activity_id);
-            } catch(err) {}
-          }
-          return false;
-        });
-        
-        var onclickAttr = '';
-        if (ann) {
-          onclickAttr = 'openActivityDetail(\'' + ann.id + '\', event)';
-        }
-        if (onclickAttr) {
-          card.setAttribute('onclick', onclickAttr);
-        }
+        var onclickAttr = 'openActivityDetail(\'' + a.strava_activity_id + '\', event, true)';
+        card.setAttribute('onclick', onclickAttr);
         
         card.innerHTML = 
           '<div>' +
