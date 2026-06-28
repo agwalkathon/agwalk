@@ -4755,7 +4755,7 @@ function initializeFeedTab(enabled) {
 
 var _feedLoaded = false;
 var _feedData = [];
-var _feedVisibleCount = 10;
+var _feedVisibleCount = 30;
 var _feedPollInterval = null;
 
 function formatMarkdown(text) {
@@ -4786,7 +4786,7 @@ async function loadFeed(isSilent) {
       if (changed || !isSilent) {
         _feedData = sortedNewFeed;
         if (!isSilent) {
-          _feedVisibleCount = 10;
+          _feedVisibleCount = 30;
         }
         if (list) {
           renderFeed();
@@ -5746,7 +5746,7 @@ function renderFeed() {
 }
 
 function showMoreAnnouncements() {
-  _feedVisibleCount += 10;
+  _feedVisibleCount += 30;
   renderFeed();
 }
 
