@@ -2083,18 +2083,19 @@
   /* Activity Detail Modal Slide-up Overlay */
   .detail-modal {
     position: fixed;
-    top: 100%;
+    top: 0;
     left: 0;
     width: 100vw;
     height: 100%;
     background: #0E1012;
     z-index: 10000;
-    transition: top 0.35s cubic-bezier(0.1, 0.76, 0.55, 0.94);
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.1, 0.76, 0.55, 0.94);
     overflow-y: auto;
     padding-bottom: 40px;
   }
   .detail-modal.open {
-    top: 0;
+    transform: translateY(0);
   }
   .detail-map-wrap {
     width: 100%;
