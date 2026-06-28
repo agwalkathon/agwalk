@@ -371,6 +371,73 @@ td button.btn {
   font-size: 12px;
 }
 td button.btn:last-child { margin-right: 0; }
+
+/* Collapsible Card styling */
+.collapsible-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+.collapsible-card:hover {
+  box-shadow: var(--shadow-md);
+}
+.collapsible-card .card-header {
+  transition: background-color 0.15s ease;
+}
+.collapsible-card .card-header:hover {
+  background-color: var(--brand-light);
+}
+/* Toggle switch theme styling */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 18px;
+}
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .2s;
+  border-radius: 18px;
+}
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 12px;
+  width: 12px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .2s;
+  border-radius: 50%;
+}
+.toggle-switch input:checked + .toggle-slider {
+  background-color: var(--brand);
+}
+.toggle-switch input:checked + .toggle-slider:before {
+  transform: translateX(16px);
+}
+/* Custom rule card row inside dynamic list */
+.custom-rule-row-card {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.custom-rule-row-card:hover {
+  border-color: var(--brand-mid) !important;
+  box-shadow: var(--shadow-sm);
+}
 </style>
 </head>
 <body>
@@ -397,10 +464,11 @@ td button.btn:last-child { margin-right: 0; }
   <div class="content">
     <!-- Tab Bar -->
     <div class="tab-bar">
-      <div style="display:flex;gap:4px;">
+      <div style="display:flex;gap:4px;flex-wrap:wrap;">
         <button class="tab-btn active" id="tab-all" onclick="switchTab('all')">🏃 All Workouts</button>
         <button class="tab-btn" id="tab-review" onclick="switchTab('review')">🚩 Under Review</button>
         <button class="tab-btn" id="tab-rules" onclick="switchTab('rules')">⚙️ Auto-Flag Rules</button>
+        <button class="tab-btn" id="tab-scanner" onclick="switchTab('scanner')">🔍 Bulk Flag Scanner</button>
         <button class="tab-btn" id="tab-deleted" onclick="switchTab('deleted')">🗑️ Deleted</button>
       </div>
       <!-- Re-check auto-flag button only visible for 'review' tab -->
@@ -531,7 +599,7 @@ td button.btn:last-child { margin-right: 0; }
       </div>
     </div>
 
-    <!-- Tab 3: Auto-Flag Rules Config & Scanner -->
+    <!-- Tab 3: Auto-Flag Rules Config -->
     <div id="rules-container" style="display:none">
       <div class="section" style="max-width:800px; margin: 0 auto 24px;">
         <div class="section-header" style="border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:20px;">
@@ -541,169 +609,213 @@ td button.btn:last-child { margin-right: 0; }
           <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">Adjust thresholds and add custom criteria. Changes take effect instantly on all syncs & imports.</p>
         </div>
         
-        <div class="section-body" style="display:flex; flex-direction:column; gap:20px;">
-          <!-- Basic Rules Card -->
-          <div class="card" style="padding:20px; background:#fff; border-radius:var(--radius-md); border:1px solid var(--border); box-shadow:var(--shadow-sm);">
-            <h3 style="font-size:13px; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:16px; letter-spacing:0.5px;">Standard Rules</h3>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
-              <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500; cursor:pointer;">
-                <input type="checkbox" id="cfg-exclude-rides" style="width:16px; height:16px; cursor:pointer;">
-                Exclude Rides / Cycling
-              </label>
-              <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500; cursor:pointer;">
-                <input type="checkbox" id="cfg-exclude-workouts" style="width:16px; height:16px; cursor:pointer;">
-                Exclude Non-Foot/Cycling Workouts
-              </label>
-            </div>
-            
-            <div class="filter-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom:0;">
-              <div class="filter-group">
-                <label>Min Distance (km)</label>
-                <input type="number" id="cfg-min-dist" step="0.1" min="0" placeholder="e.g. 1.0">
-              </div>
-              <div class="filter-group">
-                <label>Max Moving/Elapsed Gap (hrs)</label>
-                <input type="number" id="cfg-max-gap" step="0.5" min="0" placeholder="e.g. 2.0">
-              </div>
-              <div class="filter-group">
-                <label>Max Speed Limit (km/h)</label>
-                <input type="number" id="cfg-max-speed" step="0.5" min="0" placeholder="e.g. 10.0">
+        <div class="section-body" style="display:flex; flex-direction:column; gap:16px;">
+          <!-- 1. Standard Rules Card -->
+          <div class="card collapsible-card" style="margin-bottom:0px;">
+            <div class="card-header" onclick="toggleCollapse('card-standard')" style="cursor:pointer; display:flex; align-items:center; justify-content:space-between; padding:16px; user-select:none;">
+              <h3 style="font-size:14px; font-weight:600; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:8px;">
+                ⚙️ Standard Rules
+              </h3>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:12px; color:var(--text-secondary);">Expand/Collapse</span>
+                <i class="ti ti-chevron-down toggle-icon" id="icon-standard" style="font-size:16px; transition:transform 0.2s; color:var(--text-secondary);"></i>
               </div>
             </div>
-          </div>
-
-          <!-- Pace Deviation Rule Card -->
-          <div class="card" style="padding:20px; background:#fff; border-radius:var(--radius-md); border:1px solid var(--border); box-shadow:var(--shadow-sm);">
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
-              <h3 style="font-size:13px; font-weight:700; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.5px; margin:0;">Pace Deviation Rule</h3>
-              <label class="toggle-switch" style="position:relative; display:inline-block; width:40px; height:22px;">
-                <input type="checkbox" id="cfg-pace-enabled" onchange="togglePaceSection(this.checked)" style="opacity:0; width:0; height:0;">
-                <span class="toggle-slider" style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#4B5563; transition:.3s; border-radius:22px;"></span>
-              </label>
-            </div>
-            
-            <div id="pace-config-section" style="display:none; flex-direction:column; gap:12px;">
-              <div class="filter-grid" style="grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:0;">
+            <div class="card-body" id="card-standard" style="display:none; padding: 0 16px 16px; border-top:1px solid var(--border); padding-top:16px;">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+                <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500; cursor:pointer;">
+                  <input type="checkbox" id="cfg-exclude-rides" style="width:16px; height:16px; cursor:pointer;">
+                  Exclude Rides / Cycling
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500; cursor:pointer;">
+                  <input type="checkbox" id="cfg-exclude-workouts" style="width:16px; height:16px; cursor:pointer;">
+                  Exclude Non-Foot/Cycling Workouts
+                </label>
+              </div>
+              
+              <div class="filter-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom:0;">
                 <div class="filter-group">
-                  <label>Allowed Deviation (min/km)</label>
-                  <input type="number" id="cfg-pace-deviation" step="0.1" min="0" placeholder="e.g. 2.0">
+                  <label>Min Distance (km)</label>
+                  <input type="number" id="cfg-min-dist" step="0.1" min="0" placeholder="e.g. 1.0">
                 </div>
                 <div class="filter-group">
-                  <label>Min History Needed (activities)</label>
-                  <input type="number" id="cfg-pace-history" step="1" min="1" placeholder="e.g. 3">
+                  <label>Max Moving/Elapsed Gap (hrs)</label>
+                  <input type="number" id="cfg-max-gap" step="0.5" min="0" placeholder="e.g. 2.0">
                 </div>
-              </div>
-              <div>
-                <label style="display:block; font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px; font-weight:600;">Apply to Sports</label>
-                <div style="display:flex; gap:16px; flex-wrap:wrap; font-size:13px; font-weight:500;">
-                  <label style="cursor:pointer; display:flex; align-items:center; gap:6px;"><input type="checkbox" class="cfg-pace-sport" value="Walk" style="cursor:pointer;"> Walk</label>
-                  <label style="cursor:pointer; display:flex; align-items:center; gap:6px;"><input type="checkbox" class="cfg-pace-sport" value="Run" style="cursor:pointer;"> Run</label>
-                  <label style="cursor:pointer; display:flex; align-items:center; gap:6px;"><input type="checkbox" class="cfg-pace-sport" value="Hike" style="cursor:pointer;"> Hike</label>
+                <div class="filter-group">
+                  <label>Max Speed Limit (km/h)</label>
+                  <input type="number" id="cfg-max-speed" step="0.5" min="0" placeholder="e.g. 10.0">
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Steps Count Rule Card -->
-          <div class="card" style="padding:20px; background:#fff; border-radius:var(--radius-md); border:1px solid var(--border); box-shadow:var(--shadow-sm);">
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
-              <h3 style="font-size:13px; font-weight:700; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.5px; margin:0;">Steps Count validation</h3>
-              <label class="toggle-switch" style="position:relative; display:inline-block; width:40px; height:22px;">
-                <input type="checkbox" id="cfg-steps-enabled" onchange="toggleStepsSection(this.checked)" style="opacity:0; width:0; height:0;">
-                <span class="toggle-slider" style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#4B5563; transition:.3s; border-radius:22px;"></span>
-              </label>
+          <!-- 2. Pace Deviation Rule Card -->
+          <div class="card collapsible-card" style="margin-bottom:0px;">
+            <div class="card-header" onclick="toggleCollapse('card-pace')" style="cursor:pointer; display:flex; align-items:center; justify-content:space-between; padding:16px; user-select:none;">
+              <h3 style="font-size:14px; font-weight:600; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:8px;">
+                📈 Pace Deviation Rule
+              </h3>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <label class="toggle-switch" onclick="event.stopPropagation();" style="position:relative; display:inline-block; width:34px; height:18px; margin-right:8px;">
+                  <input type="checkbox" id="cfg-pace-enabled" onchange="togglePaceSection(this.checked)" style="opacity:0; width:0; height:0;">
+                  <span class="toggle-slider" style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#ccc; transition:.2s; border-radius:18px;"></span>
+                </label>
+                <i class="ti ti-chevron-down toggle-icon" id="icon-pace" style="font-size:16px; transition:transform 0.2s; color:var(--text-secondary);"></i>
+              </div>
             </div>
-            
-            <div id="steps-config-section" style="display:none; flex-direction:column; gap:12px;">
-              <div class="filter-grid" style="grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:0;">
-                <div class="filter-group">
-                  <label>Min Steps / Kilometer</label>
-                  <input type="number" id="cfg-steps-min" step="50" min="0" placeholder="e.g. 500">
+            <div class="card-body" id="card-pace" style="display:none; padding: 0 16px 16px; border-top:1px solid var(--border); padding-top:16px;">
+              <div id="pace-config-section" style="display:none; flex-direction:column; gap:12px;">
+                <div class="filter-grid" style="grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:0;">
+                  <div class="filter-group">
+                    <label>Allowed Deviation (min/km)</label>
+                    <input type="number" id="cfg-pace-deviation" step="0.1" min="0" placeholder="e.g. 2.0">
+                  </div>
+                  <div class="filter-group">
+                    <label>Min History Needed (activities)</label>
+                    <input type="number" id="cfg-pace-history" step="1" min="1" placeholder="e.g. 3">
+                  </div>
                 </div>
-                <div class="filter-group">
-                  <label>Min Distance Threshold (km)</label>
-                  <input type="number" id="cfg-steps-dist" step="0.5" min="0" placeholder="e.g. 1.0">
+                <div>
+                  <label style="display:block; font-size:11px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px; font-weight:600;">Apply to Sports</label>
+                  <div style="display:flex; gap:16px; flex-wrap:wrap; font-size:13px; font-weight:500;">
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:6px;"><input type="checkbox" class="cfg-pace-sport" value="Walk" style="cursor:pointer;"> Walk</label>
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:6px;"><input type="checkbox" class="cfg-pace-sport" value="Run" style="cursor:pointer;"> Run</label>
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:6px;"><input type="checkbox" class="cfg-pace-sport" value="Hike" style="cursor:pointer;"> Hike</label>
+                  </div>
                 </div>
               </div>
-              <div>
-                <label style="display:block; font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px; font-weight:600;">Apply to Sports</label>
-                <div style="display:flex; gap:16px; flex-wrap:wrap; font-size:13px; font-weight:500;">
-                  <label style="cursor:pointer; display:flex; align-items:center; gap:6px;"><input type="checkbox" class="cfg-steps-sport" value="Walk" style="cursor:pointer;"> Walk</label>
-                  <label style="cursor:pointer; display:flex; align-items:center; gap:6px;"><input type="checkbox" class="cfg-steps-sport" value="Run" style="cursor:pointer;"> Run</label>
-                  <label style="cursor:pointer; display:flex; align-items:center; gap:6px;"><input type="checkbox" class="cfg-steps-sport" value="Hike" style="cursor:pointer;"> Hike</label>
-                </div>
-              </div>
+              <div id="pace-disabled-msg" style="color:var(--text-secondary); font-size:13px; text-align:center; padding:8px 0;">Pace Deviation Check is disabled. Toggle switch in header to enable.</div>
             </div>
           </div>
 
-          <!-- Dynamic Custom Rules Builder Card -->
-          <div class="card" style="padding:20px; background:#fff; border-radius:var(--radius-md); border:1px solid var(--border); box-shadow:var(--shadow-sm);">
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
-              <h3 style="font-size:13px; font-weight:700; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.5px; margin:0;">Dynamic Custom Rules</h3>
-              <button class="btn btn-orange btn-sm" onclick="addCustomRuleRow()" style="font-size:11px; font-weight:600; padding:4px 10px;">+ Add Custom Rule</button>
+          <!-- 3. Steps Count Rule Card -->
+          <div class="card collapsible-card" style="margin-bottom:0px;">
+            <div class="card-header" onclick="toggleCollapse('card-steps')" style="cursor:pointer; display:flex; align-items:center; justify-content:space-between; padding:16px; user-select:none;">
+              <h3 style="font-size:14px; font-weight:600; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:8px;">
+                👣 Steps Count Validation
+              </h3>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <label class="toggle-switch" onclick="event.stopPropagation();" style="position:relative; display:inline-block; width:34px; height:18px; margin-right:8px;">
+                  <input type="checkbox" id="cfg-steps-enabled" onchange="toggleStepsSection(this.checked)" style="opacity:0; width:0; height:0;">
+                  <span class="toggle-slider" style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#ccc; transition:.2s; border-radius:18px;"></span>
+                </label>
+                <i class="ti ti-chevron-down toggle-icon" id="icon-steps" style="font-size:16px; transition:transform 0.2s; color:var(--text-secondary);"></i>
+              </div>
             </div>
-            
-            <div id="custom-rules-list" style="display:flex; flex-direction:column; gap:12px; margin-bottom:4px;">
-              <!-- Rules will be injected here dynamically -->
+            <div class="card-body" id="card-steps" style="display:none; padding: 0 16px 16px; border-top:1px solid var(--border); padding-top:16px;">
+              <div id="steps-config-section" style="display:none; flex-direction:column; gap:12px;">
+                <div class="filter-grid" style="grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:0;">
+                  <div class="filter-group">
+                    <label>Min Steps / Kilometer</label>
+                    <input type="number" id="cfg-steps-min" step="50" min="0" placeholder="e.g. 500">
+                  </div>
+                  <div class="filter-group">
+                    <label>Min Distance Threshold (km)</label>
+                    <input type="number" id="cfg-steps-dist" step="0.5" min="0" placeholder="e.g. 1.0">
+                  </div>
+                </div>
+                <div>
+                  <label style="display:block; font-size:11px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px; font-weight:600;">Apply to Sports</label>
+                  <div style="display:flex; gap:16px; flex-wrap:wrap; font-size:13px; font-weight:500;">
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:6px;"><input type="checkbox" class="cfg-steps-sport" value="Walk" style="cursor:pointer;"> Walk</label>
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:6px;"><input type="checkbox" class="cfg-steps-sport" value="Run" style="cursor:pointer;"> Run</label>
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:6px;"><input type="checkbox" class="cfg-steps-sport" value="Hike" style="cursor:pointer;"> Hike</label>
+                  </div>
+                </div>
+              </div>
+              <div id="steps-disabled-msg" style="color:var(--text-secondary); font-size:13px; text-align:center; padding:8px 0;">Steps Validation is disabled. Toggle switch in header to enable.</div>
+            </div>
+          </div>
+
+          <!-- 4. Dynamic Custom Rules Card -->
+          <div class="card collapsible-card" style="margin-bottom:0px;">
+            <div class="card-header" onclick="toggleCollapse('card-custom')" style="cursor:pointer; display:flex; align-items:center; justify-content:space-between; padding:16px; user-select:none;">
+              <h3 style="font-size:14px; font-weight:600; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:8px;">
+                💡 Dynamic Custom Rules
+              </h3>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <button class="btn btn-orange btn-sm" onclick="event.stopPropagation(); addCustomRuleRow();" style="font-size:11px; font-weight:600; padding:4px 10px; border-radius:4px; height:auto; width:auto; line-height:1.2;">+ Add Custom Rule</button>
+                <i class="ti ti-chevron-down toggle-icon" id="icon-custom" style="font-size:16px; transition:transform 0.2s; color:var(--text-secondary);"></i>
+              </div>
+            </div>
+            <div class="card-body" id="card-custom" style="display:none; padding: 0 16px 16px; border-top:1px solid var(--border); padding-top:16px;">
+              <div id="custom-rules-list" style="display:flex; flex-direction:column; gap:12px; margin-bottom:4px;">
+                <!-- Rules will be injected here dynamically -->
+              </div>
             </div>
           </div>
           
           <!-- Save actions -->
-          <div style="display:flex; justify-content:flex-end;">
+          <div style="display:flex; justify-content:flex-end; margin-top:10px;">
             <button class="btn btn-primary" onclick="saveAutoFlagConfig()" style="padding:10px 24px; font-weight:600; font-size:13px;">Save Rules Configuration</button>
           </div>
         </div>
       </div>
-      
-      <!-- Existing Scanner Panel -->
-      <div class="section" style="max-width:800px; margin: 0 auto;">
-        <div class="section-header" style="border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:20px;">
-          <h2 style="font-size:16px; font-weight:600; color:var(--text-primary);">🔍 Bulk Flag Scanner</h2>
-          <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">Scan the database manually and apply these saved rules to existing activities in bulk.</p>
+    </div>
+
+    <!-- Tab 5: Bulk Flag Scanner -->
+    <div id="scanner-container" style="display:none">
+      <div class="filter-bar">
+        <h3>Filter Candidate Activities to Flag</h3>
+        <div class="filter-grid">
+          <div class="filter-group"><label>From Date</label><input type="date" id="fr-date-from"></div>
+          <div class="filter-group"><label>To Date</label><input type="date" id="fr-date-to"></div>
+          <div class="filter-group">
+            <label>Sport Type</label>
+            <select id="fr-sport">
+              <option value="">All types</option>
+              <option value="Walk">Walk</option>
+              <option value="Run">Run</option>
+              <option value="Hike">Hike</option>
+              <option value="Ride">Ride</option>
+              <option value="VirtualRun">Virtual Run</option>
+              <option value="VirtualRide">Virtual Ride</option>
+            </select>
+          </div>
+          <div class="filter-group"><label>Min Distance (km)</label><input type="number" id="fr-dist-min" placeholder="e.g. 1.0" step="0.1"></div>
+          <div class="filter-group"><label>Max Distance (km)</label><input type="number" id="fr-dist-max" placeholder="e.g. 10.0" step="0.1"></div>
+          <div class="filter-group"><label>Pace Min (min/km)</label><input type="number" id="fr-pace-min" placeholder="e.g. 4.0" step="0.5"></div>
+          <div class="filter-group"><label>Pace Max (min/km)</label><input type="number" id="fr-pace-max" placeholder="e.g. 12.0" step="0.5"></div>
+          <div class="filter-group"><label>Min Steps / km</label><input type="number" id="fr-steps-min" placeholder="e.g. 500"></div>
+          <div class="filter-group"><label>Max Speed Limit (km/h)</label><input type="number" id="fr-speed-max" placeholder="e.g. 10.0"></div>
+          <div class="filter-group"><label>Max Elapsed/Moving Gap (hrs)</label><input type="number" id="fr-gap-max" placeholder="e.g. 2.0" step="0.5"></div>
+          <div class="filter-group"><label>Participant Name</label><input type="text" id="fr-athlete-name" placeholder="Search participant name..." list="participant-names"></div>
+          <div class="filter-group"><label>Activity ID</label><input type="text" id="fr-activity-id" placeholder="Search activity ID..."></div>
         </div>
         
-        <div class="section-body">
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-bottom:20px;">
-            <div class="field"><label>Date From</label><input type="date" id="fr-date-from"></div>
-            <div class="field"><label>Date To</label><input type="date" id="fr-date-to"></div>
-          </div>
-          
-          <div style="background:#fff3e0; border:1px solid #ffcc80; border-radius:10px; padding:16px; margin-bottom:16px;">
-            <div style="font-size:13px; color:#e65100; margin-bottom:8px;">⚠️ <strong>This will scan activities in the date range matching your saved configuration.</strong></div>
-            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-              <button class="btn btn-primary" onclick="previewFlagRules()">👁️ Preview matches</button>
-              <button class="btn btn-danger" id="btn-apply-flags" onclick="applyFlagRules()" disabled>🚩 Flag Selected</button>
-              <span id="flag-preview-count" style="font-size:13px; color:#888;"></span>
-              <span id="flag-selected-count" style="font-size:13px; color:#555; display:none;">— <strong id="flag-selected-num">0</strong> selected</span>
-            </div>
-          </div>
+        <div class="filter-actions" style="margin-top:16px;">
+          <button class="btn btn-primary" onclick="previewFlagRules()">👁️ Preview matches</button>
+          <button class="btn btn-danger" id="btn-apply-flags" onclick="applyFlagRules()" disabled>🚩 Flag Selected</button>
+          <span id="flag-preview-count" style="font-size:13px; color:var(--text-secondary); margin-left: 8px;"></span>
+          <span id="flag-selected-count" style="font-size:13px; color:var(--text-secondary); display:none;">— <strong id="flag-selected-num">0</strong> selected</span>
+        </div>
+      </div>
 
-          <div id="flag-preview-list" style="display:none; margin-top:20px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-              <div style="font-size:14px;font-weight:600;">Matching Activities</div>
-              <div style="font-size:13px;color:#888;">
-                <a href="#" style="color:#E8622A;text-decoration:none;" onclick="toggleAllPreviewCheckboxes(true);return false;">Select all</a> &nbsp;/&nbsp; 
-                <a href="#" style="color:#888;text-decoration:none;" onclick="toggleAllPreviewCheckboxes(false);return false;">None</a>
-              </div>
-            </div>
-            <div style="max-height:60vh;overflow-y:auto;overflow-x:auto;border:1px solid #f0f0f0;border-radius:8px;">
-              <table style="width:100%;border-collapse:collapse;font-size:13px;">
-                <thead style="position:sticky;top:0;z-index:2;">
-                  <tr style="background:#fafafa;">
-                    <th style="padding:8px 12px;text-align:center;width:36px"><input type="checkbox" id="chk-all-preview" onchange="toggleAllPreviewCheckboxes(this.checked)" style="cursor:pointer;width:15px;height:15px"></th>
-                    <th style="padding:8px 12px;text-align:left;color:#888;font-size:11px">ATHLETE</th>
-                    <th style="padding:8px 12px;text-align:left;color:#888;font-size:11px">ACTIVITY</th>
-                    <th style="padding:8px 12px;text-align:left;color:#888;font-size:11px">TYPE</th>
-                    <th style="padding:8px 12px;text-align:left;color:#888;font-size:11px">DATE</th>
-                    <th style="padding:8px 12px;text-align:left;color:#888;font-size:11px">DISTANCE</th>
-                    <th style="padding:8px 12px;text-align:left;color:#888;font-size:11px">PACE</th>
-                    <th style="padding:8px 12px;text-align:left;color:#888;font-size:11px">FLAG REASON</th>
-                  </tr>
-                </thead>
-                <tbody id="flag-preview-body"></tbody>
-              </table>
-            </div>
+      <div class="card" id="flag-preview-list" style="display:none; margin-top:20px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; padding: 0 4px;">
+          <h3 style="font-size:14px; font-weight:600; color:var(--text-primary); margin:0;">Matching Activities</h3>
+          <div style="font-size:13px; color:var(--text-secondary);">
+            <a href="#" style="color:var(--brand); text-decoration:none; font-weight:500;" onclick="toggleAllPreviewCheckboxes(true);return false;">Select all</a> &nbsp;·&nbsp; 
+            <a href="#" style="color:var(--text-secondary); text-decoration:none;" onclick="toggleAllPreviewCheckboxes(false);return false;">None</a>
           </div>
+        </div>
+        <div class="table-wrap">
+          <table style="width:100%; border-collapse:collapse; font-size:13px;">
+            <thead>
+              <tr style="background:var(--page-bg);">
+                <th style="padding:10px 12px; text-align:center; width:36px;"><input type="checkbox" id="chk-all-preview" onchange="toggleAllPreviewCheckboxes(this.checked)" style="cursor:pointer; width:15px; height:15px;"></th>
+                <th style="padding:10px 12px; text-align:left; color:var(--text-secondary); font-size:11px; font-weight:600; text-transform:uppercase;">ATHLETE</th>
+                <th style="padding:10px 12px; text-align:left; color:var(--text-secondary); font-size:11px; font-weight:600; text-transform:uppercase;">ACTIVITY</th>
+                <th style="padding:10px 12px; text-align:left; color:var(--text-secondary); font-size:11px; font-weight:600; text-transform:uppercase;">TYPE</th>
+                <th style="padding:10px 12px; text-align:left; color:var(--text-secondary); font-size:11px; font-weight:600; text-transform:uppercase;">DATE</th>
+                <th style="padding:10px 12px; text-align:left; color:var(--text-secondary); font-size:11px; font-weight:600; text-transform:uppercase;">DISTANCE</th>
+                <th style="padding:10px 12px; text-align:left; color:var(--text-secondary); font-size:11px; font-weight:600; text-transform:uppercase;">PACE</th>
+                <th style="padding:10px 12px; text-align:left; color:var(--text-secondary); font-size:11px; font-weight:600; text-transform:uppercase;">FLAG REASON</th>
+              </tr>
+            </thead>
+            <tbody id="flag-preview-body"></tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -1096,6 +1208,7 @@ function switchTab(t){
   document.getElementById('tab-all').classList.toggle('active',t==='all');
   document.getElementById('tab-review').classList.toggle('active',t==='review');
   document.getElementById('tab-rules').classList.toggle('active',t==='rules');
+  document.getElementById('tab-scanner').classList.toggle('active',t==='scanner');
   document.getElementById('tab-deleted').classList.toggle('active',t==='deleted');
 
   // Reset filters
@@ -1112,18 +1225,28 @@ function switchTab(t){
 
   if (t === 'rules') {
     document.getElementById('page-title').textContent = 'Flagged Activities Rules';
-    document.getElementById('page-subtitle').textContent = 'Set dynamic rules and bulk-flag activities';
+    document.getElementById('page-subtitle').textContent = 'Set dynamic rules to auto-flag activities';
     document.getElementById('all-workouts-container').style.display = 'none';
     document.getElementById('flagged-data-container').style.display = 'none';
     document.getElementById('rules-container').style.display = 'block';
+    document.getElementById('scanner-container').style.display = 'none';
     document.getElementById('btn-recheck-outer').style.display = 'none';
     updateBulkBar();
+  } else if (t === 'scanner') {
+    document.getElementById('page-title').textContent = 'Bulk Flag Scanner';
+    document.getElementById('page-subtitle').textContent = 'Scan existing database manually using configured thresholds';
+    document.getElementById('all-workouts-container').style.display = 'none';
+    document.getElementById('flagged-data-container').style.display = 'none';
+    document.getElementById('rules-container').style.display = 'none';
+    document.getElementById('scanner-container').style.display = 'block';
+    document.getElementById('btn-recheck-outer').style.display = 'none';
   } else if (t === 'all') {
     document.getElementById('page-title').textContent = 'Activities';
     document.getElementById('page-subtitle').textContent = 'Search and manage all logged workouts';
     document.getElementById('all-workouts-container').style.display = 'block';
     document.getElementById('flagged-data-container').style.display = 'none';
     document.getElementById('rules-container').style.display = 'none';
+    document.getElementById('scanner-container').style.display = 'none';
     document.getElementById('btn-recheck-outer').style.display = 'none';
     loadActivities();
   } else {
@@ -1132,6 +1255,7 @@ function switchTab(t){
     document.getElementById('all-workouts-container').style.display = 'none';
     document.getElementById('flagged-data-container').style.display = 'block';
     document.getElementById('rules-container').style.display = 'none';
+    document.getElementById('scanner-container').style.display = 'none';
     document.getElementById('btn-recheck-outer').style.display = t==='review'?'inline-flex':'none';
     
     // Adjust filters and bulk action buttons based on Review vs Deleted
@@ -1431,135 +1555,85 @@ function fmtPace(avgSpeed) {
 async function fetchFlagCandidates() {
   var dFrom = document.getElementById('fr-date-from').value;
   var dTo = document.getElementById('fr-date-to').value;
+  var sport = document.getElementById('fr-sport').value;
+  
+  var distMin = parseFloat(document.getElementById('fr-dist-min').value) || 0;
+  var distMax = parseFloat(document.getElementById('fr-dist-max').value) || 999999;
+  var paceMin = parseFloat(document.getElementById('fr-pace-min').value) || 0;
+  var paceMax = parseFloat(document.getElementById('fr-pace-max').value) || 999999;
+  var stepsMin = parseInt(document.getElementById('fr-steps-min').value) || 0;
+  var speedMaxKmh = parseFloat(document.getElementById('fr-speed-max').value) || 0;
+  var gapMaxHrs = parseFloat(document.getElementById('fr-gap-max').value) || 0;
+  var athleteName = document.getElementById('fr-athlete-name').value.trim();
+  var activityId = document.getElementById('fr-activity-id').value.trim();
 
   var q = `is_deleted=eq.false&order=activity_date.desc`;
   if (dFrom) q += `&activity_date=gte.${dFrom}T00:00:00`;
   if (dTo) q += `&activity_date=lte.${dTo}T23:59:59`;
+  if (sport) q += `&sport_type=eq.${sport}`;
+  if (activityId) q += `&strava_activity_id=eq.${activityId}`;
 
   var acts = await fetchAllRows(SUPABASE_URL + '/rest/v1/activities?' + q, HDR);
-  var matches = [];
   
-  var uiConfig = gatherRulesConfigFromUI();
-  var rules = uiConfig.rules || {};
-
-  var paceHistoryMap = {};
-  if (rules.pace_deviation_rule && rules.pace_deviation_rule.enabled) {
-    try {
-      var pastRes = await fetch(SUPABASE_URL + '/rest/v1/activities?is_flagged=eq.false&is_deleted=eq.false&select=strava_athlete_id,distance_meters,moving_time_seconds,sport_type,strava_activity_id', { headers: HDR });
-      if (pastRes.ok) {
-        var pastActs = await pastRes.json();
-        pastActs.forEach(function(p) {
-          var dKm = (p.distance_meters || 0) / 1000;
-          var tMin = (p.moving_time_seconds || 0) / 60;
-          if (dKm > 0.01) {
-            var key = String(p.strava_athlete_id) + '_' + String(p.sport_type);
-            if (!paceHistoryMap[key]) {
-              paceHistoryMap[key] = [];
-            }
-            paceHistoryMap[key].push({ id: String(p.strava_activity_id), pace: tMin / dKm });
-          }
-        });
-      }
-    } catch(err) {
-      console.error('Failed to load past activities for preview:', err);
-    }
+  if (athleteName) {
+    acts = acts.filter(function(a) {
+      var nameObj = regMap[String(a.strava_athlete_id).trim()];
+      var name = nameObj ? nameObj.full_name : 'Unknown';
+      return name.toLowerCase().includes(athleteName.toLowerCase());
+    });
   }
+
+  var matches = [];
 
   acts.forEach(function(a) {
     var reasons = [];
-
-    var rideTypes = ['Ride', 'VirtualRide', 'MountainBikeRide', 'EBikeRide', 'GravelRide'];
-    if (rules.exclude_rides !== false && rideTypes.includes(a.sport_type)) {
-      reasons.push('Ride / Cycling');
-    }
-
-    var validTypes = ['Walk', 'Run', 'Hike', 'VirtualRun'];
-    if (rules.exclude_workouts !== false && !validTypes.includes(a.sport_type) && !rideTypes.includes(a.sport_type)) {
-      reasons.push('Workout');
-    }
-
     var km = (a.distance_meters || 0) / 1000;
-    var minDist = rules.min_distance_km !== undefined ? rules.min_distance_km : 1.0;
-    if (km < minDist) {
-      reasons.push('Less than ' + minDist + ' km (' + km.toFixed(2) + ' km)');
-    }
-
-    var elapsed = a.elapsed_time_seconds || 0;
     var moving = a.moving_time_seconds || 0;
-    var maxGapSeconds = (rules.max_elapsed_moving_gap_hours !== undefined ? rules.max_elapsed_moving_gap_hours : 2.0) * 3600;
-    if (elapsed > 0 && moving > 0 && (elapsed - moving) > maxGapSeconds) {
-      reasons.push('Elapsed Time Issue (' + fmtDur(elapsed - moving) + ' gap)');
+    var elapsed = a.elapsed_time_seconds || 0;
+    var steps = parseInt(a.steps) || 0;
+    var avgSpeed = a.avg_speed || 0; 
+    var pace = avgSpeed ? (1000 / avgSpeed) / 60 : 999999; 
+
+    // 1. Distance filter
+    if (distMin > 0 && km < distMin) {
+      reasons.push('Distance below min limit (' + km.toFixed(2) + ' < ' + distMin + ' km)');
+    }
+    if (distMax < 999999 && km > distMax) {
+      reasons.push('Distance above max limit (' + km.toFixed(2) + ' > ' + distMax + ' km)');
     }
 
-    var avgSpeed = a.avg_speed || 0;
-    var maxSpeedMs = rules.max_speed_ms !== undefined ? rules.max_speed_ms : 2.78;
-    if (avgSpeed > 0 && validTypes.includes(a.sport_type) && avgSpeed > maxSpeedMs) {
+    // 2. Pace filter
+    if (paceMin > 0 && pace < paceMin) {
+      reasons.push('Pace too fast (' + pace.toFixed(2) + ' < ' + paceMin + ' min/km)');
+    }
+    if (paceMax < 999999 && pace > paceMax) {
+      reasons.push('Pace too slow (' + pace.toFixed(2) + ' > ' + paceMax + ' min/km)');
+    }
+
+    // 3. Steps filter
+    if (stepsMin > 0 && km > 0.1) {
+      var stepsPerKm = steps / km;
+      if (stepsPerKm < stepsMin) {
+        reasons.push('Steps Count Issue (' + Math.round(stepsPerKm) + ' < ' + stepsMin + ' steps/km)');
+      }
+    }
+
+    // 4. Max Speed filter
+    if (speedMaxKmh > 0 && avgSpeed > 0) {
       var speedKmh = avgSpeed * 3.6;
-      var limitKmh = maxSpeedMs * 3.6;
-      reasons.push('Pace Issue (Bike/Cycle) (' + speedKmh.toFixed(1) + ' km/h > ' + limitKmh.toFixed(1) + ' km/h)');
-    }
-
-    var paceRule = rules.pace_deviation_rule || {};
-    if (paceRule.enabled && paceRule.sports && paceRule.sports.includes(a.sport_type)) {
-      var minHistory = paceRule.min_history_count !== undefined ? paceRule.min_history_count : 3;
-      var allowedDev = paceRule.allowed_deviation_minutes !== undefined ? paceRule.allowed_deviation_minutes : 2.0;
-
-      var key = String(a.strava_athlete_id) + '_' + String(a.sport_type);
-      var history = paceHistoryMap[key] || [];
-      var filteredHistory = history.filter(h => h.id !== String(a.strava_activity_id || a.id));
-
-      if (filteredHistory.length >= minHistory) {
-        var totalPace = filteredHistory.reduce((sum, h) => sum + h.pace, 0);
-        var avgPace = totalPace / filteredHistory.length;
-        var tMin = moving / 60;
-        var pace = km > 0.01 ? (tMin / km) : 0;
-
-        if (pace > 0 && Math.abs(pace - avgPace) > allowedDev) {
-          reasons.push('Pace Deviation Issue (New: ' + pace.toFixed(2) + ' min/km, Avg: ' + avgPace.toFixed(2) + ' min/km)');
-        }
+      if (speedKmh > speedMaxKmh) {
+        reasons.push('Speed too high (' + speedKmh.toFixed(1) + ' > ' + speedMaxKmh + ' km/h)');
       }
     }
 
-    var stepsRule = rules.steps_count_rule || {};
-    if (stepsRule.enabled && stepsRule.sports && stepsRule.sports.includes(a.sport_type)) {
-      var minSteps = stepsRule.min_steps_per_km !== undefined ? stepsRule.min_steps_per_km : 500;
-      var minDistThresh = stepsRule.min_distance_threshold_km !== undefined ? stepsRule.min_distance_threshold_km : 1.0;
-      var recSteps = a.steps !== undefined && a.steps !== null ? parseInt(a.steps) : 0;
-
-      if (km >= minDistThresh && recSteps > 0) {
-        var stepsPerKm = recSteps / km;
-        if (stepsPerKm < minSteps) {
-          reasons.push('Steps Count Issue (' + Math.round(stepsPerKm) + ' steps/km)');
-        }
+    // 5. Max moving/elapsed gap filter
+    if (gapMaxHrs > 0 && elapsed > 0 && moving > 0) {
+      var gapSeconds = elapsed - moving;
+      var limitSeconds = gapMaxHrs * 3600;
+      if (gapSeconds > limitSeconds) {
+        reasons.push('Elapsed gap too high (' + fmtDur(gapSeconds) + ' > ' + gapMaxHrs + ' hrs)');
       }
     }
-
-    var customRules = uiConfig.custom_rules || [];
-    customRules.forEach(function(rule) {
-      if (rule.sport && a.sport_type !== rule.sport) return;
-
-      var valToCompare = null;
-      if (rule.field === 'distance_meters') valToCompare = a.distance_meters || 0;
-      if (rule.field === 'moving_time_seconds') valToCompare = moving;
-      if (rule.field === 'elapsed_time_seconds') valToCompare = elapsed;
-      if (rule.field === 'avg_speed') valToCompare = avgSpeed;
-      if (rule.field === 'steps') valToCompare = parseInt(a.steps) || 0;
-      if (rule.field === 'elevation_gain') valToCompare = a.elevation_gain || 0;
-
-      if (valToCompare !== null) {
-        var matches = false;
-        var limitVal = parseFloat(rule.value);
-        if (rule.operator === '>') matches = (valToCompare > limitVal);
-        if (rule.operator === '<') matches = (valToCompare < limitVal);
-        if (rule.operator === '>=') matches = (valToCompare >= limitVal);
-        if (rule.operator === '<=') matches = (valToCompare <= limitVal);
-        if (rule.operator === '==') matches = (valToCompare == limitVal);
-
-        if (matches) {
-          reasons.push(rule.flag_reason || ('Flagged by custom rule: ' + rule.name));
-        }
-      }
-    });
 
     if (reasons.length > 0) {
       matches.push({
@@ -1698,6 +1772,20 @@ function updateSelectedPreviewCount() {
   }
 }
 
+function toggleCollapse(id) {
+  var el = document.getElementById(id);
+  var icon = document.getElementById('icon-' + id.split('-')[1]);
+  if (el) {
+    if (el.style.display === 'none') {
+      el.style.display = 'block';
+      if (icon) icon.style.transform = 'rotate(180deg)';
+    } else {
+      el.style.display = 'none';
+      if (icon) icon.style.transform = 'rotate(0deg)';
+    }
+  }
+}
+
 // Global configuration variable
 var currentRulesConfig = null;
 
@@ -1705,10 +1793,14 @@ var currentRulesConfig = null;
 function togglePaceSection(show) {
   var sec = document.getElementById('pace-config-section');
   if (sec) sec.style.display = show ? 'flex' : 'none';
+  var msg = document.getElementById('pace-disabled-msg');
+  if (msg) msg.style.display = show ? 'none' : 'block';
 }
 function toggleStepsSection(show) {
   var sec = document.getElementById('steps-config-section');
   if (sec) sec.style.display = show ? 'flex' : 'none';
+  var msg = document.getElementById('steps-disabled-msg');
+  if (msg) msg.style.display = show ? 'none' : 'block';
 }
 
 // Load Rules Configuration
@@ -1841,17 +1933,17 @@ function addCustomRuleRow(ruleData) {
   var div = document.createElement('div');
   div.className = 'custom-rule-row-card';
   div.id = id;
-  div.style.cssText = 'padding:14px; background:#fafafa; border:1px solid #eee; border-radius:8px; display:flex; flex-direction:column; gap:10px; position:relative;';
+  div.style.cssText = 'padding:16px; background:var(--page-bg); border:1px solid var(--border); border-radius:var(--radius-md); display:flex; flex-direction:column; gap:12px; position:relative; margin-bottom:12px;';
 
   div.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <input type="text" class="rule-name-input" placeholder="Rule Name (e.g. Distance Too High)" value="${esc(name)}" style="font-weight:600; font-size:13px; border:none; background:transparent; padding:0; width:80%; outline:none; border-bottom:1px dashed #ccc;">
-      <button onclick="deleteCustomRuleRow('${id}')" style="background:none; border:none; color:#dc2626; cursor:pointer; font-size:16px;" title="Delete Rule">🗑️</button>
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--border); padding-bottom:8px; margin-bottom:4px;">
+      <input type="text" class="rule-name-input" placeholder="Rule Name (e.g. Distance Too High)" value="${esc(name)}" style="font-weight:600; font-size:13px; border:none; background:transparent; padding:4px 0; width:80%; outline:none; border-bottom:1px dashed var(--brand); color:var(--text-primary);">
+      <button onclick="deleteCustomRuleRow('${id}')" style="background:none; border:none; color:#dc2626; cursor:pointer; font-size:16px; display:flex; align-items:center;" title="Delete Rule"><i class="ti ti-trash" style="font-size:18px;"></i></button>
     </div>
-    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:10px;">
+    <div class="filter-grid" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin-bottom:0;">
       <div class="filter-group" style="margin:0;">
-        <label style="font-size:10px;">Sport Type</label>
-        <select class="rule-sport-select" style="font-size:12px; padding:4px; height:auto; width:100%; border:1px solid #ccc; border-radius:4px;">
+        <label>Sport Type</label>
+        <select class="rule-sport-select">
           <option value="Walk" ${sport === 'Walk' ? 'selected' : ''}>Walk</option>
           <option value="Run" ${sport === 'Run' ? 'selected' : ''}>Run</option>
           <option value="Hike" ${sport === 'Hike' ? 'selected' : ''}>Hike</option>
@@ -1861,8 +1953,8 @@ function addCustomRuleRow(ruleData) {
         </select>
       </div>
       <div class="filter-group" style="margin:0;">
-        <label style="font-size:10px;">Field</label>
-        <select class="rule-field-select" style="font-size:12px; padding:4px; height:auto; width:100%; border:1px solid #ccc; border-radius:4px;">
+        <label>Field</label>
+        <select class="rule-field-select">
           <option value="distance_meters" ${field === 'distance_meters' ? 'selected' : ''}>Distance (m)</option>
           <option value="moving_time_seconds" ${field === 'moving_time_seconds' ? 'selected' : ''}>Moving Time (s)</option>
           <option value="elapsed_time_seconds" ${field === 'elapsed_time_seconds' ? 'selected' : ''}>Elapsed Time (s)</option>
@@ -1872,8 +1964,8 @@ function addCustomRuleRow(ruleData) {
         </select>
       </div>
       <div class="filter-group" style="margin:0;">
-        <label style="font-size:10px;">Condition</label>
-        <select class="rule-operator-select" style="font-size:12px; padding:4px; height:auto; width:100%; border:1px solid #ccc; border-radius:4px;">
+        <label>Condition</label>
+        <select class="rule-operator-select">
           <option value=">" ${operator === '>' ? 'selected' : ''}>&gt; (Greater)</option>
           <option value="<" ${operator === '<' ? 'selected' : ''}>&lt; (Less)</option>
           <option value=">=" ${operator === '>=' ? 'selected' : ''}>&gt;= (Greater/Equal)</option>
@@ -1882,13 +1974,13 @@ function addCustomRuleRow(ruleData) {
         </select>
       </div>
       <div class="filter-group" style="margin:0;">
-        <label style="font-size:10px;">Value</label>
-        <input type="number" class="rule-value-input" value="${value}" placeholder="e.g. 30000" style="font-size:12px; padding:4px; border:1px solid #ccc; border-radius:4px; width:100%; box-sizing:border-box;">
+        <label>Value</label>
+        <input type="number" class="rule-value-input" value="${value}" placeholder="e.g. 30000">
       </div>
     </div>
     <div class="filter-group" style="margin:0;">
-      <label style="font-size:10px;">Flag Reason (appended to activity)</label>
-      <input type="text" class="rule-reason-input" value="${esc(reason)}" placeholder="e.g. Walk exceeds distance limit of 30 km" style="font-size:12px; padding:4px; border:1px solid #ccc; border-radius:4px; width:100%; box-sizing:border-box;">
+      <label>Flag Reason (appended to activity)</label>
+      <input type="text" class="rule-reason-input" value="${esc(reason)}" placeholder="e.g. Walk exceeds distance limit of 30 km">
     </div>
   `;
   container.appendChild(div);
