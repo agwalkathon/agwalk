@@ -635,35 +635,109 @@
     .empty-state p{font-size:15px;line-height:1.6;}
 
     /* ── Bottom nav ── */
-    .bottom-nav{
-      position:fixed;bottom:0;left:0;right:0;
-      background:var(--surface);
-      border-top:1px solid var(--border);
-      display:grid;
-      grid-auto-flow: column;
-      grid-auto-columns: 1fr;
-      padding-bottom:max(14px,env(safe-area-inset-bottom));
-      z-index:200;
+    .bottom-nav {
+      position: fixed;
+      bottom: calc(16px + env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      width: 92%;
+      max-width: 480px;
+      background: rgba(26, 29, 32, 0.82);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 28px;
+      display: flex;
+      justify-content: space-around;
+      padding: 6px;
+      z-index: 200;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(232, 98, 42, 0.04);
+      transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     }
-    .bnav-item{
-      display:flex;flex-direction:column;align-items:center;
-      padding:12px 6px 4px;text-decoration:none;
-      color:var(--muted);gap:5px;
-      transition:color 0.15s;position:relative;
+    .bnav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 6px;
+      text-decoration: none;
+      color: var(--muted);
+      gap: 4px;
+      transition: color 0.3s;
+      position: relative;
+      flex: 1;
+      border-radius: 22px;
+      z-index: 2;
     }
     .bnav-label {
-      font-size:9.5px;font-weight:700;
-      letter-spacing:0.5px;text-transform:uppercase;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      transition: opacity 0.3s, transform 0.3s;
     }
-    .bnav-item svg{width:22px;height:22px;stroke-width:2;}
-    .bnav-item.active{color:var(--brand);}
+    .bnav-item svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 2;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .bnav-item.active {
+      color: var(--brand);
+    }
+    .bnav-item.active svg {
+      transform: scale(1.12);
+    }
+    .bnav-indicator {
+      position: absolute;
+      top: 6px;
+      bottom: 6px;
+      left: 0;
+      width: 0;
+      background: linear-gradient(135deg, rgba(232, 98, 42, 0.16) 0%, rgba(252, 97, 0, 0.06) 100%);
+      border: 1.5px solid rgba(232, 98, 42, 0.22);
+      border-radius: 22px;
+      z-index: 1;
+      transition: all 0.38s cubic-bezier(0.25, 1, 0.25, 1.12);
+      pointer-events: none;
+    }
     
+    #feed-unread-badge {
+      animation: badge-pulse 2s infinite;
+    }
+    @keyframes badge-pulse {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.7);
+      }
+      70% {
+        transform: scale(1.25);
+        box-shadow: 0 0 0 6px rgba(249, 115, 22, 0);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(249, 115, 22, 0);
+      }
+    }
+
     @media (max-width: 480px) {
+      .bottom-nav {
+        width: 94%;
+        padding: 5px;
+      }
       .bottom-nav.nav-five-tabs .bnav-label {
         display: none;
       }
       .bottom-nav.nav-five-tabs .bnav-item {
-        padding: 14px 6px 14px;
+        padding: 12px 6px;
+      }
+      .bottom-nav.nav-five-tabs .bnav-indicator {
+        top: 5px;
+        bottom: 5px;
+        border-radius: 20px;
+      }
+      .bottom-nav.nav-five-tabs .bnav-item {
+        border-radius: 20px;
       }
     }
 
@@ -1945,6 +2019,7 @@ document.addEventListener('click', function(e) {
 </div>
 
 <nav class="bottom-nav">
+  <div class="bnav-indicator"></div>
   <a class="bnav-item active" id="bnav-dashboard" href="#" onclick="showTab('dashboard');return false;">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
     <span class="bnav-label">Dashboard</span>
@@ -3730,6 +3805,7 @@ function initializeFeedTab(enabled) {
       el.style.width = contentWidth;
     });
   }
+  setTimeout(updateNavIndicator, 50);
 }
 
 var _feedLoaded = false;
@@ -4468,6 +4544,19 @@ var _lbLoaded=false,_lbReady=false;
 var TAB_ORDER = ['dashboard','activities','leaderboard','you'];
 var _currentTab = null;
 
+function updateNavIndicator() {
+  var activeItem = document.querySelector('.bottom-nav .bnav-item.active');
+  var indicator = document.querySelector('.bottom-nav .bnav-indicator');
+  if (activeItem && indicator) {
+    indicator.style.width = activeItem.offsetWidth + 'px';
+    indicator.style.left = activeItem.offsetLeft + 'px';
+  }
+}
+window.addEventListener('resize', updateNavIndicator);
+window.addEventListener('load', function() {
+  setTimeout(updateNavIndicator, 100);
+});
+
 function showTab(tab){
   var prevTab = _currentTab;
   if (prevTab === tab) return; // No-op if clicking already active tab
@@ -4501,6 +4590,7 @@ function showTab(tab){
   safeToggleClass('bnav-leaderboard', 'active', tab==='leaderboard');
   safeToggleClass('bnav-feed', 'active', tab==='feed');
   safeToggleClass('bnav-you', 'active', tab==='you');
+  updateNavIndicator();
 
   // rings + metrics now inside dashboard tab — no separate show/hide needed
   setTimeout(function() {
