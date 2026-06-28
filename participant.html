@@ -1619,6 +1619,114 @@
   @keyframes ptr-spin { to { transform: rotate(360deg); } }
 
   /* ── Updates / Feed Tab ── */
+  
+  /* ── Community Pulse Carousel & Ticker ── */
+  .community-stats-carousel {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 4px 2px 8px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .community-stats-carousel::-webkit-scrollbar {
+    display: none;
+  }
+  .pulse-card {
+    flex: 0 0 165px;
+    scroll-snap-align: start;
+    background: rgba(26, 29, 32, 0.55);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 105px;
+  }
+  .pulse-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+  .pulse-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+  .pulse-card-icon {
+    font-size: 14px;
+  }
+  .pulse-card-val {
+    font-size: 19px;
+    font-weight: 800;
+    color: #fff;
+    margin-top: 8px;
+    line-height: 1.2;
+  }
+  .pulse-card-sub {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ticker-wrap {
+    background: rgba(232, 98, 42, 0.06);
+    border: 1px solid rgba(232, 98, 42, 0.15);
+    border-radius: 12px;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+  .ticker-label {
+    font-size: 9px;
+    font-weight: 800;
+    color: var(--brand);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: rgba(232, 98, 42, 0.12);
+    padding: 3px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .ticker-text-container {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    height: 16px;
+  }
+  .ticker-text {
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: absolute;
+    width: 100%;
+    line-height: 16px;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
   .feed-card {
     background: rgba(26, 29, 32, 0.65);
     backdrop-filter: blur(16px);
@@ -2566,6 +2674,12 @@ document.addEventListener('click', function(e) {
 <div class="max-w">
   <div class="sec">Feed</div>
   <div id="feed-highlights-row" style="display:none; margin-bottom: 16px;"></div>
+  
+  <!-- Community Pulse Dashboard -->
+  <div id="community-pulse-section" style="display:none; margin-bottom:18px;">
+    <div class="community-stats-carousel" id="community-stats-carousel"></div>
+    <div id="live-activity-ticker" class="ticker-wrap" style="margin-top:12px;"></div>
+  </div>
   <div id="feed-list">
     <div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div><div class="skeleton skel-line short"></div></div>
     <div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div><div class="skeleton skel-line short"></div></div>
@@ -4832,10 +4946,202 @@ function triggerHighlightCheer() {
     if (modal) modal.style.display = 'none';
   }, 1200);
 }
+function renderCommunityPulse() {
+  var pulseSec = document.getElementById('community-pulse-section');
+  var carousel = document.getElementById('community-stats-carousel');
+  var ticker = document.getElementById('live-activity-ticker');
+  if (!pulseSec || !carousel || !ticker) return;
+
+  if (!LB_REG || !LB_REG.length || !LB_ACTS || !LB_ACTS.length) {
+    pulseSec.style.display = 'none';
+    return;
+  }
+  
+  pulseSec.style.display = 'block';
+
+  // 1. Odometer
+  var validActs = LB_ACTS.filter(function(a){return !a.is_flagged;});
+  var totalKm = validActs.reduce(function(s,a){return s+parseFloat(a.distance_meters||0)/1000;}, 0);
+  
+  // 2. Active Today
+  var todayStr = new Date().toISOString().split('T')[0];
+  var loggedToday = {};
+  validActs.forEach(function(a) {
+    var d = getActDate(a);
+    if (d === todayStr) {
+      loggedToday[a.strava_athlete_id] = true;
+    }
+  });
+  var activeTodayCount = Object.keys(loggedToday).length;
+  var totalAthletes = LB_REG.length;
+  var activeTodayPct = totalAthletes > 0 ? Math.round((activeTodayCount / totalAthletes) * 100) : 0;
+
+  // 3. Eco Impact
+  var co2Saved = totalKm * 0.12; // 0.12 kg/km
+  var treesPlanted = co2Saved / 22; // ~22 kg/tree/year
+
+  // 4. Virtual Journey (Kashmir to Kanyakumari - 3600 km)
+  var targetRouteKm = 3600;
+  var journeyPct = Math.min(100, Math.round((totalKm / targetRouteKm) * 100));
+  
+  // 5. Peak Active Hour
+  var hourCounts = {};
+  validActs.forEach(function(a) {
+    var tStr = a.activity_date_time_ist || a.activity_date;
+    if (!tStr) return;
+    var match = tStr.match(/[T ](\d{2}):/);
+    if (match) {
+      var hr = parseInt(match[1]);
+      hourCounts[hr] = (hourCounts[hr] || 0) + 1;
+    }
+  });
+  var peakHour = 6;
+  var maxCount = 0;
+  for (var hr = 0; hr < 24; hr++) {
+    if ((hourCounts[hr] || 0) > maxCount) {
+      maxCount = hourCounts[hr];
+      peakHour = hr;
+    }
+  }
+  var startHr = peakHour;
+  var endHr = (peakHour + 1) % 24;
+  var startPeriod = startHr >= 12 ? 'PM' : 'AM';
+  var endPeriod = endHr >= 12 ? 'PM' : 'AM';
+  var startFmt = (startHr % 12 || 12) + ':00 ' + startPeriod;
+  var endFmt = (endHr % 12 || 12) + ':00 ' + endPeriod;
+  var peakHourStr = startFmt + ' - ' + endFmt;
+
+  // Render Carousel Cards
+  var cardsHtml = '';
+  
+  // Card 1: Community Odometer
+  cardsHtml += `
+    <div class="pulse-card">
+      <div class="pulse-card-header">
+        <span>Odometer</span>
+        <span class="pulse-card-icon">🏆</span>
+      </div>
+      <div class="pulse-card-val">${totalKm.toLocaleString('en-IN', {maximumFractionDigits:1})} km</div>
+      <div class="pulse-card-sub">${(totalKm * 1350).toLocaleString('en-IN', {maximumFractionDigits:0})} total steps</div>
+    </div>
+  `;
+  
+  // Card 2: Active Today
+  cardsHtml += `
+    <div class="pulse-card">
+      <div class="pulse-card-header">
+        <span>Active Today</span>
+        <span class="pulse-card-icon">⚡</span>
+      </div>
+      <div class="pulse-card-val">${activeTodayCount}/${totalAthletes}</div>
+      <div class="pulse-card-sub">${activeTodayPct}% active today</div>
+    </div>
+  `;
+  
+  // Card 3: Eco-Impact
+  cardsHtml += `
+    <div class="pulse-card">
+      <div class="pulse-card-header">
+        <span>CO₂ Offset</span>
+        <span class="pulse-card-icon">🌱</span>
+      </div>
+      <div class="pulse-card-val">${co2Saved.toFixed(1)} kg</div>
+      <div class="pulse-card-sub">≈ ${treesPlanted.toFixed(1)} trees planted</div>
+    </div>
+  `;
+  
+  // Card 4: Virtual Journey
+  cardsHtml += `
+    <div class="pulse-card">
+      <div class="pulse-card-header">
+        <span>K2K Route</span>
+        <span class="pulse-card-icon">🗺️</span>
+      </div>
+      <div class="pulse-card-val">${journeyPct}%</div>
+      <div class="pulse-card-sub">${totalKm.toFixed(0)} / ${targetRouteKm} km</div>
+    </div>
+  `;
+  
+  // Card 5: Peak Active Hour
+  cardsHtml += `
+    <div class="pulse-card">
+      <div class="pulse-card-header">
+        <span>Peak Hour</span>
+        <span class="pulse-card-icon">⏰</span>
+      </div>
+      <div class="pulse-card-val">${startFmt.replace(':00', '')}</div>
+      <div class="pulse-card-sub">${peakHourStr}</div>
+    </div>
+  `;
+  
+  carousel.innerHTML = cardsHtml;
+
+  // 6. Live Ticker
+  var recentActs = validActs.slice()
+    .sort(function(a,b){return (b.activity_date||'').localeCompare(a.activity_date||'');})
+    .slice(0, 5);
+
+  if (!recentActs.length) {
+    ticker.style.display = 'none';
+    return;
+  }
+  
+  ticker.style.display = 'flex';
+  
+  // Find names mapping
+  var regNames = {};
+  LB_REG.forEach(function(r){
+    var firstLast = r.full_name || '—';
+    var nameParts = firstLast.trim().split(/\s+/);
+    if (nameParts.length > 1) {
+      firstLast = nameParts[0] + ' ' + nameParts[nameParts.length - 1][0] + '.';
+    }
+    regNames[String(r.strava_athlete_id)] = firstLast;
+  });
+
+  var tickerIndex = 0;
+  function updateTicker() {
+    if (!recentActs[tickerIndex]) tickerIndex = 0;
+    var act = recentActs[tickerIndex];
+    var athName = regNames[String(act.strava_athlete_id)] || 'Someone';
+    var dist = parseFloat(act.distance_meters||0)/1000;
+    var minutesAgoStr = 'just now';
+    try {
+      var actTime = new Date(act.activity_date);
+      var diffMs = new Date() - actTime;
+      var diffMin = Math.floor(diffMs / 60000);
+      if (diffMin > 0) {
+        if (diffMin < 60) {
+          minutesAgoStr = diffMin + 'm ago';
+        } else if (diffMin < 1440) {
+          minutesAgoStr = Math.floor(diffMin / 60) + 'h ago';
+        } else {
+          minutesAgoStr = Math.floor(diffMin / 1440) + 'd ago';
+        }
+      }
+    } catch(e) {}
+    
+    var textHtml = `<div class="ticker-text" id="ticker-active-text">🏃 <strong>${athName}</strong> walked ${dist.toFixed(1)} km <span style="color:var(--muted); font-size:11px;">(${minutesAgoStr})</span></div>`;
+    
+    ticker.innerHTML = `
+      <div class="ticker-label"><span>🏃</span> Live</div>
+      <div class="ticker-text-container">
+        ${textHtml}
+      </div>
+    `;
+    tickerIndex = (tickerIndex + 1) % recentActs.length;
+  }
+  
+  if (window.communityTickerInterval) clearInterval(window.communityTickerInterval);
+  updateTicker();
+  window.communityTickerInterval = setInterval(updateTicker, 5000);
+}
+
 function renderFeed() {
   var list = document.getElementById('feed-list');
   if (!list) return;
   renderFeedHighlights();
+  renderCommunityPulse();
   if (!_feedData.length) {
     list.innerHTML = '<div class="empty-state"><div class="icon">📢</div><p>No updates in the feed yet. Check back later!</p></div>';
     return;
