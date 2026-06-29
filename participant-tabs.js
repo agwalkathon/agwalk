@@ -470,19 +470,19 @@ function renderActivities(acts, dayBreakdown, actBreakdown, gender) {
         '<span class="whoop-date-month">' + esc(shortMonth) + '</span>' +
       '</div>' +
       '<div style="flex:1; display:flex; flex-direction:column; margin-left:12px; min-width:0; align-items:stretch;">' +
-        '<div class="whoop-stats-box" style="margin-left:0; width:100%; justify-content:flex-end;">' +
+        '<div class="whoop-stats-box" style="margin-left:0; width:100%; justify-content:flex-start;">' +
           '<div class="whoop-stat-item">' + actValHtml + '<span class="whoop-stat-lbl">ACTS</span></div>' +
           '<div class="whoop-stat-item"><span class="whoop-stat-val">' + daySteps.toLocaleString('en-IN') + '</span><span class="whoop-stat-lbl">STEPS</span></div>' +
           '<div class="whoop-stat-item"><span class="whoop-stat-val">' + rawKm.toFixed(1) + '</span><span class="whoop-stat-lbl">KM</span></div>' +
         '</div>' +
-        '<div class="whoop-points-box" style="display:flex; flex-wrap:wrap; gap:6px; font-size:12px; color:var(--muted); margin-top:6px; justify-content:flex-end; align-self:flex-end; font-weight:600; font-family:var(--font);">' +
+        '<div class="whoop-points-box" style="display:flex; flex-wrap:wrap; gap:6px; font-size:12px; color:var(--muted); margin-top:6px; justify-content:flex-start; align-self:flex-start; font-weight:600; font-family:var(--font);">' +
           '<span>Base: <strong style="color:#60A5FA;">' + db.distPts + '</strong></span>' +
           '<span style="color:rgba(255,255,255,0.15);">&middot;</span>' +
           '<span>Bonus: <strong style="color:#FFD000;">' + db.bonusPts + '</strong></span>' +
           '<span style="color:rgba(255,255,255,0.15);">&middot;</span>' +
           '<span>Challenge: <strong style="color:#A78BFA;">' + chPts + '</strong></span>' +
         '</div>' +
-        '<div class="whoop-total-box" style="font-size:13px; font-weight:700; color:var(--muted); margin-top:4px; align-self:flex-end; font-family:var(--font);">' +
+        '<div class="whoop-total-box" style="font-size:13px; font-weight:700; color:var(--muted); margin-top:4px; align-self:flex-start; font-family:var(--font);">' +
           'Total: <strong style="color:var(--brand); font-size:14px; font-weight:800;">' + dayTotal + ' pts</strong>' +
         '</div>' +
       '</div>' +
@@ -2374,7 +2374,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-var VAPID_PUBLIC_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa40HI80NM9e9oFJAbHMQRXKCh_hXmEF7fPbQpxQZMSaFRbMzDqSmjLR2E8ypc';
+var VAPID_PUBLIC_KEY = 'BCXhOjvYOgNOGoge2s5bxkEj9DVxYnUsjDHbP8GR4PKDmtMKAJ4zkLWK2KvvRIRvMKfSpsC1cDGivtXsMRbNkYI';
 
 function urlBase64ToUint8Array(base64String) {
   var cleanStr = base64String.trim();
@@ -2453,12 +2453,35 @@ async function enablePushNotifications() {
     }
 
     var reg = await navigator.serviceWorker.ready;
-    var convertedVapidKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
     
-    var sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: convertedVapidKey
-    });
+    // Dynamically fetch VAPID public key from backend
+    var vapidKey = VAPID_PUBLIC_KEY;
+    try {
+      var keyRes = await fetch(BACKEND + '/push/vapid-key');
+      var keyJson = await keyRes.json();
+      if (keyJson && keyJson.publicKey) {
+        vapidKey = keyJson.publicKey;
+        console.log('[Push] Fetched dynamic VAPID key:', vapidKey);
+      }
+    } catch (e) {
+      console.warn('[Push] Dynamic VAPID fetch failed, using fallback:', e);
+    }
+    
+    var convertedVapidKey = urlBase64ToUint8Array(vapidKey);
+    var sub;
+    try {
+      console.log('[Push] Attempting subscription with Uint8Array key');
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: convertedVapidKey
+      });
+    } catch (subErr) {
+      console.warn('[Push] Uint8Array subscribe failed, retrying with ArrayBuffer:', subErr);
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: convertedVapidKey.buffer
+      });
+    }
 
     var athleteId = currentSession ? currentSession.athleteId : '';
     if (!athleteId) {
