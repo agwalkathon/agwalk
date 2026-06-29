@@ -1849,8 +1849,9 @@ function renderFeed() {
       var reactionButtonsHtml = '';
       emojis.forEach(function(emo) {
         var count = (item.reaction_counts && item.reaction_counts[emo.type]) || 0;
+        var displayCount = count > 0 ? count : '';
         var activeClass = (item.my_reactions && item.my_reactions.indexOf(emo.type) > -1) ? 'active' : '';
-        reactionButtonsHtml += `<button class="feed-react-btn ${activeClass}" onclick="reactToAnnouncement('${item.id}', '${emo.type}', event)"><span class="emoji" style="display: flex; align-items: center; justify-content: center;">${emo.icon}</span><span class="count">${count}</span></button>`;
+        reactionButtonsHtml += `<button class="feed-react-btn ${activeClass}" onclick="reactToAnnouncement('${item.id}', '${emo.type}', event)"><span class="emoji" style="display: flex; align-items: center; justify-content: center;">${emo.icon}</span><span class="count">${displayCount}</span></button>`;
       });
 
       html += `
@@ -1926,8 +1927,9 @@ function renderFeed() {
       var reactionButtonsHtml = '';
       emojis.forEach(function(emo) {
         var count = (item.reaction_counts && item.reaction_counts[emo.type]) || 0;
+        var displayCount = count > 0 ? count : '';
         var activeClass = (item.my_reactions && item.my_reactions.indexOf(emo.type) > -1) ? 'active' : '';
-        reactionButtonsHtml += `<button class="feed-react-btn ${activeClass}" onclick="reactToAnnouncement('${item.id}', '${emo.type}', event)"><span class="emoji" style="display: flex; align-items: center; justify-content: center;">${emo.icon}</span><span class="count">${count}</span></button>`;
+        reactionButtonsHtml += `<button class="feed-react-btn ${activeClass}" onclick="reactToAnnouncement('${item.id}', '${emo.type}', event)"><span class="emoji" style="display: flex; align-items: center; justify-content: center;">${emo.icon}</span><span class="count">${displayCount}</span></button>`;
       });
 
       html += `
@@ -2003,7 +2005,8 @@ async function reactToAnnouncement(announcementId, reactionType, event) {
         var cntEl = btn.querySelector('.count');
         if (cntEl) {
           var curr = parseInt(cntEl.textContent, 10) || 0;
-          cntEl.textContent = Math.max(0, curr - 1);
+          var nextVal = Math.max(0, curr - 1);
+          cntEl.textContent = nextVal > 0 ? nextVal : '';
         }
       }
     } else {
