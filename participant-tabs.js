@@ -1770,6 +1770,8 @@ function renderFeed() {
             ${mapHtml}
             ${(function() {
               var statsCols = [];
+              
+              // 1. Distance (Always show)
               statsCols.push(`
                 <div class="stat-item">
                   <span class="stat-label">Distance</span>
@@ -1777,19 +1779,59 @@ function renderFeed() {
                   <span class="stat-unit">km</span>
                 </div>
               `);
+
+              // 2. Pace (if allowed from Feed-config)
+              var showPace = true;
+              if (CONFIG_LB && CONFIG_LB.feed_config && CONFIG_LB.feed_config.rules) {
+                if (CONFIG_LB.feed_config.rules.smart_pace_filter !== false) {
+                  var sportLower = (act.sport_type || '').toLowerCase();
+                  if (sportLower.indexOf('walk') > -1) {
+                    showPace = false;
+                  }
+                }
+              }
+              if (showPace) {
+                statsCols.push(`
+                  <div class="stat-item">
+                    <span class="stat-label">Pace</span>
+                    <span class="stat-val">${paceStr}</span>
+                  </div>
+                `);
+              }
+
+              // 3. Moving Time (Always show)
+              var movingSec = act.moving_time_seconds || 0;
               statsCols.push(`
                 <div class="stat-item">
-                  <span class="stat-label">Pace</span>
-                  <span class="stat-val">${paceStr}</span>
+                  <span class="stat-label">Duration</span>
+                  <span class="stat-val">${fmtDur(movingSec)}</span>
                 </div>
               `);
-              statsCols.push(`
-                <div class="stat-item">
-                  <span class="stat-label">Steps</span>
-                  <span class="stat-val">${calculatedStepsDisplay}</span>
-                </div>
-              `);
-              if (elevGain > 0) {
+
+              // 4. Steps (Calculated - if allowed from Feed-config)
+              var showSteps = true;
+              if (CONFIG_LB && CONFIG_LB.feed_config && CONFIG_LB.feed_config.rules) {
+                if (CONFIG_LB.feed_config.rules.show_steps === false) {
+                  showSteps = false;
+                }
+              }
+              if (showSteps) {
+                statsCols.push(`
+                  <div class="stat-item">
+                    <span class="stat-label">Steps</span>
+                    <span class="stat-val">${calculatedStepsDisplay}</span>
+                  </div>
+                `);
+              }
+
+              // 5. Elevation (if allowed from Feed-config)
+              var showElevation = true;
+              if (CONFIG_LB && CONFIG_LB.feed_config && CONFIG_LB.feed_config.rules) {
+                if (CONFIG_LB.feed_config.rules.show_elevation === false) {
+                  showElevation = false;
+                }
+              }
+              if (showElevation && elevGain > 0) {
                 statsCols.push(`
                   <div class="stat-item">
                     <span class="stat-label">Elev Gain</span>
@@ -1798,6 +1840,7 @@ function renderFeed() {
                   </div>
                 `);
               }
+
               var gridStyle = 'grid-template-columns: repeat(' + statsCols.length + ', 1fr);';
               return '<div class="feed-card-stats-grid" style="' + gridStyle + '">' + statsCols.join('') + '</div>';
             })()}
@@ -1889,6 +1932,12 @@ async function reactToAnnouncement(announcementId, reactionType, event) {
 
   var item = _feedData.find(function(x) { return String(x.id) === String(announcementId); });
   if (item) {
+    if (!Array.isArray(item.my_reactions)) {
+      item.my_reactions = [];
+    }
+    if (!item.reaction_counts || typeof item.reaction_counts !== 'object') {
+      item.reaction_counts = {};
+    }
     var idx = item.my_reactions.indexOf(reactionType);
     if (idx > -1) {
       item.my_reactions.splice(idx, 1);
@@ -1912,7 +1961,6 @@ async function reactToAnnouncement(announcementId, reactionType, event) {
         triggerConfettiBurst(clickX, clickY, getEmojiCharForType(reactionType));
       }
       item.my_reactions.push(reactionType);
-      if (!item.reaction_counts) item.reaction_counts = {};
       item.reaction_counts[reactionType] = (item.reaction_counts[reactionType] || 0) + 1;
     }
     renderFeed();
