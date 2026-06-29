@@ -1855,6 +1855,7 @@ function renderFeed() {
       }
 
       var appreciationHtml = '';
+      var isSpecialAppreciation = false;
       var elevGain = parseFloat(act.elevation_gain || 0);
       if (act.sport_type === 'Walk' || act.sport_type === 'Run' || act.sport_type === 'VirtualRun' || act.sport_type === 'Hike') {
         var paceVal = (act.moving_time_seconds / 60) / (act.distance_meters / 1000);
@@ -1868,9 +1869,34 @@ function renderFeed() {
         for (var cIdx = 0; cIdx < customApps.length; cIdx++) {
           if (customApps[cIdx].cond()) {
             appreciationHtml = `<div class="activity-appreciation-badge special"><span class="appreciation-icon">${customApps[cIdx].emoji}</span><span class="appreciation-text">${customApps[cIdx].text}</span></div>`;
+            isSpecialAppreciation = true;
             break;
           }
         }
+      }
+
+      if (!isSpecialAppreciation && distKm > 0) {
+        var actId = String(act.strava_activity_id || act.activity_id || item.created_at || 'act');
+        var seed = athleteName + '_' + parseFloat(distKm).toFixed(2) + '_' + actId;
+        var icon = '🌱';
+        var pool = ["Wonderful active minutes! Keep this beautiful rhythm going.", "Every single step counts! Great job staying active today."];
+        var hash = 0;
+        for (var i = 0; i < seed.length; i++) {
+          hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        var index = Math.abs(hash) % pool.length;
+        var msg = pool[index];
+        appreciationHtml = `<div class="activity-appreciation-badge"><span class="appreciation-icon">${icon}</span><span class="appreciation-text">"${msg}"</span></div>`;
+      }
+
+      var kudosInsightsHtml = '';
+      if (appreciationHtml) {
+        kudosInsightsHtml = `
+          <div style="margin-top: 14px;">
+            <div style="font-size: 10px; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px;">Kudos Insights</div>
+            ${appreciationHtml}
+          </div>
+        `;
       }
 
       var targetAthleteId = String(act.athlete_id || item.tagged_athlete_id || '');
@@ -1943,7 +1969,7 @@ function renderFeed() {
               return '<div class="feed-card-stats-grid" style="' + gridStyle + '">' + statsCols.join('') + '</div>';
             })()}
             ${mapHtml}
-            ${appreciationHtml}
+            ${kudosInsightsHtml}
           </div>
           <div class="feed-card-actions" onclick="event.stopPropagation();">${reactionButtonsHtml}</div>
         </div>
