@@ -103,7 +103,7 @@ function openActivityDetail(id, event, isStravaId) {
 
       var paceValStr = '—';
       if (distanceKmVal > 0 && movingSec > 0) {
-        paceValStr = fmtPS(movingSec / distanceKmVal, sportType);
+        paceValStr = fmtPS((distanceKmVal * 1000) / movingSec, sportType);
       }
       document.getElementById('det-pace').innerText = paceValStr;
 
