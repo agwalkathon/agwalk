@@ -248,7 +248,7 @@ function renderCommunityPulse() {
 
   var cardsHtml = 
     // Odometer section
-    '<div class="pulse-odo-card" style="grid-column: span 3;">' +
+    '<div class="pulse-odo-card" style="grid-column: span 12;">' +
       '<div style="font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; font-family: var(--font); text-align: left;">' +
         'Odometer' +
       '</div>' +
@@ -259,10 +259,10 @@ function renderCommunityPulse() {
     '</div>' +
 
     // K2K journey card
-    '<div class="pulse-card" style="grid-column: span 3;">' +
+    '<div class="pulse-card k2k-card" style="grid-column: span 6;">' +
       '<div class="pulse-card-top">' +
         '<div class="pulse-circle">' +
-          '<svg>' +
+          '<svg viewBox="0 0 80 80" width="80" height="80">' +
             '<circle class="bg" cx="40" cy="40" r="35"></circle>' +
             '<circle class="fill k2k-fill" cx="40" cy="40" r="35" style="stroke-dashoffset: 220; stroke: #A78BFA;"></circle>' +
           '</svg>' +
@@ -280,10 +280,10 @@ function renderCommunityPulse() {
     '</div>' +
 
     // Active Today card
-    '<div class="pulse-card">' +
+    '<div class="pulse-card active-card" style="grid-column: span 6;">' +
       '<div class="pulse-card-top">' +
         '<div class="pulse-circle">' +
-          '<svg>' +
+          '<svg viewBox="0 0 80 80" width="80" height="80">' +
             '<circle class="bg" cx="40" cy="40" r="35"></circle>' +
             '<circle class="fill active-fill" cx="40" cy="40" r="35" style="stroke-dashoffset: 220; stroke: var(--brand);"></circle>' +
           '</svg>' +
@@ -297,28 +297,28 @@ function renderCommunityPulse() {
     '</div>' +
 
     // Total Steps card
-    '<div class="pulse-card-stat">' +
+    '<div class="pulse-card-stat" style="grid-column: span 3;">' +
       '<div class="pulse-stat-val">' + totalSteps.toLocaleString('en-IN') + '</div>' +
       '<div class="pulse-stat-lbl">TOTAL STEPS</div>' +
       '<div class="pulse-stat-sub">Based on average cadence</div>' +
     '</div>' +
 
     // CO2 offset card
-    '<div class="pulse-card-stat">' +
+    '<div class="pulse-card-stat" style="grid-column: span 3;">' +
       '<div class="pulse-stat-val" style="color: #34D399;">' + co2.toLocaleString('en-IN') + ' kg</div>' +
       '<div class="pulse-stat-lbl" style="color: #34D399;">CO₂ OFFSET</div>' +
       '<div class="pulse-stat-sub">Equivalent trees carbon offset</div>' +
     '</div>' +
 
     // Total Active Hours card
-    '<div class="pulse-card-stat">' +
+    '<div class="pulse-card-stat" style="grid-column: span 3;">' +
       '<div class="pulse-stat-val" style="color: #60A5FA;">' + Math.round(totalHours).toLocaleString('en-IN') + ' hrs</div>' +
       '<div class="pulse-stat-lbl" style="color: #60A5FA;">ACTIVE TIME</div>' +
       '<div class="pulse-stat-sub">Cumulative moving duration</div>' +
     '</div>' +
 
     // Peak active hour card
-    '<div class="pulse-card-stat">' +
+    '<div class="pulse-card-stat" style="grid-column: span 3;">' +
       '<div class="pulse-stat-val" style="color: #FBBF24;">' + peakHour + '</div>' +
       '<div class="pulse-stat-lbl" style="color: #FBBF24;">PEAK ACTIVE HOUR</div>' +
       '<div class="pulse-stat-sub">Most active start hour bracket</div>' +
