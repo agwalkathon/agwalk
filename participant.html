@@ -636,17 +636,17 @@
 <!-- Activity Detail Modal -->
   <div id="activity-detail-modal" class="detail-modal">
     <!-- Top Nav Bar -->
-    <div style="display:flex; align-items:center; justify-content:space-between; padding:16px; padding-top:calc(16px + env(safe-area-inset-top)); border-bottom:1px solid rgba(255,255,255,0.05); position:sticky; top:0; background:#0E1012; z-index:10002;">
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:16px; padding-top:calc(16px + env(safe-area-inset-top)); border-bottom:1px solid rgba(255,255,255,0.08); position:sticky; top:0; background:rgba(14,16,18,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); z-index:10002;">
       <button class="btn-back" onclick="closeActivityDetail()" style="background:none; border:none; color:var(--muted); font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
         Back
       </button>
-      <div id="detail-top-date" style="font-size:16px; font-weight:800; color:#fff; text-align:center;">Sunday, June 28</div>
+      <div id="detail-top-date" style="font-size:16px; font-weight:800; color:#fff; text-align:center;">Activity</div>
       <div style="width:50px;"></div> <!-- placeholder for symmetry -->
     </div>
 
     <!-- Hero Map Section -->
-    <div class="detail-map-wrap" id="detail-map-container" style="display:none;">
+    <div class="detail-map-wrap" id="detail-map-container" style="display:none; border-bottom:1px solid rgba(255,255,255,0.08);">
       <div id="detail-map" style="width: 100%; height: 100%;"></div>
     </div>
     
@@ -654,12 +654,21 @@
     <div class="detail-content" style="padding-top:16px;">
       <!-- Title & Started Info -->
       <div style="margin-bottom:18px;">
-        <div id="detail-title" style="font-size:18px; font-weight:800; color:#fff; line-height:1.35;">Walk - Evening Walk</div>
-        <div id="detail-started-info" style="font-size:12.5px; color:var(--muted); margin-top:4px;">Started at 06:14 pm · 12.01 km</div>
+        <div id="detail-title" style="font-size:18px; font-weight:800; color:#fff; line-height:1.35;">Evening Walk</div>
+        <div id="detail-started-info" style="font-size:12.5px; color:var(--muted); margin-top:4px;">Started Info</div>
+      </div>
+      
+      <!-- Description/Notes (moved above Activity Status Row) -->
+      <div id="detail-desc-box" style="display:none; margin-bottom:16px;">
+        <div class="detail-metrics-title" style="margin-top:0;">Activity Notes</div>
+        <div class="detail-desc-card" style="margin-bottom:0;">
+          <div class="detail-desc-title" id="detail-desc-title">Evening Walk</div>
+          <div class="detail-desc-text" id="detail-desc-content">—</div>
+        </div>
       </div>
       
       <!-- Activity Status Row -->
-      <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:rgba(255,255,255,0.04); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.09); border-radius:12px; margin-bottom:16px;">
+      <div id="detail-status-row" style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:rgba(255,255,255,0.03); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.08); border-radius:12px; margin-bottom:16px;">
         <div style="font-size:10.5px; font-weight:700; color:var(--label); text-transform:uppercase; letter-spacing:0.8px;">Activity Status</div>
         <div id="detail-status-badge" style="font-size:11px; font-weight:800; padding:3px 9px; border-radius:20px; background:rgba(34,197,94,0.12); color:var(--green); border:1px solid rgba(34,197,94,0.25);">✓ Valid</div>
       </div>
@@ -716,15 +725,22 @@
         </div>
       </div>
       
-      <!-- Description/Notes -->
-      <div id="detail-desc-box" style="display:none;">
-        <div class="detail-metrics-title">Activity Notes</div>
-        <div class="detail-desc-card">
-          <div class="detail-desc-title" id="detail-desc-title">Evening Walk</div>
-          <div class="detail-desc-text" id="detail-desc-content">—</div>
+      <!-- Best Efforts Section -->
+      <div id="detail-best-efforts-section" style="margin-top:24px; display:none;">
+        <div class="detail-metrics-title">Best Efforts</div>
+        <div id="detail-best-efforts-container" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap:10px; margin-top:8px;">
+          <!-- dynamically rendered -->
         </div>
       </div>
-      
+
+      <!-- Photos Section -->
+      <div id="detail-photos-section" style="margin-top:24px; display:none;">
+        <div class="detail-metrics-title">Photos</div>
+        <div id="detail-photos-container" style="display:flex; gap:12px; overflow-x:auto; padding-bottom:8px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;">
+          <!-- dynamically rendered -->
+        </div>
+      </div>
+
       <!-- Splits Section -->
       <div id="detail-splits-section" style="margin-top:24px; display:none;">
         <div class="detail-metrics-title">Splits (per km)</div>
@@ -744,7 +760,7 @@
 
 <div id="profile-detail-modal" class="detail-modal">
     <!-- Top Nav Bar -->
-    <div style="display:flex; align-items:center; justify-content:space-between; padding:16px; padding-top:calc(16px + env(safe-area-inset-top)); border-bottom:1px solid rgba(255,255,255,0.05); position:sticky; top:0; background:#0E1012; z-index:10002;">
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:16px; padding-top:calc(16px + env(safe-area-inset-top)); border-bottom:1px solid rgba(255,255,255,0.08); position:sticky; top:0; background:rgba(14,16,18,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); z-index:10002;">
       <button class="btn-back" onclick="closeProfileDetail()" style="background:none; border:none; color:var(--muted); font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
         Back
@@ -758,15 +774,16 @@
       <!-- Avatar & Basic Info -->
       <div style="text-align:center; margin-bottom:24px;">
         <div id="prof-avatar" class="profile-avatar-large">PM</div>
-        <div id="prof-name" style="font-size:20px; font-weight:900; color:#fff;">Prakash Mali</div>
-        <div id="prof-team-shift" style="font-size:12.5px; color:var(--muted); margin-top:4px;">Avengers &middot; India Shift</div>
-        <div id="prof-location" style="font-size:11.5px; color:var(--muted); margin-top:4px; display:none;"></div>
-        <div style="margin-top:8px; display:flex; align-items:center; justify-content:center; gap:6px;">
-          <span id="prof-gender-badge" style="display:none; font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:10px; background:rgba(232,98,42,0.12); color:var(--brand); border:1px solid rgba(232,98,42,0.25);"></span>
+        <div id="prof-name" style="font-size:20px; font-weight:900; color:#fff; display:flex; align-items:center; justify-content:center; gap:6px;">Prakash Mali</div>
+        <!-- Shift, Team and Gender details removed -->
+        <div id="prof-team-shift" style="display:none;"></div>
+        <div id="prof-location" style="font-size:11.5px; color:var(--muted); margin-top:6px; display:none;"></div>
+        <div style="display:none;">
+          <span id="prof-gender-badge" style="display:none;"></span>
         </div>
       </div>
 
-      <!-- Stats Cumulative Grid (No Total Points included) -->
+      <!-- Stats Cumulative Grid -->
       <div class="profile-stats-row">
         <div class="profile-stat-card glass-metric-box">
           <div class="val" id="prof-total-dist">—</div>
@@ -780,12 +797,65 @@
           <div class="val" id="prof-total-activities">—</div>
           <div class="lbl">Activities</div>
         </div>
+        <div class="profile-stat-card glass-metric-box">
+          <div class="val" id="prof-total-hours">—</div>
+          <div class="lbl">Total Hours</div>
+        </div>
+      </div>
+
+      <!-- Activity Category Splits Card -->
+      <div class="glass-card" style="padding:16px; margin-bottom:24px;">
+        <div class="detail-metrics-title" style="margin-top:0;">Activity Category Splits</div>
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; text-align:center; margin-top:8px;">
+          <div>
+            <div style="font-size:20px;">🏃</div>
+            <div style="font-size:14px; font-weight:800; color:#fff; margin-top:4px;" id="prof-split-run">0.0 km</div>
+            <div style="font-size:9.5px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Run</div>
+          </div>
+          <div>
+            <div style="font-size:20px;">🚶‍♂️</div>
+            <div style="font-size:14px; font-weight:800; color:#fff; margin-top:4px;" id="prof-split-walk">0.0 km</div>
+            <div style="font-size:9.5px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Walk/Hike</div>
+          </div>
+          <div>
+            <div style="font-size:20px;">🚴</div>
+            <div style="font-size:14px; font-weight:800; color:#fff; margin-top:4px;" id="prof-split-ride">0.0 km</div>
+            <div style="font-size:9.5px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Ride</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Personal Bests Grid (Moved before heatmap) -->
+      <div style="margin-bottom:24px;">
+        <div class="detail-metrics-title">Personal Bests</div>
+        <div class="prof-pb-row">
+          <div class="prof-pb-card">
+            <span class="lbl">Longest Activity</span>
+            <span class="val" id="prof-pb-longest">—</span>
+            <span class="sub">single session max</span>
+          </div>
+          <div class="prof-pb-card">
+            <span class="lbl">Best Pace</span>
+            <span class="val" id="prof-pb-pace">—</span>
+            <span class="sub">min/km · walk/run</span>
+          </div>
+          <div class="prof-pb-card">
+            <span class="lbl">Longest Duration</span>
+            <span class="val" id="prof-pb-duration">—</span>
+            <span class="sub">moving duration</span>
+          </div>
+          <div class="prof-pb-card">
+            <span class="lbl">Active Streak</span>
+            <span class="val" id="prof-pb-streak">—</span>
+            <span class="sub">consecutive days</span>
+          </div>
+        </div>
       </div>
 
       <!-- Heatmap Calendar Grid -->
       <div style="margin-bottom:24px;">
         <div class="detail-metrics-title">Consistency Heatmap (June)</div>
-        <div class="card" style="padding:16px; background:rgba(255,255,255,0.01); border:1px solid rgba(255,255,255,0.05); margin-top:8px;">
+        <div class="glass-card" style="padding:16px; margin-top:8px;">
           <!-- Heatmap Grid -->
           <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap:4px; font-size:9px; color:var(--muted); font-weight:600; text-align:center; margin-bottom:6px;">
             <div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div><div>S</div>
@@ -813,33 +883,6 @@
         <!-- Sports Stats Container -->
         <div id="prof-sports-stats-container" style="display:flex; flex-direction:column; gap:12px;">
           <!-- dynamically rendered -->
-        </div>
-      </div>
-
-      <!-- Personal Bests Grid -->
-      <div style="margin-bottom:24px;">
-        <div class="detail-metrics-title">Personal Bests</div>
-        <div class="prof-pb-row">
-          <div class="prof-pb-card">
-            <span class="lbl">Longest Activity</span>
-            <span class="val" id="prof-pb-longest">—</span>
-            <span class="sub">single session max</span>
-          </div>
-          <div class="prof-pb-card">
-            <span class="lbl">Best Pace</span>
-            <span class="val" id="prof-pb-pace">—</span>
-            <span class="sub">min/km · walk/run</span>
-          </div>
-          <div class="prof-pb-card">
-            <span class="lbl">Longest Duration</span>
-            <span class="val" id="prof-pb-duration">—</span>
-            <span class="sub">moving duration</span>
-          </div>
-          <div class="prof-pb-card">
-            <span class="lbl">Active Streak</span>
-            <span class="val" id="prof-pb-streak">—</span>
-            <span class="sub">consecutive days</span>
-          </div>
         </div>
       </div>
 
