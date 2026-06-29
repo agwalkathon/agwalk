@@ -506,7 +506,6 @@
     }
     .content:not(.active) {
       visibility: hidden !important;
-      content-visibility: hidden;
     }
     .hidden-tab {
       display: none !important;
