@@ -299,7 +299,9 @@ body{font-family:var(--font);background:var(--page-bg);color:var(--text-primary)
               <div style="font-size:13px;font-weight:600" id="preview-label">Preview</div>
               <div style="display:flex;gap:8px">
                 <button class="btn btn-ghost" onclick="resetUpload()">🗑 Clear</button>
-                <button class="btn btn-primary" id="import-btn" onclick="startImport()">⬆️ Import New Activities</button>
+                <button class="btn btn-primary" id="import-btn" onclick="startImport('unique')">⬆️ Import Unique</button>
+                <button class="btn btn-purple" id="import-existing-btn" onclick="startImport('update-only')">🔄 Update Existing Only</button>
+                <button class="btn btn-teal" id="import-update-btn" onclick="startImport('all')">⚡ Import &amp; Update All</button>
               </div>
             </div>
             <div class="preview-wrap">
@@ -680,9 +682,18 @@ function renderPreview() {
   document.getElementById('st-err').textContent   = errs;
   document.getElementById('stats-row').style.display = 'flex';
 
-  var btn = document.getElementById('import-btn');
-  btn.disabled = newRows === 0;
-  btn.innerHTML = newRows === 0 ? '⬆️ Nothing to Import' : '⬆️ Import ' + newRows + ' New Activities';
+  var btnUnique = document.getElementById('import-btn');
+  var btnExisting = document.getElementById('import-existing-btn');
+  var btnUpdate = document.getElementById('import-update-btn');
+
+  btnUnique.disabled = newRows === 0;
+  btnUnique.innerHTML = newRows === 0 ? '⬆️ Nothing to Import' : '⬆️ Import ' + newRows + ' Unique';
+
+  btnExisting.disabled = dups === 0;
+  btnExisting.innerHTML = dups === 0 ? '🔄 Nothing to Update' : '🔄 Update ' + dups + ' Existing Only';
+
+  btnUpdate.disabled = (newRows + dups) === 0;
+  btnUpdate.innerHTML = (newRows + dups) === 0 ? '⚡ Nothing to Import/Update' : '⚡ Import & Update ' + (newRows + dups) + ' All';
 
   var preview = parsedRows.slice(0, 50);
   document.getElementById('preview-body').innerHTML = preview.map(function(r) {
@@ -721,13 +732,32 @@ function renderPreview() {
   document.getElementById('preview-label').textContent = 'Preview' + (parsedRows.length > 50 ? ' (first 50 of ' + total + ' rows)' : ' (' + total + ' rows)');
 }
 
-async function startImport() {
-  var toImport = parsedRows.filter(function(r){ return !r.isDup && r.errors.length === 0; });
+async function startImport(mode) {
+  var toImport = parsedRows.filter(function(r){
+    if (r.errors.length > 0) return false;
+    if (mode === 'unique') {
+      return !r.isDup;
+    } else if (mode === 'update-only') {
+      return r.isDup;
+    } else { // mode === 'all'
+      return true;
+    }
+  });
   if (!toImport.length) return;
 
-  var btn = document.getElementById('import-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div> Importing…';
+  var btnUnique = document.getElementById('import-btn');
+  var btnExisting = document.getElementById('import-existing-btn');
+  var btnUpdate = document.getElementById('import-update-btn');
+  btnUnique.disabled = true;
+  btnExisting.disabled = true;
+  btnUpdate.disabled = true;
+
+  var activeBtn;
+  if (mode === 'unique') activeBtn = btnUnique;
+  else if (mode === 'update-only') activeBtn = btnExisting;
+  else activeBtn = btnUpdate;
+
+  activeBtn.innerHTML = '<div class="spinner"></div> Importing…';
 
   var pw = document.getElementById('progress-wrap');
   pw.style.display = 'block';
@@ -749,6 +779,15 @@ async function startImport() {
   });
 
   addLog('🚀 Starting import of ' + allActivities.length + ' activities…');
+  
+  var updateExisting = (mode === 'all' || mode === 'update-only');
+  if (mode === 'all') {
+    addLog('⚡ Mode: Import new activities and update existing duplicates.', '#90caf9');
+  } else if (mode === 'update-only') {
+    addLog('🔄 Mode: Update existing duplicates only (new activities will be skipped).', '#b39ddb');
+  } else {
+    addLog('⬆️ Mode: Import unique activities only (duplicates will be skipped).', '#90caf9');
+  }
 
   var success = 0, failed = 0, skipped = 0;
   var BATCH = 200;
@@ -767,7 +806,7 @@ async function startImport() {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + ADMIN_SECRET
         },
-        body: JSON.stringify({ activities: batch })
+        body: JSON.stringify({ activities: batch, updateExisting: updateExisting })
       });
       if (!res.ok) {
         var errText = await res.text();
@@ -779,7 +818,11 @@ async function startImport() {
           success += result.imported || 0;
           skipped += result.skipped || 0;
           failed  += result.failed  || 0;
-          addLog('✅ Batch ' + batchNum + ': ' + (result.imported||0) + ' imported, ' + (result.skipped||0) + ' skipped');
+          if (updateExisting) {
+            addLog('✅ Batch ' + batchNum + ': ' + (result.imported||0) + ' processed (new/updated), ' + (result.failed||0) + ' failed');
+          } else {
+            addLog('✅ Batch ' + batchNum + ': ' + (result.imported||0) + ' imported, ' + (result.skipped||0) + ' skipped (duplicates)');
+          }
         } else {
           failed += batch.length;
           addLog('❌ Batch ' + batchNum + ': ' + (result.error||'Unknown'), '#ef9a9a');
@@ -801,13 +844,23 @@ async function startImport() {
   lbl.textContent = '✅ Import complete';
   addLog('');
   addLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', '#555');
-  addLog('✅ Imported:  ' + success);
-  addLog('⚠️  Skipped (duplicates): ' + skipped);
+  if (mode === 'all') {
+    addLog('⚡ Processed (new/updated): ' + success);
+  } else if (mode === 'update-only') {
+    addLog('🔄 Updated:   ' + success);
+  } else {
+    addLog('⬆️ Imported (new): ' + success);
+    addLog('⚠️  Skipped (duplicates): ' + skipped);
+  }
   if (failed) addLog('❌ Failed:    ' + failed, '#ef9a9a');
   addLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', '#555');
 
-  btn.innerHTML = '✅ Done — ' + success + ' imported';
-  btn.disabled = false;
+  activeBtn.innerHTML = '✅ Done — ' + success + ' processed';
+  
+  // Re-enable all buttons after 2 seconds
+  setTimeout(function() {
+    renderPreview();
+  }, 2000);
 }
 
 function rowToActivity(row) {
