@@ -1967,7 +1967,7 @@ async function reactToAnnouncement(announcementId, reactionType, event) {
   }
 
   try {
-    var res = await fetch(BACKEND + '/announcements/react', {
+    var res = await fetch(BACKEND + '/react', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -2178,20 +2178,31 @@ function renderNotifications() {
   });
 }
 
-function clearPWACache() {
-  if (confirm('Clear offline app cache and refresh portal?')) {
-    if (currentSession && currentSession.athleteId) {
-      cacheClear(currentSession.athleteId);
-    }
-    if ('serviceWorker' in navigator) {
-      caches.keys().then(function(names) {
-        return Promise.all(names.map(function(name) { return caches.delete(name); }));
-      }).then(function() {
-        window.location.reload(true);
-      });
-    } else {
-      window.location.reload(true);
-    }
+function clearPWACache(btn) {
+  if (btn) {
+    btn.style.color = '#10b981';
+    btn.style.transform = 'scale(1.15)';
+    btn.style.transition = 'all 0.2s ease';
+  }
+
+  if (currentSession && currentSession.athleteId) {
+    cacheClear(currentSession.athleteId);
+  }
+
+  var reloadPage = function() {
+    window.location.reload(true);
+  };
+
+  if ('serviceWorker' in navigator) {
+    caches.keys().then(function(names) {
+      return Promise.all(names.map(function(name) { return caches.delete(name); }));
+    }).then(function() {
+      setTimeout(reloadPage, 800);
+    }).catch(function() {
+      setTimeout(reloadPage, 800);
+    });
+  } else {
+    setTimeout(reloadPage, 800);
   }
 }
 
