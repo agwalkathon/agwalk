@@ -45,18 +45,20 @@ function openActivityDetail(id, event, isStravaId) {
     document.getElementById('detail-top-date').innerText = 'Loading...';
     document.getElementById('detail-title').innerText = 'Loading...';
     document.getElementById('detail-started-info').innerText = '';
-    document.getElementById('det-dist').innerText = '—';
-    document.getElementById('det-movetime').innerText = '—';
-    document.getElementById('det-elapsed').innerText = '—';
-    document.getElementById('det-pace').innerText = '—';
-    document.getElementById('det-calcsteps').innerText = '—';
-    document.getElementById('det-stravasteps').innerText = '—';
-    document.getElementById('det-elevation').innerText = '—';
-    document.getElementById('det-device').innerText = '—';
-    document.getElementById('det-avghr').innerText = '—';
-    document.getElementById('det-maxhr').innerText = '—';
-    document.getElementById('det-cadence').innerText = '—';
-    document.getElementById('det-calories').innerText = '—';
+    // Show all wrap divs first so they appear during load, then hide if no data
+    ['det-dist-wrap','det-pace-wrap','det-movetime-wrap','det-elapsed-wrap',
+     'det-hr-wrap','det-maxhr-wrap','det-cadence-wrap','det-stravasteps-wrap',
+     'det-calcsteps-wrap','det-elevation-wrap','det-calories-wrap','det-device-wrap'
+    ].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.style.display = ''; }
+    });
+    ['det-dist','det-pace','det-movetime','det-elapsed','det-avghr','det-maxhr',
+     'det-cadence','det-stravasteps','det-calcsteps','det-elevation','det-device','det-calories'
+    ].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.innerText = '—';
+    });
     document.getElementById('detail-desc-box').style.display = 'none';
     document.getElementById('detail-appreciation-box').innerHTML = '';
 
@@ -93,63 +95,64 @@ function openActivityDetail(id, event, isStravaId) {
       } catch (e) {}
       document.getElementById('detail-started-info').innerText = startedStr;
 
+      // Helper: show/hide a field wrapper
+      function setField(wrapId, valId, value) {
+        var wrap = document.getElementById(wrapId);
+        var el = document.getElementById(valId);
+        var hasValue = value !== null && value !== undefined && value !== '' && value !== '—';
+        if (wrap) wrap.style.display = hasValue ? '' : 'none';
+        if (el && hasValue) el.innerText = value;
+      }
+
       var distanceKmVal = (act.distance_meters || 0) / 1000;
-      document.getElementById('det-dist').innerText = distanceKmVal.toFixed(2) + ' km';
+      // Distance — always show if > 0
+      setField('det-dist-wrap', 'det-dist', distanceKmVal > 0 ? distanceKmVal.toFixed(2) + ' km' : null);
 
       var movingSec = act.moving_time_seconds || 0;
       var elapsedSec = act.elapsed_time_seconds || 0;
-      document.getElementById('det-movetime').innerText = fmtDur(movingSec);
-      document.getElementById('det-elapsed').innerText = fmtDur(elapsedSec);
 
-      var paceValStr = '—';
+      // Moving time — show if > 0
+      setField('det-movetime-wrap', 'det-movetime', movingSec > 0 ? fmtDur(movingSec) : null);
+
+      // Elapsed time — show only if different from moving time and > 0
+      var elapsedDiff = Math.abs(elapsedSec - movingSec);
+      setField('det-elapsed-wrap', 'det-elapsed', (elapsedSec > 0 && elapsedDiff > 30) ? fmtDur(elapsedSec) : null);
+
+      // Pace — show if calculable
+      var paceValStr = null;
       if (distanceKmVal > 0 && movingSec > 0) {
         paceValStr = fmtPS((distanceKmVal * 1000) / movingSec, sportType);
       }
-      document.getElementById('det-pace').innerText = paceValStr;
+      setField('det-pace-wrap', 'det-pace', paceValStr);
 
+      // Calculated steps — always show if distance > 0
       var calculatedSteps = Math.round(distanceKmVal * 1350);
-      document.getElementById('det-calcsteps').innerText = calculatedSteps.toLocaleString('en-IN');
+      setField('det-calcsteps-wrap', 'det-calcsteps', distanceKmVal > 0 ? calculatedSteps.toLocaleString('en-IN') + ' steps' : null);
 
+      // Strava steps — only if > 0
       var stravaStepsVal = act.steps || null;
-      var stepsWrap = document.getElementById('det-stravasteps-wrap');
-      if (stravaStepsVal !== null && stravaStepsVal !== undefined && stravaStepsVal > 0) {
-        document.getElementById('det-stravasteps').innerText = stravaStepsVal.toLocaleString('en-IN');
-        if (stepsWrap) stepsWrap.style.display = 'block';
-      } else {
-        if (stepsWrap) stepsWrap.style.display = 'none';
-      }
+      setField('det-stravasteps-wrap', 'det-stravasteps', (stravaStepsVal && stravaStepsVal > 0) ? stravaStepsVal.toLocaleString('en-IN') + ' steps' : null);
 
-      document.getElementById('det-elevation').innerText = Math.round(act.elevation_gain || 0) + ' m';
-      document.getElementById('det-device').innerText = esc(act.device_name || 'Strava App');
+      // Elevation — only if > 0
+      var elevVal = act.elevation_gain || 0;
+      setField('det-elevation-wrap', 'det-elevation', elevVal > 0 ? Math.round(elevVal) + ' m' : null);
 
+      // Device — only if explicitly set in DB (not fallback)
+      setField('det-device-wrap', 'det-device', act.device_name || null);
+
+      // Heart rate — only if avg HR exists
       var avgHrVal = act.average_heartrate || null;
       var maxHrVal = act.max_heartrate || null;
-      var hrWrap = document.getElementById('det-hr-wrap');
-      if (avgHrVal) {
-        document.getElementById('det-avghr').innerText = Math.round(avgHrVal) + ' bpm';
-        document.getElementById('det-maxhr').innerText = maxHrVal ? Math.round(maxHrVal) + ' bpm' : '—';
-        if (hrWrap) hrWrap.style.display = '';
-      } else {
-        if (hrWrap) hrWrap.style.display = 'none';
-      }
+      setField('det-hr-wrap', 'det-avghr', avgHrVal ? Math.round(avgHrVal) + ' bpm' : null);
+      setField('det-maxhr-wrap', 'det-maxhr', maxHrVal ? Math.round(maxHrVal) + ' bpm' : null);
 
+      // Cadence — only if exists
       var cadenceVal = act.average_cadence || null;
-      var cadenceWrap = document.getElementById('det-cadence-wrap');
-      if (cadenceVal) {
-        document.getElementById('det-cadence').innerText = Math.round(cadenceVal * 2) + ' spm';
-        if (cadenceWrap) cadenceWrap.style.display = '';
-      } else {
-        if (cadenceWrap) cadenceWrap.style.display = 'none';
-      }
+      setField('det-cadence-wrap', 'det-cadence', cadenceVal ? Math.round(cadenceVal * 2) + ' spm' : null);
 
+      // Calories — only if exists
       var caloriesVal = act.calories || null;
-      var caloriesWrap = document.getElementById('det-calories-wrap');
-      if (caloriesVal) {
-        document.getElementById('det-calories').innerText = Math.round(caloriesVal) + ' kcal';
-        if (caloriesWrap) caloriesWrap.style.display = '';
-      } else {
-        if (caloriesWrap) caloriesWrap.style.display = 'none';
-      }
+      setField('det-calories-wrap', 'det-calories', caloriesVal ? Math.round(caloriesVal) + ' kcal' : null);
 
       var descBox = document.getElementById('detail-desc-box');
       if (act.description) {
