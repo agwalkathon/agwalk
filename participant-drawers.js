@@ -101,7 +101,6 @@ function openActivityDetail(id, event, isStravaId) {
       var sportIcon = renderIcon(sportType);
       document.getElementById('detail-title').innerHTML = `
         <div style="display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-          <span style="font-weight:800; color:rgba(255,255,255,0.6);">${sportType}</span>
           <span style="display:inline-flex; align-items:center; color:var(--brand);">${sportIcon}</span>
           <span style="font-weight:900; color:#fff;">${esc(actName)}</span>
         </div>
@@ -113,7 +112,7 @@ function openActivityDetail(id, event, isStravaId) {
         if (!isNaN(localDt.getTime())) {
           var timeStr = localDt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
           var dateStr = localDt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-          startedStr = 'Started at ' + timeStr + ' on ' + dateStr;
+          startedStr = esc(athleteName) + ' - Started at ' + timeStr + ' on ' + dateStr;
         }
       } catch (e) {}
       document.getElementById('detail-started-info').innerText = startedStr;
@@ -558,10 +557,10 @@ function openProfileDetail(athleteId, event) {
           var hasPhoto = profilePhoto && profilePhoto !== 'null' && profilePhoto !== 'undefined' && !profilePhoto.includes('large.png') && !profilePhoto.includes('avatar/athlete');
           if (hasPhoto) {
             avEl.textContent = '';
-            avEl.setAttribute('style', `background: url('${profilePhoto}') no-repeat center center; background-size: cover; width:70px; height:70px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 20px rgba(0,0,0,0.4); border:2.5px solid rgba(255,255,255,0.06);`);
+            avEl.setAttribute('style', `background: url('${profilePhoto}') no-repeat center center; background-size: cover; width:90px; height:90px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(0,0,0,0.4); border:2.5px solid rgba(255,255,255,0.08);`);
           } else {
             avEl.textContent = pInitials;
-            avEl.setAttribute('style', pStyle + '; width:70px; height:70px; border-radius:50%; font-size:24px; font-weight:800; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 20px rgba(0,0,0,0.4); border:2.5px solid rgba(255,255,255,0.06);');
+            avEl.setAttribute('style', pStyle + '; width:90px; height:90px; border-radius:50%; font-size:32px; font-weight:800; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(0,0,0,0.4); border:2.5px solid rgba(255,255,255,0.08);');
           }
         }
       }
@@ -720,11 +719,12 @@ function openProfileDetail(athleteId, event) {
         }
         listContainer.innerHTML = '';
         validActs.slice(0, 10).forEach(function(a) {
-          var card = document.createElement('a');
+          var card = document.createElement('div');
           card.className = 'prof-recent-act-card';
-          card.href = '#';
-          card.style.textDecoration = 'none';
           card.style.display = 'flex';
+          card.style.flexDirection = 'column';
+          card.style.alignItems = 'stretch';
+          card.style.cursor = 'pointer';
           
           var dateLabel = '';
           try {
@@ -737,19 +737,45 @@ function openProfileDetail(athleteId, event) {
           var distVal = ((a.distance_meters || 0) / 1000).toFixed(2);
           var movingMins = Math.round((a.moving_time_seconds || 0) / 60);
           var stepsVal = Math.round(((a.distance_meters || 0) / 1000) * 1350);
+          var paceValStr = (a.distance_meters > 0 && a.moving_time_seconds > 0) ? fmtPS(a.distance_meters / a.moving_time_seconds, a.sport_type) : '—';
+          var elevVal = a.elevation_gain || 0;
+          var deviceVal = a.device_name || 'Strava';
 
           card.addEventListener('click', function(e) {
+            if (e.target.closest('.view-full-btn')) {
+              return;
+            }
             e.preventDefault();
-            openActivityDetail(a.strava_activity_id, e, true);
+            var coll = card.querySelector('.act-card-collapse');
+            if (coll) {
+              var isCollapsed = coll.style.display === 'none';
+              coll.style.display = isCollapsed ? 'block' : 'none';
+              card.style.borderColor = isCollapsed ? 'rgba(232, 98, 42, 0.4)' : 'rgba(255,255,255,0.06)';
+            }
           });
           
           card.innerHTML = `
-            <div>
-              <div style="font-size:14px; font-weight:800; color:#fff;">${esc(a.activity_name || 'Activity')}</div>
-              <div style="font-size:11.5px; color:var(--muted); margin-top:2px;">${dateLabel} &middot; ${movingMins} mins &middot; ${stepsVal.toLocaleString('en-IN')} steps</div>
+            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+              <div>
+                <div style="font-size:14px; font-weight:800; color:#fff;">${esc(a.activity_name || 'Activity')}</div>
+                <div style="font-size:11.5px; color:var(--muted); margin-top:2px;">${dateLabel} &middot; ${movingMins} mins &middot; ${stepsVal.toLocaleString('en-IN')} steps</div>
+              </div>
+              <div style="font-size:14px; font-weight:800; color:var(--brand); display:flex; align-items:center; gap:2px; flex-shrink:0;">
+                <span>${distVal}</span> <span style="font-size:10px; color:var(--muted); font-weight:700;">KM</span>
+              </div>
             </div>
-            <div style="font-size:14px; font-weight:800; color:var(--brand); display:flex; align-items:center; gap:2px; flex-shrink:0;">
-              <span>${distVal}</span> <span style="font-size:10px; color:var(--muted); font-weight:700;">KM</span>
+            <div class="act-card-collapse" style="display: none; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.08); margin-top: 10px; width: 100%;">
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 12px; color: rgba(255,255,255,0.7);">
+                <div><span style="color: var(--muted); font-weight: 700;">Pace:</span> ${paceValStr}</div>
+                <div><span style="color: var(--muted); font-weight: 700;">Elapsed:</span> ${fmtDur(a.elapsed_time_seconds || 0)}</div>
+                <div><span style="color: var(--muted); font-weight: 700;">Elevation:</span> ${Math.round(elevVal)} m</div>
+                <div><span style="color: var(--muted); font-weight: 700;">Device:</span> ${esc(deviceVal)}</div>
+              </div>
+              <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                <button class="view-full-btn" onclick="openActivityDetail('${a.strava_activity_id}', event, true)" style="background: rgba(232, 98, 42, 0.1); border: 1px solid rgba(232, 98, 42, 0.25); color: var(--brand); padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+                  Full Stats &amp; Map ↗
+                </button>
+              </div>
             </div>
           `;
           listContainer.appendChild(card);
