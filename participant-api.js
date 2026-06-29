@@ -671,11 +671,11 @@ async function load(isBackgroundRefresh) {
         LB_REG=allRegRaw;
         LB_ACTS=allActsRaw;
         precomputeLBScores();
-        if(LB_ME){_lbReady=true;lbRender();}
+        if(LB_ME){_lbReady=true; if(typeof lbRender === 'function') lbRender();}
         if (typeof renderFeedHighlights === 'function') renderFeedHighlights();
         if (typeof renderCommunityPulse === 'function') renderCommunityPulse();
       }catch(e2){console.warn('Ranking load failed:',e2);return;}
-      renderStanding();
+      if (typeof renderStanding === 'function') renderStanding();
     })();
 
     // Pace Goals Card
@@ -1073,8 +1073,8 @@ async function loadNotifications() {
     if (data.success && Array.isArray(data.notifications)) {
       _notificationsList = data.notifications;
       _notificationsLoaded = true;
-      renderNotifications();
-      if (typeof myActs !== 'undefined' && myActs && myActs.length > 0) {
+      if (typeof renderNotifications === 'function') renderNotifications();
+      if (typeof renderStanding === 'function' && typeof myActs !== 'undefined' && myActs && myActs.length > 0) {
         renderStanding();
       }
     }
