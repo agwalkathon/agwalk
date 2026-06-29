@@ -2226,6 +2226,25 @@
     letter-spacing: 1.2px;
     margin: 18px 0 10px;
   }
+  .prof-recent-act-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  .prof-recent-act-card:active {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(232,98,42,0.3);
+  }
+
   .detail-modal.open {
     transform: translateX(0);
   }
