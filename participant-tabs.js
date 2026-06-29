@@ -1698,7 +1698,7 @@ function renderFeed() {
       var durationMins = Math.round((act.moving_time_seconds || 0) / 60);
       var paceStr = '—';
       if (act.distance_meters > 0 && act.moving_time_seconds > 0) {
-        paceStr = fmtPS(act.moving_time_seconds / (act.distance_meters / 1000), act.sport_type);
+        paceStr = fmtPS(act.distance_meters / act.moving_time_seconds, act.sport_type);
       }
       var steps = Math.round((act.distance_meters / 1000) * 1350);
       var calculatedStepsDisplay = steps.toLocaleString('en-IN');
@@ -1794,15 +1794,12 @@ function renderFeed() {
               <span class="activity-title" onclick="openActivityDetail('${act.activity_id || act.strava_activity_id}', event, true); event.stopPropagation();" style="cursor: pointer;">${esc(act.activity_name || 'Activity')}</span>
             </div>
             ${descriptionHtml}
-            ${appreciationHtml}
-            ${mapHtml}
             ${(function() {
               var statsCols = [];
               
               // 1. Distance (Always show)
               statsCols.push(`
                 <div class="stat-item">
-                  <span class="stat-label">Distance</span>
                   <span class="stat-val">${distKm}</span>
                   <span class="stat-unit">km</span>
                 </div>
@@ -1819,10 +1816,20 @@ function renderFeed() {
                 }
               }
               if (showPace) {
+                var paceVal = paceStr, paceUnit = 'pace';
+                if (paceStr.indexOf('/') > -1) {
+                  var parts = paceStr.split('/');
+                  paceVal = parts[0];
+                  paceUnit = '/' + parts[1];
+                } else if (paceStr.indexOf(' ') > -1) {
+                  var parts = paceStr.split(' ');
+                  paceVal = parts[0];
+                  paceUnit = parts[1];
+                }
                 statsCols.push(`
                   <div class="stat-item">
-                    <span class="stat-label">Pace</span>
-                    <span class="stat-val">${paceStr}</span>
+                    <span class="stat-val">${paceVal}</span>
+                    <span class="stat-unit">${paceUnit}</span>
                   </div>
                 `);
               }
@@ -1831,8 +1838,8 @@ function renderFeed() {
               var movingSec = act.moving_time_seconds || 0;
               statsCols.push(`
                 <div class="stat-item">
-                  <span class="stat-label">Duration</span>
                   <span class="stat-val">${fmtDur(movingSec)}</span>
+                  <span class="stat-unit">Time</span>
                 </div>
               `);
 
@@ -1846,8 +1853,8 @@ function renderFeed() {
               if (showSteps) {
                 statsCols.push(`
                   <div class="stat-item">
-                    <span class="stat-label">Steps</span>
                     <span class="stat-val">${calculatedStepsDisplay}</span>
+                    <span class="stat-unit">Steps</span>
                   </div>
                 `);
               }
@@ -1862,9 +1869,8 @@ function renderFeed() {
               if (showElevation && elevGain > 0) {
                 statsCols.push(`
                   <div class="stat-item">
-                    <span class="stat-label">Elev Gain</span>
                     <span class="stat-val">${Math.round(elevGain)}</span>
-                    <span class="stat-unit">meters</span>
+                    <span class="stat-unit">m</span>
                   </div>
                 `);
               }
@@ -1872,6 +1878,8 @@ function renderFeed() {
               var gridStyle = 'grid-template-columns: repeat(' + statsCols.length + ', 1fr);';
               return '<div class="feed-card-stats-grid" style="' + gridStyle + '">' + statsCols.join('') + '</div>';
             })()}
+            ${mapHtml}
+            ${appreciationHtml}
           </div>
           <div class="feed-card-actions" onclick="event.stopPropagation();">
             ${reactionButtonsHtml}
@@ -1972,15 +1980,19 @@ async function reactToAnnouncement(announcementId, reactionType, event) {
       if (item.reaction_counts[reactionType] > 0) item.reaction_counts[reactionType]--;
       
       // Update DOM directly
+      var btn = null;
       if (event) {
-        var btn = event.currentTarget || event.target.closest('button');
-        if (btn) {
-          btn.classList.remove('active');
-          var cntEl = btn.querySelector('.count');
-          if (cntEl) {
-            var curr = parseInt(cntEl.textContent, 10) || 0;
-            cntEl.textContent = Math.max(0, curr - 1);
-          }
+        btn = event.currentTarget || (event.target && event.target.closest('button'));
+      }
+      if (!btn) {
+        btn = document.querySelector(`button[onclick*="'${announcementId}'"][onclick*="'${reactionType}'"]`);
+      }
+      if (btn) {
+        btn.classList.remove('active');
+        var cntEl = btn.querySelector('.count');
+        if (cntEl) {
+          var curr = parseInt(cntEl.textContent, 10) || 0;
+          cntEl.textContent = Math.max(0, curr - 1);
         }
       }
     } else {
@@ -2005,15 +2017,19 @@ async function reactToAnnouncement(announcementId, reactionType, event) {
       item.reaction_counts[reactionType] = (item.reaction_counts[reactionType] || 0) + 1;
       
       // Update DOM directly
+      var btn = null;
       if (event) {
-        var btn = event.currentTarget || event.target.closest('button');
-        if (btn) {
-          btn.classList.add('active');
-          var cntEl = btn.querySelector('.count');
-          if (cntEl) {
-            var curr = parseInt(cntEl.textContent, 10) || 0;
-            cntEl.textContent = curr + 1;
-          }
+        btn = event.currentTarget || (event.target && event.target.closest('button'));
+      }
+      if (!btn) {
+        btn = document.querySelector(`button[onclick*="'${announcementId}'"][onclick*="'${reactionType}'"]`);
+      }
+      if (btn) {
+        btn.classList.add('active');
+        var cntEl = btn.querySelector('.count');
+        if (cntEl) {
+          var curr = parseInt(cntEl.textContent, 10) || 0;
+          cntEl.textContent = curr + 1;
         }
       }
     }
