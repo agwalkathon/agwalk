@@ -29,6 +29,24 @@ function updateNavIndicator() {
   indicator.style.left = (idx * w) + '%';
 }
 
+function clearFeedTab() {
+  if (window._feedMaps && window._feedMaps.length > 0) {
+    window._feedMaps.forEach(function(m) {
+      try { m.remove(); } catch(e) {}
+    });
+  }
+  window._feedMaps = [];
+  var list = document.getElementById('feed-list');
+  if (list) list.innerHTML = '';
+}
+
+function clearLeaderboardTab() {
+  var list = document.getElementById('lb-list');
+  if (list) list.innerHTML = '';
+  var tabs = document.getElementById('lb-tabs-container');
+  if (tabs) tabs.innerHTML = '';
+}
+
 function showTab(tab) {
   if (tab === 'feed' && !CONFIG_LB.announcements_enabled) return;
   if (_currentTab === tab) return;
@@ -55,6 +73,13 @@ function showTab(tab) {
 
   updateNavIndicator();
 
+  // Virtualization clean up for offscreen tabs to release browser memory and Leaflet map instances
+  if (prevTab === 'feed') {
+    clearFeedTab();
+  } else if (prevTab === 'leaderboard') {
+    clearLeaderboardTab();
+  }
+
   // Lazy loaders for tabs
   if (tab === 'dashboard') {
     triggerRingAnimation();
@@ -69,6 +94,8 @@ function showTab(tab) {
     if (!_feedLoaded) {
       loadFeed().catch(function(e) { console.warn('showTab loadFeed error:', e); });
       _feedLoaded = true;
+    } else {
+      renderFeed();
     }
     // Force Leaflet to re-measure container sizes after tab slide animation is complete
     setTimeout(function() {
@@ -2195,7 +2222,7 @@ function clearPWACache(btn) {
   }
 
   var reloadPage = function() {
-    window.location.reload(true);
+    window.location.reload();
   };
 
   if ('serviceWorker' in navigator) {
