@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="participant.css?v=20260629_v12">
+  <link rel="stylesheet" href="participant.css?v=20260629_v13">
 </head>
 </head>
 <body>
@@ -636,7 +636,7 @@
 <!-- Activity Detail Modal -->
   <div id="activity-detail-modal" class="detail-modal">
     <!-- Top Nav Bar -->
-    <div style="display:flex; align-items:center; justify-content:space-between; padding:16px; border-bottom:1px solid rgba(255,255,255,0.05); position:sticky; top:0; background:#0E1012; z-index:10002;">
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:16px; padding-top:calc(16px + env(safe-area-inset-top)); border-bottom:1px solid rgba(255,255,255,0.05); position:sticky; top:0; background:#0E1012; z-index:10002;">
       <button class="btn-back" onclick="closeActivityDetail()" style="background:none; border:none; color:var(--muted); font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
         Back
@@ -744,7 +744,7 @@
 
 <div id="profile-detail-modal" class="detail-modal">
     <!-- Top Nav Bar -->
-    <div style="display:flex; align-items:center; justify-content:space-between; padding:16px; border-bottom:1px solid rgba(255,255,255,0.05); position:sticky; top:0; background:#0E1012; z-index:10002;">
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:16px; padding-top:calc(16px + env(safe-area-inset-top)); border-bottom:1px solid rgba(255,255,255,0.05); position:sticky; top:0; background:#0E1012; z-index:10002;">
       <button class="btn-back" onclick="closeProfileDetail()" style="background:none; border:none; color:var(--muted); font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
         Back
