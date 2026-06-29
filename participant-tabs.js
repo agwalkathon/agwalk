@@ -512,7 +512,7 @@ function showDateDetails(dateStr) {
     if (a.avg_heart_rate && parseFloat(a.avg_heart_rate) > 0) gridItems.push({ label: 'Avg HR', val: Math.round(a.avg_heart_rate) + ' bpm' });
     if (a.max_heart_rate && parseFloat(a.max_heart_rate) > 0) gridItems.push({ label: 'Max HR', val: Math.round(a.max_heart_rate) + ' bpm' });
     if (a.avg_cadence && parseFloat(a.avg_cadence) > 0) gridItems.push({ label: 'Avg Cadence', val: Math.round(a.avg_cadence * 2) + ' steps/min' });
-    if (a.steps && parseInt(a.steps) > 0) gridItems.push({ label: 'Strava Steps', val: parseInt(a.steps).toLocaleString('en-IN') });
+    if (a.steps && parseInt(a.steps) > 0) gridItems.push({ label: 'Steps', val: parseInt(a.steps).toLocaleString('en-IN') });
     if (a.distance_meters && parseFloat(a.distance_meters) > 0) {
       var calcSteps = Math.round((a.distance_meters / 1000) * 1350);
       gridItems.push({ label: 'Calculated Steps', val: calcSteps.toLocaleString('en-IN') });
@@ -1675,7 +1675,7 @@ function renderFeed() {
       var steps = Math.round((act.distance_meters / 1000) * 1350);
       var calculatedStepsDisplay = steps.toLocaleString('en-IN');
       if (act.steps && act.steps > 0) {
-        calculatedStepsDisplay = act.steps.toLocaleString('en-IN') + ' (Strava)';
+        calculatedStepsDisplay = act.steps.toLocaleString('en-IN');
       }
 
       var deviceText = act.device_name ? ' via ' + act.device_name : '';
