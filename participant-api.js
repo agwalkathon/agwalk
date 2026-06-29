@@ -257,13 +257,16 @@ async function load(isBackgroundRefresh) {
       var btn = document.getElementById('btn-strava-connect');
       var msg = document.getElementById('strava-connect-msg');
       if (!btn) return;
-      btn.style.background = '#10b981';
-      btn.style.color = '#ffffff';
-      btn.style.boxShadow = 'none';
+      btn.style.background = 'rgba(26, 29, 32, 0.65)';
+      btn.style.backdropFilter = 'blur(16px)';
+      btn.style.webkitBackdropFilter = 'blur(16px)';
+      btn.style.border = '1px solid rgba(255, 255, 255, 0.08)';
+      btn.style.color = '#10b981';
+      btn.style.boxShadow = '0 4px 15px rgba(0,0,0,0.15)';
       btn.style.pointerEvents = 'none';
       btn.style.cursor = 'not-allowed';
       btn.innerHTML = `
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px; color:#10b981;">
           <polyline points="20 6 9 17 4 12"></polyline>
         </svg>
         Strava Connected
