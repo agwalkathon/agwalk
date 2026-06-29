@@ -1967,7 +1967,7 @@ async function reactToAnnouncement(announcementId, reactionType, event) {
   }
 
   try {
-    var res = await fetch(BACKEND + '/react', {
+    var res = await fetch(BACKEND + '/announcements/react', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
