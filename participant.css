@@ -1741,61 +1741,180 @@
   /* ── Community Pulse Carousel & Ticker ── */
   .community-stats-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-bottom: 4px;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+    width: 100%;
   }
-  @media (max-width: 480px) {
-    .community-stats-grid {
-      grid-template-columns: repeat(2, 1fr);
+  @media (max-width: 768px) {
+    .pulse-card.k2k-card, .pulse-card.active-card {
+      grid-column: span 12 !important;
+    }
+    .pulse-card-stat {
+      grid-column: span 6 !important;
     }
   }
+
+  .pulse-odo-card {
+    grid-column: span 12;
+    background: rgba(26, 29, 32, 0.55);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 16px 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  }
+  .pulse-odometer {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .digit-box {
+    background: #090A0C;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    width: 30px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 800;
+    color: #fff;
+    font-family: monospace;
+    text-shadow: 0 0 4px rgba(255,255,255,0.2);
+  }
+
   .pulse-card {
     background: rgba(26, 29, 32, 0.55);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
+    border-radius: 16px;
+    padding: 18px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.15);
     transition: transform 0.2s ease, border-color 0.2s ease;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    height: 92px;
+    min-height: 140px;
   }
   .pulse-card:hover {
     transform: translateY(-2px);
     border-color: rgba(255, 255, 255, 0.15);
   }
-  .pulse-card-header {
+  .pulse-card-top {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    font-size: 10.5px;
-    font-weight: 700;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
+    gap: 16px;
+    width: 100%;
   }
-  .pulse-card-icon {
+  .pulse-circle {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+  }
+  .pulse-circle svg {
+    width: 80px;
+    height: 80px;
+    transform: rotate(-90deg);
+  }
+  .pulse-circle circle {
+    fill: none;
+    stroke-width: 6;
+    cx: 40;
+    cy: 40;
+    r: 35;
+  }
+  .pulse-circle circle.bg {
+    stroke: rgba(255, 255, 255, 0.06);
+  }
+  .pulse-circle circle.fill {
+    stroke-linecap: round;
+    stroke-dasharray: 220;
+    stroke-dashoffset: 220;
+    transition: stroke-dashoffset 0.8s ease-out;
+  }
+  .pulse-pct {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 14px;
-  }
-  .pulse-card-val {
-    font-size: 19px;
     font-weight: 800;
     color: #fff;
-    margin-top: 8px;
-    line-height: 1.2;
   }
-  .pulse-card-sub {
-    font-size: 10px;
+  .pulse-desc {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
+    text-align: left;
+  }
+  .pulse-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 0.3px;
+  }
+  .pulse-subtitle {
+    font-size: 11px;
     color: var(--muted);
-    margin-top: 4px;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-weight: 500;
+  }
+  .pulse-metric {
+    font-size: 15px;
+    font-weight: 800;
+    margin-top: 2px;
+  }
+  .pulse-card-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    margin-top: 12px;
+    padding-top: 8px;
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 500;
+    text-align: left;
+  }
+
+  .pulse-card-stat {
+    background: rgba(26, 29, 32, 0.55);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100px;
+    text-align: left;
+  }
+  .pulse-stat-val {
+    font-size: 20px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.1;
+  }
+  .pulse-stat-lbl {
+    font-size: 9px;
+    font-weight: 800;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 6px;
+  }
+  .pulse-stat-sub {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 2px;
+    font-weight: 500;
   }
   .ticker-wrap {
     background: rgba(232, 98, 42, 0.06);
