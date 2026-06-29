@@ -400,7 +400,12 @@
         SPECIAL_DAYS = specialRows.map(function(x){ return x.special_date; });
 
         // 4. Fetch registrations
-        REGISTRATIONS = await fetchAllRows(SUPABASE_URL + '/rest/v1/registration?select=strava_athlete_id,full_name,gender,shift,leaderboard_team,team_lead');
+        REGISTRATIONS = await fetchAllRows(SUPABASE_URL + '/rest/v1/registration?select=strava_athlete_id,full_name,gender,shift,leaderboard_team,project_lead');
+        if (Array.isArray(REGISTRATIONS)) {
+          REGISTRATIONS.forEach(function(r) {
+            r.team_lead = r.project_lead;
+          });
+        }
 
         // 5. Fetch activities in range (including dates)
         var actUrl = SUPABASE_URL + '/rest/v1/activities?is_deleted=eq.false';
