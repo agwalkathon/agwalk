@@ -371,7 +371,22 @@ function openActivityDetail(id, event, isStravaId) {
         .then(function(rows) {
           if (rows && rows.length > 0) {
             var fullAct = rows[0];
-            populateFromActivity(fullAct, null);
+            var athleteId = fullAct.strava_athlete_id || fullAct.athlete_id;
+            if (athleteId) {
+              fetch(SUPABASE_URL + '/rest/v1/registration?strava_athlete_id=eq.' + athleteId + '&select=full_name', { headers: HDR })
+                .then(function(r) { return r.json(); })
+                .then(function(regRows) {
+                  if (regRows && regRows.length > 0) {
+                    fullAct.athlete_name = regRows[0].full_name;
+                  }
+                  populateFromActivity(fullAct, null);
+                })
+                .catch(function() {
+                  populateFromActivity(fullAct, null);
+                });
+            } else {
+              populateFromActivity(fullAct, null);
+            }
           }
         })
         .catch(function(err) { console.warn('Failed to load full activity details:', err); });
