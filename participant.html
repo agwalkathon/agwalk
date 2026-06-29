@@ -357,25 +357,11 @@
 <div class="content hidden-tab" id="tab-feed">
 <div class="max-w">
   <div class="sec">Activity Feed</div>
-  <div id="feed-highlights-row" style="display:none; margin-bottom: 16px;"></div>
-  
-
   <div id="feed-list">
     <div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div><div class="skeleton skel-line short"></div></div>
     <div class="skel-card"><div class="skeleton skel-line full"></div><div class="skeleton skel-line medium"></div><div class="skeleton skel-line short"></div></div>
   </div>
   
-  <!-- Highlights Detail Modal -->
-  <div id="highlight-detail-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100dvh; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center; padding:24px;" onclick="this.style.display='none'">
-    <div class="modal-card" style="background:var(--surface); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:24px; max-width:400px; width:100%; box-shadow:0 12px 40px rgba(0,0,0,0.5); text-align:center; transform:scale(0.9); transition:transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); position:relative;" onclick="event.stopPropagation()">
-      <button style="position:absolute; top:12px; right:12px; background:none; border:none; color:var(--muted); font-size:18px; cursor:pointer;" onclick="document.getElementById('highlight-detail-modal').style.display='none'">✕</button>
-      <div id="highlight-modal-emoji" style="font-size:54px; margin-bottom:12px; filter:drop-shadow(0 0 10px rgba(255,255,255,0.15));">🔥</div>
-      <div id="highlight-modal-title" style="font-size:18px; font-weight:800; color:#fff; margin-bottom:6px; letter-spacing:0.3px;">Streak Leader!</div>
-      <div id="highlight-modal-subtitle" style="font-size:11px; font-weight:700; color:var(--brand); text-transform:uppercase; letter-spacing:1px; margin-bottom:14px;">12 Days Active</div>
-      <div id="highlight-modal-body" style="font-size:13.5px; color:rgba(255,255,255,0.7); line-height:1.5; margin-bottom:20px;">Prakash Mali is on fire with 12 consecutive days of activities! Keep it going!</div>
-      <button class="btn" style="width:100%; border:none; border-radius:10px; font-weight:700; padding:12px; background:linear-gradient(135deg, #FC6100 0%, #E8622A 100%); color:#fff; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px; box-shadow:0 4px 12px rgba(232,98,42,0.3);" onclick="triggerHighlightCheer()">Clap Support 👏</button>
-    </div>
-  </div>
   
   <!-- Activity Detail Modal -->
   <div id="activity-detail-modal" class="detail-modal">
