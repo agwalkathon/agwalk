@@ -1,6 +1,16 @@
 // Profile and Activity Details Modal Drawers
 
 var _activeProfileStats = null;
+
+function fmtEffortTime(s) {
+  var min = Math.floor(s / 60);
+  var sec = Math.round(s % 60);
+  if (min > 0) {
+    return min + ':' + (sec < 10 ? '0' : '') + sec;
+  }
+  return sec + 's';
+}
+
 var _activeStatsTimeframe = 'recent';
 var _activeDetailMap = null;
 var _detailMapTimeout = null;
@@ -61,6 +71,12 @@ function openActivityDetail(id, event, isStravaId) {
     });
     document.getElementById('detail-desc-box').style.display = 'none';
     document.getElementById('detail-appreciation-box').innerHTML = '';
+    
+    // Hide best efforts and photos on load
+    document.getElementById('detail-best-efforts-section').style.display = 'none';
+    document.getElementById('detail-best-efforts-container').innerHTML = '';
+    document.getElementById('detail-photos-section').style.display = 'none';
+    document.getElementById('detail-photos-container').innerHTML = '';
 
     var modal = document.getElementById('activity-detail-modal');
     modal.style.display = 'block';
@@ -82,7 +98,14 @@ function openActivityDetail(id, event, isStravaId) {
       document.getElementById('detail-top-date').innerText = topDateStr;
 
       var actName = act.activity_name || (sportType + ' Activity');
-      document.getElementById('detail-title').innerText = esc(athleteName) + ' \u00b7 ' + esc(actName);
+      var sportIcon = renderIcon(sportType);
+      document.getElementById('detail-title').innerHTML = `
+        <div style="display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <span style="font-weight:800; color:rgba(255,255,255,0.6);">${sportType}</span>
+          <span style="display:inline-flex; align-items:center; color:var(--brand);">${sportIcon}</span>
+          <span style="font-weight:900; color:#fff;">${esc(actName)}</span>
+        </div>
+      `;
 
       var startedStr = '';
       try {
@@ -114,9 +137,8 @@ function openActivityDetail(id, event, isStravaId) {
       // Moving time — show if > 0
       setField('det-movetime-wrap', 'det-movetime', movingSec > 0 ? fmtDur(movingSec) : null);
 
-      // Elapsed time — show only if different from moving time and > 0
-      var elapsedDiff = Math.abs(elapsedSec - movingSec);
-      setField('det-elapsed-wrap', 'det-elapsed', (elapsedSec > 0 && elapsedDiff > 30) ? fmtDur(elapsedSec) : null);
+      // Elapsed time — always show if elapsedSec > 0
+      setField('det-elapsed-wrap', 'det-elapsed', elapsedSec > 0 ? fmtDur(elapsedSec) : null);
 
       // Pace — show if calculable
       var paceValStr = null;
@@ -133,9 +155,9 @@ function openActivityDetail(id, event, isStravaId) {
       var stravaStepsVal = act.steps || null;
       setField('det-stravasteps-wrap', 'det-stravasteps', (stravaStepsVal && stravaStepsVal > 0) ? stravaStepsVal.toLocaleString('en-IN') + ' steps' : null);
 
-      // Elevation — only if > 0
+      // Elevation — show as 0 m if not set or 0
       var elevVal = act.elevation_gain || 0;
-      setField('det-elevation-wrap', 'det-elevation', elevVal > 0 ? Math.round(elevVal) + ' m' : null);
+      setField('det-elevation-wrap', 'det-elevation', (elevVal !== null && elevVal !== undefined) ? Math.round(elevVal) + ' m' : '0 m');
 
       // Device — only if explicitly set in DB (not fallback)
       setField('det-device-wrap', 'det-device', act.device_name || null);
@@ -160,6 +182,64 @@ function openActivityDetail(id, event, isStravaId) {
         descBox.style.display = 'block';
       } else {
         descBox.style.display = 'none';
+      }
+
+      // Best Efforts Grid rendering
+      var bestEffSection = document.getElementById('detail-best-efforts-section');
+      var bestEffContainer = document.getElementById('detail-best-efforts-container');
+      bestEffSection.style.display = 'none';
+      bestEffContainer.innerHTML = '';
+      var bestEfforts = [];
+      if (act.best_efforts) {
+        try {
+          bestEfforts = typeof act.best_efforts === 'string' ? JSON.parse(act.best_efforts) : act.best_efforts;
+        } catch(e) {
+          console.warn('Failed to parse best_efforts:', e);
+        }
+      }
+      if (Array.isArray(bestEfforts) && bestEfforts.length > 0) {
+        bestEffSection.style.display = 'block';
+        var bestEffHtml = '';
+        bestEfforts.forEach(function(effort) {
+          var effortTime = effort.moving_time || 0;
+          var formattedTime = fmtEffortTime(effortTime);
+          bestEffHtml += `
+            <div class="detail-field-item" style="text-align: center;">
+              <div class="detail-field-label" style="font-size: 10px;">${esc(effort.name)}</div>
+              <div class="detail-field-val" style="font-size: 15px; margin-top: 4px; color: var(--brand); font-weight: 800;">${formattedTime}</div>
+            </div>
+          `;
+        });
+        bestEffContainer.innerHTML = bestEffHtml;
+      }
+
+      // Photos Grid rendering
+      var photosSection = document.getElementById('detail-photos-section');
+      var photosContainer = document.getElementById('detail-photos-container');
+      photosSection.style.display = 'none';
+      photosContainer.innerHTML = '';
+      var photosData = null;
+      if (act.photos) {
+        try {
+          photosData = typeof act.photos === 'string' ? JSON.parse(act.photos) : act.photos;
+        } catch(e) {
+          console.warn('Failed to parse photos:', e);
+        }
+      }
+      if (photosData && photosData.count > 0 && photosData.primary && photosData.primary.urls) {
+        var urls = photosData.primary.urls;
+        if (typeof urls === 'string') {
+          try { urls = JSON.parse(urls); } catch(e) {}
+        }
+        var imgUrl = urls["600"] || urls["100"] || (typeof urls === 'object' ? Object.values(urls)[0] : null);
+        if (imgUrl) {
+          photosSection.style.display = 'block';
+          photosContainer.innerHTML = `
+            <div style="flex: 0 0 auto; width: 100%; max-width: 320px; scroll-snap-align: start; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); backdrop-filter: blur(10px);">
+              <img src="${imgUrl}" style="width: 100%; height: 200px; object-fit: cover; display: block; cursor: pointer;" alt="Activity Photo" onclick="window.open('${imgUrl}', '_blank')" />
+            </div>
+          `;
+        }
       }
 
       var appBox = document.getElementById('detail-appreciation-box');
@@ -252,6 +332,7 @@ function openActivityDetail(id, event, isStravaId) {
         populateFromActivity(act, item.created_at);
       }
     }
+
 
     if (stravaActId) {
       var splitsSection = document.getElementById('detail-splits-section');
@@ -421,11 +502,12 @@ function openProfileDetail(athleteId, event) {
       btnAll.style.color = 'var(--muted)';
     }
 
-    document.getElementById('prof-name').innerText = 'Loading...';
-    document.getElementById('prof-team-shift').innerText = '—';
+    document.getElementById('prof-name').innerHTML = 'Loading...';
+    document.getElementById('prof-team-shift').innerText = '';
     document.getElementById('prof-total-dist').innerText = '—';
     document.getElementById('prof-total-steps').innerText = '—';
     document.getElementById('prof-total-activities').innerText = '—';
+    document.getElementById('prof-total-hours').innerText = '—';
     document.getElementById('prof-pb-longest').innerText = '—';
     document.getElementById('prof-pb-pace').innerText = '—';
     document.getElementById('prof-pb-duration').innerText = '—';
@@ -449,37 +531,23 @@ function openProfileDetail(athleteId, event) {
       var partRows = results[1];
       var city = (partRows && partRows[0] && partRows[0].city) || '';
       var state = (partRows && partRows[0] && partRows[0].state) || '';
-      var locationStr = [city, state].filter(Boolean).join(', ');
+      var profilePhoto = (partRows && partRows[0] && partRows[0].profile_photo) || '';
+      
+      var locationParts = [];
+      if (city) locationParts.push(city);
+      if (state) locationParts.push(state);
+      locationParts.push('India');
+      var locationStr = locationParts.join(', ');
 
       if (regRows && regRows.length > 0) {
         var p = regRows[0];
-        document.getElementById('prof-name').innerText = esc(p.full_name || '—');
-
-        var parts = [];
-        if (p.leaderboard_team) parts.push(p.leaderboard_team);
-        if (p.shift) parts.push(p.shift);
-        document.getElementById('prof-team-shift').innerText = parts.join(' \u00b7 ');
+        document.getElementById('prof-name').innerHTML = `<a href="https://www.strava.com/athletes/${athleteId}" target="_blank" style="color: #fff; text-decoration: none; border-bottom: 1.5px dashed rgba(255,255,255,0.3); transition: color 0.2s ease, border-color 0.2s ease;">${esc(p.full_name || '—')} 🇮🇳</a>`;
 
         // Location
         var locEl = document.getElementById('prof-location');
         if (locEl) {
-          if (locationStr) {
-            locEl.innerText = '📍 ' + locationStr;
-            locEl.style.display = 'block';
-          } else {
-            locEl.style.display = 'none';
-          }
-        }
-
-        // Gender badge
-        var genderEl = document.getElementById('prof-gender-badge');
-        if (genderEl) {
-          if (p.gender) {
-            genderEl.innerText = p.gender === 'Female' ? '♀ Female' : '♂ Male';
-            genderEl.style.display = 'inline-block';
-          } else {
-            genderEl.style.display = 'none';
-          }
+          locEl.innerText = '📍 ' + locationStr;
+          locEl.style.display = 'block';
         }
 
         var pName = p.full_name || 'Participant';
@@ -487,8 +555,14 @@ function openProfileDetail(athleteId, event) {
         var pStyle = getAvatarStyle(pName);
         var avEl = document.getElementById('prof-avatar');
         if (avEl) {
-          avEl.textContent = pInitials;
-          avEl.setAttribute('style', pStyle + '; width:70px; height:70px; border-radius:50%; font-size:24px; font-weight:800; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 20px rgba(0,0,0,0.4); border:2.5px solid rgba(255,255,255,0.06);');
+          var hasPhoto = profilePhoto && profilePhoto !== 'null' && profilePhoto !== 'undefined' && !profilePhoto.includes('large.png') && !profilePhoto.includes('avatar/athlete');
+          if (hasPhoto) {
+            avEl.textContent = '';
+            avEl.setAttribute('style', `background: url('${profilePhoto}') no-repeat center center; background-size: cover; width:70px; height:70px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 20px rgba(0,0,0,0.4); border:2.5px solid rgba(255,255,255,0.06);`);
+          } else {
+            avEl.textContent = pInitials;
+            avEl.setAttribute('style', pStyle + '; width:70px; height:70px; border-radius:50%; font-size:24px; font-weight:800; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 20px rgba(0,0,0,0.4); border:2.5px solid rgba(255,255,255,0.06);');
+          }
         }
       }
     }).catch(function(err) {
@@ -546,6 +620,30 @@ function openProfileDetail(athleteId, event) {
         var totalDistM = validActs.reduce(function(s,a) { return s + (a.distance_meters || 0); }, 0);
         var totalSteps = Math.round((totalDistM / 1000) * 1350);
         document.getElementById('prof-total-steps').innerText = totalSteps.toLocaleString('en-IN');
+
+        // Total Hours calculation
+        var totalMovingSeconds = validActs.reduce(function(s,a) { return s + (a.moving_time_seconds || 0); }, 0);
+        var totalHours = (totalMovingSeconds / 3600).toFixed(1);
+        document.getElementById('prof-total-hours').innerText = totalHours + 'h';
+
+        // Split distance of Run, Walk/Hike and Ride
+        var runDistM = 0;
+        var walkHikeDistM = 0;
+        var rideDistM = 0;
+        validActs.forEach(function(a) {
+          var t = a.sport_type;
+          var dist = a.distance_meters || 0;
+          if (t === 'Run' || t === 'VirtualRun') {
+            runDistM += dist;
+          } else if (t === 'Walk' || t === 'Hike') {
+            walkHikeDistM += dist;
+          } else if (t === 'Ride' || t === 'VirtualRide' || t === 'MountainBikeRide') {
+            rideDistM += dist;
+          }
+        });
+        document.getElementById('prof-split-run').innerText = (runDistM / 1000).toFixed(1) + ' km';
+        document.getElementById('prof-split-walk').innerText = (walkHikeDistM / 1000).toFixed(1) + ' km';
+        document.getElementById('prof-split-ride').innerText = (rideDistM / 1000).toFixed(1) + ' km';
 
         var maxDist = 0;
         var maxTime = 0;
@@ -622,8 +720,12 @@ function openProfileDetail(athleteId, event) {
         }
         listContainer.innerHTML = '';
         validActs.slice(0, 10).forEach(function(a) {
-          var card = document.createElement('div');
+          var card = document.createElement('a');
           card.className = 'prof-recent-act-card';
+          card.href = '#';
+          card.style.textDecoration = 'none';
+          card.style.display = 'flex';
+          
           var dateLabel = '';
           try {
             var adt = new Date(a.activity_date);
@@ -636,17 +738,20 @@ function openProfileDetail(athleteId, event) {
           var movingMins = Math.round((a.moving_time_seconds || 0) / 60);
           var stepsVal = Math.round(((a.distance_meters || 0) / 1000) * 1350);
 
-          var onclickAttr = 'openActivityDetail(\'' + a.strava_activity_id + '\', event, true)';
-          card.setAttribute('onclick', onclickAttr);
+          card.addEventListener('click', function(e) {
+            e.preventDefault();
+            openActivityDetail(a.strava_activity_id, e, true);
+          });
           
-          card.innerHTML = 
-            '<div>' +
-              '<div style="font-size:14px; font-weight:800; color:#fff;">' + esc(a.activity_name || 'Activity') + '</div>' +
-              '<div style="font-size:11.5px; color:var(--muted); margin-top:2px;">' + dateLabel + ' &middot; ' + distVal + ' km &middot; ' + movingMins + ' mins</div>' +
-            '</div>' +
-            '<div style="font-size:13px; font-weight:700; color:var(--brand); display:flex; align-items:center; gap:2px;">' +
-              '<span>' + stepsVal.toLocaleString('en-IN') + '</span> <span style="font-size:10px; color:var(--muted);">steps</span>' +
-            '</div>';
+          card.innerHTML = `
+            <div>
+              <div style="font-size:14px; font-weight:800; color:#fff;">${esc(a.activity_name || 'Activity')}</div>
+              <div style="font-size:11.5px; color:var(--muted); margin-top:2px;">${dateLabel} &middot; ${movingMins} mins &middot; ${stepsVal.toLocaleString('en-IN')} steps</div>
+            </div>
+            <div style="font-size:14px; font-weight:800; color:var(--brand); display:flex; align-items:center; gap:2px; flex-shrink:0;">
+              <span>${distVal}</span> <span style="font-size:10px; color:var(--muted); font-weight:700;">KM</span>
+            </div>
+          `;
           listContainer.appendChild(card);
         });
       })
@@ -657,6 +762,7 @@ function openProfileDetail(athleteId, event) {
     console.error('Error executing openProfileDetail:', errGlobal);
   }
 }
+
 
 function closeProfileDetail() {
   var modal = document.getElementById('profile-detail-modal');
