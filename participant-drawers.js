@@ -128,7 +128,7 @@ function openActivityDetail(id, event, isStravaId) {
       if (avgHrVal) {
         document.getElementById('det-avghr').innerText = Math.round(avgHrVal) + ' bpm';
         document.getElementById('det-maxhr').innerText = maxHrVal ? Math.round(maxHrVal) + ' bpm' : '—';
-        if (hrWrap) hrWrap.style.display = 'block';
+        if (hrWrap) hrWrap.style.display = '';
       } else {
         if (hrWrap) hrWrap.style.display = 'none';
       }
@@ -136,8 +136,8 @@ function openActivityDetail(id, event, isStravaId) {
       var cadenceVal = act.average_cadence || null;
       var cadenceWrap = document.getElementById('det-cadence-wrap');
       if (cadenceVal) {
-        document.getElementById('det-cadence').innerText = Math.round(cadenceVal * 2) + ' spm'; // convert to steps per min
-        if (cadenceWrap) cadenceWrap.style.display = 'block';
+        document.getElementById('det-cadence').innerText = Math.round(cadenceVal * 2) + ' spm';
+        if (cadenceWrap) cadenceWrap.style.display = '';
       } else {
         if (cadenceWrap) cadenceWrap.style.display = 'none';
       }
@@ -146,7 +146,7 @@ function openActivityDetail(id, event, isStravaId) {
       var caloriesWrap = document.getElementById('det-calories-wrap');
       if (caloriesVal) {
         document.getElementById('det-calories').innerText = Math.round(caloriesVal) + ' kcal';
-        if (caloriesWrap) caloriesWrap.style.display = 'block';
+        if (caloriesWrap) caloriesWrap.style.display = '';
       } else {
         if (caloriesWrap) caloriesWrap.style.display = 'none';
       }
@@ -430,38 +430,70 @@ function openProfileDetail(athleteId, event) {
     document.getElementById('prof-heatmap-grid').innerHTML = '';
     document.getElementById('prof-recent-activities').innerHTML = '<div style="font-size:13px; color:var(--muted); text-align:center; padding:20px;">Loading recent activities...</div>';
 
+    if (typeof _currentProfileAthleteId !== 'undefined') _currentProfileAthleteId = athleteId;
+
     var modal = document.getElementById('profile-detail-modal');
     modal.style.display = 'block';
     setTimeout(function() {
       modal.classList.add('open');
     }, 10);
 
-    fetch(SUPABASE_URL + '/rest/v1/registration?strava_athlete_id=eq.' + athleteId + '&select=*', { headers: HDR })
-      .then(function(res) { return res.json(); })
-      .then(function(regRows) {
-        if (regRows && regRows.length > 0) {
-          var p = regRows[0];
-          document.getElementById('prof-name').innerText = esc(p.full_name || '—');
-          
-          var parts = [];
-          if (p.leaderboard_team) parts.push(p.leaderboard_team);
-          if (p.shift) parts.push(p.shift);
-          document.getElementById('prof-team-shift').innerText = parts.join(' \u00b7 ');
-          
-          var pName = p.full_name || 'Participant';
-          var pInitials = (function(){var parts=(pName||'').trim().split(/\s+/);if(parts.length>=2)return(parts[0][0]+(parts[parts.length-1][0])).toUpperCase();return(parts[0]||'?')[0].toUpperCase();})();
-          var pStyle = getAvatarStyle(pName);
-          var avEl = document.getElementById('prof-avatar');
-          if (avEl) {
-            avEl.textContent = pInitials;
-            avEl.setAttribute('style', pStyle + '; width:70px; height:70px; border-radius:50%; font-size:24px; font-weight:800; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 20px rgba(0,0,0,0.4); border:2.5px solid rgba(255,255,255,0.06);');
+    Promise.all([
+      fetch(SUPABASE_URL + '/rest/v1/registration?strava_athlete_id=eq.' + athleteId + '&select=*', { headers: HDR }).then(function(r){ return r.json(); }),
+      fetch(SUPABASE_URL + '/rest/v1/participants?strava_athlete_id=eq.' + athleteId + '&select=city,state,profile_photo', { headers: HDR }).then(function(r){ return r.json(); })
+    ]).then(function(results) {
+      var regRows = results[0];
+      var partRows = results[1];
+      var city = (partRows && partRows[0] && partRows[0].city) || '';
+      var state = (partRows && partRows[0] && partRows[0].state) || '';
+      var locationStr = [city, state].filter(Boolean).join(', ');
+
+      if (regRows && regRows.length > 0) {
+        var p = regRows[0];
+        document.getElementById('prof-name').innerText = esc(p.full_name || '—');
+
+        var parts = [];
+        if (p.leaderboard_team) parts.push(p.leaderboard_team);
+        if (p.shift) parts.push(p.shift);
+        document.getElementById('prof-team-shift').innerText = parts.join(' \u00b7 ');
+
+        // Location
+        var locEl = document.getElementById('prof-location');
+        if (locEl) {
+          if (locationStr) {
+            locEl.innerText = '📍 ' + locationStr;
+            locEl.style.display = 'block';
+          } else {
+            locEl.style.display = 'none';
           }
         }
-      })
-      .catch(function(err) {
-        console.warn('Profile details load error:', err);
-      });
 
+        // Gender badge
+        var genderEl = document.getElementById('prof-gender-badge');
+        if (genderEl) {
+          if (p.gender) {
+            genderEl.innerText = p.gender === 'Female' ? '♀ Female' : '♂ Male';
+            genderEl.style.display = 'inline-block';
+          } else {
+            genderEl.style.display = 'none';
+          }
+        }
+
+        var pName = p.full_name || 'Participant';
+        var pInitials = (function(){var pts=(pName||'').trim().split(/\s+/);if(pts.length>=2)return(pts[0][0]+(pts[pts.length-1][0])).toUpperCase();return(pts[0]||'?')[0].toUpperCase();})();
+        var pStyle = getAvatarStyle(pName);
+        var avEl = document.getElementById('prof-avatar');
+        if (avEl) {
+          avEl.textContent = pInitials;
+          avEl.setAttribute('style', pStyle + '; width:70px; height:70px; border-radius:50%; font-size:24px; font-weight:800; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 20px rgba(0,0,0,0.4); border:2.5px solid rgba(255,255,255,0.06);');
+        }
+      }
+    }).catch(function(err) {
+      console.warn('Profile details load error:', err);
+    });
+
+    var _profileAthleteId = athleteId;
+    var _profileTimeframe = document.getElementById('prof-timeframe-select') ? (document.getElementById('prof-timeframe-select').value || 'month') : 'month';
     var url = SUPABASE_URL + '/rest/v1/activities?strava_athlete_id=eq.' + athleteId + '&is_deleted=is.false&activity_date=gte.2026-06-01&activity_date=lte.2026-06-30&order=activity_date.desc';
     fetch(url, { headers: HDR })
       .then(function(res) { return res.json(); })
