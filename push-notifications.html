@@ -545,7 +545,7 @@ async function loadBroadcasts() {
             '<td style="padding: 12px 16px; font-weight: 600;">' + esc(b.title || '') + '</td>' +
             '<td style="padding: 12px 16px; color: var(--sub);">' + esc(desc) + '</td>' +
             '<td style="padding: 12px 16px; text-align: right;">' +
-              '<button class="btn btn-sm btn-ghost" onclick="deleteBroadcast(' + b.id + ')" style="color: #dc2626; padding: 4px 8px; font-size: 11px;">Delete</button>' +
+              '<button class="btn btn-sm btn-ghost" onclick="deleteBroadcast(\'' + b.id + '\')" style="color: #dc2626; padding: 4px 8px; font-size: 11px;">Delete</button>' +
             '</td>' +
           '</tr>';
         }).join('');
