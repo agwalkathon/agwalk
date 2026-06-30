@@ -25,7 +25,7 @@
     html,body{height:100dvh;overflow:hidden;max-width:100vw;}
     body {
       font-family: var(--font);
-      background: linear-gradient(180deg, #0e1115 0%, #171c24 100%);
+      background: linear-gradient(180deg, #1f262d 0%, #0e1115 100%);
       background-attachment: fixed;
       background-size: 100% 100dvh;
       color: var(--text);
@@ -2262,7 +2262,7 @@
     left: 0;
     width: 100vw;
     height: 100%;
-    background: linear-gradient(180deg, #0e1115 0%, #171c24 100%);
+    background: linear-gradient(180deg, #1f262d 0%, #0e1115 100%);
     backdrop-filter: blur(25px);
     -webkit-backdrop-filter: blur(25px);
     z-index: 10000;
