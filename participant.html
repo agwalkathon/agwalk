@@ -17,7 +17,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="participant.css?v=20260630_v46">
+  <link rel="stylesheet" href="participant.css?v=20260630_v47">
 </head>
 </head>
 <body>
@@ -182,6 +182,7 @@
     -->
 
     <!-- Metrics -->
+  <div class="card" style="padding:16px;margin-bottom:16px;">
   <div class="sec">My Stats</div>
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
     <div class="stat-card-item">
@@ -206,16 +207,19 @@
       <div class="stat-card-label">Moving Time</div>
     </div>
   </div>
+  </div>
 
+  <div class="card">
   <div class="sec">Pace Goals</div>
-  <div class="card" id="pace-card">
+  <div id="pace-card">
     <!-- dynamically rendered by JS -->
+  </div>
   </div>
 
 
 
-  <div class="sec">Activity Streak</div>
   <div class="card">
+  <div class="sec">Activity Streak</div>
     <div class="streak-top">
       <div>
         <div class="streak-num" id="streak-num">0</div>
@@ -245,6 +249,7 @@
   <div class="flagged-info" id="flagged-banner">
     <strong>⚑ Flagged activities</strong> — Some activities were flagged for admin review. They're excluded from your score until reviewed.
   </div>
+  <div class="card" style="padding:16px;margin-bottom:16px;">
   <div class="sec">PERSONAL BESTS</div>
   <div class="pb-grid">
     <!-- Longest Activity -->
@@ -302,6 +307,7 @@
       </div>
       <div class="pb-card-val" id="pb-bestday">—</div>
     </div>
+  </div>
   </div>
 
   <div class="sec" id="act-section-title">My Activities</div>
@@ -430,6 +436,7 @@
   </div>
 
   <!-- Card 1: Event Progress -->
+  <div class="card" style="padding:16px;margin-bottom:16px;">
   <div class="sec">Event Progress</div>
   <div class="you-cards">
     <div class="you-card">
@@ -450,10 +457,11 @@
       <div class="you-consist-bar"><div class="you-consist-fill" id="you-consist-fill" style="width:0%"></div></div>
     </div>
   </div>
+  </div>
 
   <!-- Card 2: Streak comparison -->
+  <div class="card" style="background:var(--surface);border-radius:var(--radius-sm);margin-bottom:12px;">
   <div class="sec">Streaks</div>
-  <div class="card" style="background:rgba(26,29,32,0.65);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.08);box-shadow:0 4px 15px rgba(0,0,0,0.15);border-radius:var(--radius-sm);transition:transform 0.2s ease,border-color 0.2s ease;" onmouseover="this.style.transform='translateY(-1.5px)';this.style.borderColor='rgba(255,255,255,0.15)';" onmouseout="this.style.transform='';this.style.borderColor='';">
     <div class="you-streak-row">
       <span class="you-streak-lbl">🔥 Current Streak</span>
       <span class="you-streak-val" id="you-cur-streak">—</span>
@@ -465,8 +473,8 @@
   </div>
 
   <!-- Card 3: Medal Prediction -->
-  <div class="sec">Medal Prediction</div>
   <div class="medal-pred" id="you-medal-pred">
+  <div class="sec">Medal Prediction</div>
     <div class="medal-pred-icon" id="you-medal-pred-ico">🏅</div>
     <div>
       <div class="medal-pred-title" id="you-medal-pred-title">Calculating...</div>
@@ -475,8 +483,8 @@
   </div>
 
   <!-- June Heatmap -->
-  <div class="sec">Activity Heatmap</div>
   <div class="heatmap-wrap">
+  <div class="sec">Activity Heatmap</div>
     <div id="heatmap-days-label" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:2px;">
       <div style="text-align:center;font-size:9px;color:var(--muted);font-weight:600;">M</div>
       <div style="text-align:center;font-size:9px;color:var(--muted);font-weight:600;">T</div>
@@ -497,6 +505,7 @@
   </div>
 
   <!-- Card 4: Strava Sync -->
+  <div class="card" style="padding:16px;margin-bottom:16px;">
   <div class="sec">Strava Sync</div>
   <div class="you-cards">
     <div class="you-card">
@@ -515,6 +524,7 @@
       <div class="you-card-lbl">Last Activity</div>
       <div class="you-card-sub" id="you-last-sync-date"></div>
     </div>
+  </div>
   </div>
 
 
