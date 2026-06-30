@@ -1354,7 +1354,14 @@ function initializeFeedTab(enabled) {
 
 function formatMarkdown(text) {
   if (!text) return '';
-  return String(text).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  var html = esc(text);
+  // Bold: **text** or __text__
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+  // Italics: *text* or _text_
+  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  html = html.replace(/_(.*?)_/g, '<em>$1</em>');
+  return html;
 }
 
 async function loadFeed(isSilent) {
