@@ -848,7 +848,7 @@
       line-height: 1.2;
     }
     .whoop-stat-lbl {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 700;
       color: var(--muted);
       text-transform: uppercase;
@@ -900,11 +900,11 @@
     .medal-current-block{display:flex;align-items:center;gap:10px;}
     .medal-emoji-big{font-size:30px;line-height:1;}
     .medal-current-info{}
-    .medal-current-lbl{font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+    .medal-current-lbl{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
     .medal-current-name{font-size:18px;font-weight:900;color:var(--text);}
     .medal-pts-right{text-align:right;}
     .medal-pts-big{font-size:28px;font-weight:900;color:var(--brand);line-height:1;letter-spacing:-0.5px;}
-    .medal-pts-lbl{font-size:9.5px;font-weight:600;color:var(--muted);margin-top:3px;}
+    .medal-pts-lbl{font-size:10.5px;font-weight:600;color:var(--muted);margin-top:3px;}
 
     .medal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 14px 14px;}
     .medal-item{background:var(--surface2);border-radius:var(--radius-xs);padding:10px 6px 12px;text-align:center;position:relative;}
@@ -958,7 +958,7 @@
     .gold-rival{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:var(--radius-xs);padding:10px 12px;}
     .gold-rival-left{flex:1;}
     .gold-rival-label{font-size:13px;font-weight:700;color:#fff;}
-    .gold-rival-sub{font-size:9.5px;color:var(--muted);margin-top:2px;}
+    .gold-rival-sub{font-size:10.5px;color:var(--muted);margin-top:2px;}
     .gold-rival-pts{font-size:18px;font-weight:900;color:var(--green);flex-shrink:0;}
 
     /* ── Streak ── */
@@ -967,7 +967,7 @@
     .streak-num-lbl{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;}
     .streak-right{text-align:right;}
     .streak-best-val{font-size:20px;font-weight:800;color:#fff;}
-    .streak-best-lbl{font-size:9.5px;color:var(--muted);margin-top:2px;}
+    .streak-best-lbl{font-size:10.5px;color:var(--muted);margin-top:2px;}
     .streak-msg-txt{font-size:13px;color:var(--muted);margin-top:4px;}
     .streak-bars-wrap{padding:4px 16px 6px;display:flex;gap:4px;}
     .sbar {
@@ -1161,7 +1161,7 @@
       z-index: 2;
     }
     .bnav-label {
-      font-size: 9.5px;
+      font-size: 10.5px;
       font-weight: 700;
       letter-spacing: 0.5px;
       text-transform: uppercase;
@@ -1255,7 +1255,7 @@
     .my-tag{background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.95);font-size:8.5px;font-weight:600;padding:3px 8px;border-radius:20px;}
     .my-pts-block,.my-rank-block{text-align:center;flex-shrink:0;min-width:52px;}
     .my-pts-num,.my-rank-num{font-size:26px;font-weight:600;color:#fff;line-height:1;letter-spacing:-0.3px;}
-    .my-pts-lbl,.my-rank-lbl{font-size:9px;text-transform:uppercase;letter-spacing:0.6px;color:var(--label);margin-top:3px;font-weight:600;}
+    .my-pts-lbl,.my-rank-lbl{font-size:10px;text-transform:uppercase;letter-spacing:0.6px;color:var(--label);margin-top:3px;font-weight:600;}
 
     /* ── Tabs ── */
     .lb-tabs {
@@ -1412,7 +1412,7 @@
       border-color: rgba(255, 255, 255, 0.08);
     }
     .detail-cell-lbl {
-      font-size: 8.5px;
+      font-size: 9.5px;
       font-weight: 700;
       color: var(--muted);
       text-transform: uppercase;
@@ -1577,7 +1577,7 @@
       margin-bottom: 2px;
     }
     .podium-team {
-      font-size: 9px;
+      font-size: 10px;
       color: var(--label);
       text-transform: uppercase;
       letter-spacing: 0.3px;
@@ -1614,7 +1614,7 @@
     .points,.distance,.rank,td,th{font-variant-numeric:tabular-nums;}
     /* ── Rank movement ── */
     .rank-delta {
-      font-size: 8.5px;
+      font-size: 9.5px;
       font-weight: 800;
       display: inline-block;
       margin-top: 5px;
@@ -1646,13 +1646,13 @@
     .spark-bar.today{background:var(--brand);}
 
     /* ── Last active badge ── */
-    .last-active-chip{font-size:9px;font-weight:600;color:var(--label);}
+    .last-active-chip{font-size:10px;font-weight:600;color:var(--label);}
     .last-active-chip.recent{color:var(--green);}
 
     /* ── Hall of Fame ── */
     .hof-grid{display:grid;grid-template-columns:1fr;gap:8px;padding:10px 12px 14px;}
     .hof-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;display:flex;align-items:center;gap:16px;}
-    .hof-title{font-size:9px;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:6px;}
+    .hof-title{font-size:10px;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:6px;}
     .hof-name{font-size:13px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .hof-val{font-size:18px;font-weight:900;color:var(--brand);line-height:1;margin-bottom:2px;}
 
@@ -1747,7 +1747,7 @@
     text-overflow: ellipsis;
   }
   .highlight-sub {
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 600;
     color: var(--muted);
     line-height: 1.2;
@@ -1923,7 +1923,7 @@
     line-height: 1.1;
   }
   .pulse-stat-lbl {
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 800;
     color: var(--muted);
     text-transform: uppercase;
@@ -1931,7 +1931,7 @@
     margin-top: 6px;
   }
   .pulse-stat-sub {
-    font-size: 9px;
+    font-size: 10px;
     color: rgba(255, 255, 255, 0.4);
     margin-top: 2px;
     font-weight: 500;
@@ -1949,7 +1949,7 @@
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   }
   .ticker-label {
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 800;
     color: var(--brand);
     text-transform: uppercase;
@@ -2533,7 +2533,7 @@
     color: #fff;
   }
   .profile-stat-card .lbl {
-    font-size: 9.5px;
+    font-size: 10.5px;
     font-weight: 700;
     color: var(--label);
     text-transform: uppercase;
@@ -2563,7 +2563,7 @@
     transform: translateY(-2px);
   }
   .prof-pb-card .lbl {
-    font-size: 9.5px;
+    font-size: 10.5px;
     font-weight: 700;
     color: var(--label);
     text-transform: uppercase;
@@ -2576,7 +2576,7 @@
     margin-top: 3px;
   }
   .prof-pb-card .sub {
-    font-size: 9.5px;
+    font-size: 10.5px;
     color: var(--muted);
     margin-top: 2px;
   }
