@@ -2056,6 +2056,7 @@
     color: rgba(255,255,255,0.8);
     margin-bottom: 14px;
     word-wrap: break-word;
+    white-space: pre-line;
   }
   .feed-card-body strong {
     color: #fff;
@@ -2173,6 +2174,7 @@
     font-style: italic;
     margin-bottom: 10px;
     line-height: 1.4;
+    white-space: pre-line;
   }
   .activity-appreciation-badge {
     display: flex;
