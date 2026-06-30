@@ -1830,13 +1830,15 @@ function renderFeed() {
       var shownReactions = item.reactions_detail.slice(0, maxAvatars);
       
       shownReactions.forEach(function(r, index) {
+        var pName = (r.name && r.name !== 'Participant') ? r.name : (regMap[r.athlete_id] ? regMap[r.athlete_id].full_name : 'Participant');
         var uInitials = (function(){
-          var parts = (r.name || '').trim().split(/\s+/);
+          var parts = (pName || '').trim().split(/\s+/);
           if(parts.length >= 2) return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
           return (parts[0] || '?')[0].toUpperCase();
         })();
         
-        var style = `width:20px; height:20px; border-radius:50%; background:#1a1c1e; border:1px solid rgba(255,255,255,0.25); color:#fff; display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:700; margin-left: ${index > 0 ? '-6px' : '0'}; z-index: ${10 - index}; transition: transform 0.2s;`;
+        var customStyle = getAvatarStyle(pName);
+        var style = `width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:700; border:1px solid; margin-left: ${index > 0 ? '-6px' : '0'}; z-index: ${10 - index}; transition: transform 0.2s; ${customStyle}`;
         avatarsHtml += `<div style="${style}">${uInitials}</div>`;
       });
       
@@ -2671,17 +2673,21 @@ function openReactionsDetail(announcementId) {
   listContainer.innerHTML = item.reactions_detail.map(function(r) {
     var iconClass = r.type === 'heart' ? 'fa-solid fa-heart' : 'fa-solid fa-thumbs-up';
     var iconColor = r.type === 'heart' ? '#ef4444' : '#3b82f6';
+    
+    var pName = (r.name && r.name !== 'Participant') ? r.name : (regMap[r.athlete_id] ? regMap[r.athlete_id].full_name : 'Participant');
     var initials = (function(){
-      var parts = (r.name || '').trim().split(/\s+/);
+      var parts = (pName || '').trim().split(/\s+/);
       if(parts.length >= 2) return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
       return (parts[0] || '?')[0].toUpperCase();
     })();
 
+    var customStyle = getAvatarStyle(pName);
+
     return `
       <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:12px; padding:12px 14px;">
         <div style="display:flex; align-items:center; gap:12px;">
-          <div style="width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">${initials}</div>
-          <span style="font-size:14px; font-weight:700; color:#fff;">${esc(r.name)}</span>
+          <div style="width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; border:1px solid; ${customStyle}">${initials}</div>
+          <span style="font-size:14px; font-weight:700; color:#fff;">${esc(pName)}</span>
         </div>
         <div style="color:${iconColor}; font-size:16px;">
           <i class="${iconClass}"></i>
