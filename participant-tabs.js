@@ -2222,21 +2222,24 @@ function triggerReactionConfetti(x, y, emoji) {
 var _activeInsight = null;
 var _activeRecovery = null;
 
-function renderInAppNotificationBanner(title, body, onClick, key, onClose) {
+function renderInAppNotificationBanner(title, body, onClick, key, onClose, type) {
   var onDismissStr = onClose ? 'onClose()' : 'dismissInAppBanner(event)';
+  var cardClass = type ? 'banner-card type-' + type : 'banner-card';
   return `
-    <div class="banner-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
-    <div class="banner-content" onclick="${onClick}">
-      <div class="banner-title">${esc(title)}</div>
-      <div class="banner-body">${esc(body)}</div>
+    <div class="${cardClass}" onclick="${onClick}" style="cursor: ${onClick ? 'pointer' : 'default'};">
+      <button class="banner-dismiss-btn" onclick="${onDismissStr}" title="Dismiss">✕</button>
+      <div class="banner-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+      <div class="banner-content">
+        <div class="banner-title">${esc(title)}</div>
+        <div class="banner-body">${esc(body)}</div>
+      </div>
     </div>
-    <button class="banner-dismiss-btn" onclick="${onDismissStr}" title="Dismiss">✕</button>
   `;
 }
 
 function dismissInAppBanner(e) {
   if (e) e.stopPropagation();
-  var banner = document.getElementById('in-app-notification-banner');
+  var banner = document.getElementById('inapp-notification-banner');
   if (!banner) return;
   var key = banner.getAttribute('data-banner-key');
   if (key) {
@@ -2248,7 +2251,7 @@ function dismissInAppBanner(e) {
 }
 
 function updateInAppNotificationBanner() {
-  var banner = document.getElementById('in-app-notification-banner');
+  var banner = document.getElementById('inapp-notification-banner');
   if (!banner) return;
 
   var dismissed = JSON.parse(safeGetItem('ag_dismissed_banners') || '{}');
@@ -2279,7 +2282,7 @@ function updateInAppNotificationBanner() {
       var html = renderInAppNotificationBanner(
         _activeRecovery.title,
         _activeRecovery.sub,
-        'showTab(\'you\')', recKey, null
+        'showTab(\'you\')', recKey, null, 'recovery'
       );
       banner.setAttribute('data-banner-key', recKey);
       banner.innerHTML = html;
@@ -2295,7 +2298,7 @@ function updateInAppNotificationBanner() {
       var html = renderInAppNotificationBanner(
         _activeInsight.title,
         _activeInsight.body,
-        null, iKey, null
+        null, iKey, null, 'insight'
       );
       banner.setAttribute('data-banner-key', iKey);
       banner.innerHTML = html;
