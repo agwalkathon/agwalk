@@ -899,5 +899,25 @@
     </div>
   </div>
 
+  <!-- Reactions Detail Modal Drawer -->
+  <div id="reactions-detail-modal" class="detail-modal">
+    <!-- Top Nav Bar -->
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:16px; padding-top:calc(16px + env(safe-area-inset-top)); border-bottom:1px solid rgba(255,255,255,0.08); position:sticky; top:0; background:rgba(14,16,18,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); z-index:10002;">
+      <button class="btn-back" onclick="closeReactionsDetail()" style="background:none; border:none; color:var(--muted); font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Back
+      </button>
+      <div style="font-size:16px; font-weight:800; color:#fff; text-align:center;">Reactions</div>
+      <div style="width:50px;"></div>
+    </div>
+
+    <!-- Reactions content -->
+    <div class="detail-content" style="padding-top:20px;">
+      <div id="reactions-detail-list" style="display:flex; flex-direction:column; gap:12px;">
+        <!-- List of participants who reacted -->
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
