@@ -1822,7 +1822,38 @@ function renderFeed() {
       reactionButtonsHtml += `<button class="feed-react-btn ${activeClass} type-${emo.type}" data-ann-id="${item.id}" data-react-type="${emo.type}" data-icon-reg="${emo.iconReg}" data-icon-active="${emo.iconActive}" onclick="reactToAnnouncement('${item.id}', '${emo.type}', event, this)"><i class="${iconClass} reaction-fa"></i><span class="count">${displayCount}</span></button>`;
     });
 
-    var actionsHtml = `<div class="feed-card-actions" onclick="event.stopPropagation();">${reactionButtonsHtml}</div>`;
+    var avatarPileHtml = '';
+    if (Array.isArray(item.reactions_detail) && item.reactions_detail.length > 0) {
+      var maxAvatars = 3;
+      var totalReactions = item.reactions_detail.length;
+      var avatarsHtml = '';
+      var shownReactions = item.reactions_detail.slice(0, maxAvatars);
+      
+      shownReactions.forEach(function(r, index) {
+        var uInitials = (function(){
+          var parts = (r.name || '').trim().split(/\s+/);
+          if(parts.length >= 2) return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+          return (parts[0] || '?')[0].toUpperCase();
+        })();
+        
+        var style = `width:20px; height:20px; border-radius:50%; background:#1a1c1e; border:1px solid rgba(255,255,255,0.25); color:#fff; display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:700; margin-left: ${index > 0 ? '-6px' : '0'}; z-index: ${10 - index}; transition: transform 0.2s;`;
+        avatarsHtml += `<div style="${style}">${uInitials}</div>`;
+      });
+      
+      var plusLabel = '';
+      if (totalReactions > maxAvatars) {
+        plusLabel = `<span style="font-size:11px; font-weight:600; color:var(--muted); margin-left:6px;">+${totalReactions - maxAvatars}</span>`;
+      }
+      
+      avatarPileHtml = `
+        <div class="reactions-avatar-pile" style="display:flex; align-items:center; margin-left:auto; cursor:pointer;" onclick="openReactionsDetail('${item.id}'); event.stopPropagation();">
+          <div style="display:flex; align-items:center;">${avatarsHtml}</div>
+          ${plusLabel}
+        </div>
+      `;
+    }
+
+    var actionsHtml = `<div class="feed-card-actions" onclick="event.stopPropagation();">${reactionButtonsHtml}${avatarPileHtml}</div>`;
 
     if (item.type === 'activity') {
       var act = {};
@@ -2629,3 +2660,41 @@ function loadProfileTimeframe() {
   openProfileDetail(athleteId, null);
 }
 var _currentProfileAthleteId = '';
+
+function openReactionsDetail(announcementId) {
+  var item = _feedData.find(function(x) { return String(x.id) === String(announcementId); });
+  if (!item || !Array.isArray(item.reactions_detail) || !item.reactions_detail.length) return;
+
+  var listContainer = document.getElementById('reactions-detail-list');
+  if (!listContainer) return;
+
+  listContainer.innerHTML = item.reactions_detail.map(function(r) {
+    var iconClass = r.type === 'heart' ? 'fa-solid fa-heart' : 'fa-solid fa-thumbs-up';
+    var iconColor = r.type === 'heart' ? '#ef4444' : '#3b82f6';
+    var initials = (function(){
+      var parts = (r.name || '').trim().split(/\s+/);
+      if(parts.length >= 2) return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+      return (parts[0] || '?')[0].toUpperCase();
+    })();
+
+    return `
+      <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:12px; padding:12px 14px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">${initials}</div>
+          <span style="font-size:14px; font-weight:700; color:#fff;">${esc(r.name)}</span>
+        </div>
+        <div style="color:${iconColor}; font-size:16px;">
+          <i class="${iconClass}"></i>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  var modal = document.getElementById('reactions-detail-modal');
+  if (modal) modal.classList.add('open');
+}
+
+function closeReactionsDetail() {
+  var modal = document.getElementById('reactions-detail-modal');
+  if (modal) modal.classList.remove('open');
+}
