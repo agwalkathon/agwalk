@@ -44,7 +44,6 @@
       background:rgba(31, 38, 45, 0.97);
       backdrop-filter:blur(20px);
       -webkit-backdrop-filter:blur(20px);
-      border-bottom:1px solid rgba(255,255,255,0.04);
       padding:max(14px,env(safe-area-inset-top)) 16px 14px;
       display:flex;align-items:center;
       justify-content:space-between;
@@ -327,8 +326,7 @@
 
     /* ── Hero profile strip ── */
     .hero-profile{
-      background:var(--surface);
-      border-bottom:1px solid var(--border);
+      background:transparent;
       padding:18px 16px 20px;
       text-align:center;
     }
