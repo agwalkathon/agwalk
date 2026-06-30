@@ -379,6 +379,7 @@ async function verifyOTP(){
       role: 'user',
       athleteId: d.athlete_id,
       name: d.name || 'Participant',
+      email: email,
       expires: Date.now() + (8 * 60 * 60 * 1000)
     }));
     window.location.replace('participant.html');
@@ -474,7 +475,16 @@ if(oauthCode){
   .then(function(r){return r.json();})
   .then(function(d){
     if(d.success){
-      localStorage.setItem('wk_user',JSON.stringify({loggedIn:true,role:d.role||'user',athleteId:d.athlete_id,name:d.name,profilePhoto:d.profile_photo||'',expires:Date.now()+(8*60*60*1000)}));
+      localStorage.setItem('wk_user',JSON.stringify({
+        loggedIn:true,
+        role:d.role||'user',
+        athleteId:d.athlete_id,
+        name:d.name,
+        profilePhoto:d.profile_photo||'',
+        empCode:d.emp_code||'',
+        email:d.email||'',
+        expires:Date.now()+(8*60*60*1000)
+      }));
       if(d.role==='admin'){sessionStorage.setItem('wk_admin',JSON.stringify({loggedIn:true,role:'admin',expires:Date.now()+(8*60*60*1000)}));window.location.replace('admin.html');}
       else{window.location.replace('participant.html');}
     } else if(d.error==='not_registered'){showErr('⛔ <strong>Not registered.</strong><br>Your Strava account is not in the participant list.');}
