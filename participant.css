@@ -907,7 +907,7 @@
     .medal-pts-lbl{font-size:9.5px;font-weight:600;color:var(--muted);margin-top:3px;}
 
     .medal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 14px 14px;}
-    .medal-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-xs);padding:10px 6px 12px;text-align:center;position:relative;}
+    .medal-item{background:var(--surface2);border-radius:var(--radius-xs);padding:10px 6px 12px;text-align:center;position:relative;}
     .medal-item.achieved{border-color:var(--brand);}
     .mc-emoji{font-size:24px;margin-bottom:4px;}
     .mc-name{font-size:12px;font-weight:800;margin-bottom:5px;}
@@ -952,10 +952,10 @@
     }
     .gold-quote-text{font-size:14px;font-weight:700;color:rgba(255,255,255,0.75);line-height:1.5;font-style:italic;letter-spacing:0.1px;}
     .gold-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
-    .gold-stat{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-xs);padding:10px 12px;}
+    .gold-stat{background:var(--surface2);border-radius:var(--radius-xs);padding:10px 12px;}
     .gold-stat-val{font-size:20px;font-weight:900;color:var(--brand);line-height:1;}
     .gold-stat-lbl{font-size:11px;font-weight:600;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:0.5px;}
-    .gold-rival{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-xs);padding:10px 12px;}
+    .gold-rival{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:var(--radius-xs);padding:10px 12px;}
     .gold-rival-left{flex:1;}
     .gold-rival-label{font-size:13px;font-weight:700;color:#fff;}
     .gold-rival-sub{font-size:9.5px;color:var(--muted);margin-top:2px;}
@@ -996,7 +996,7 @@
 
     /* ── Time of day ── */
     .tod-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
-    .tod-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 6px;text-align:center;}
+    .tod-card{background:var(--surface);border-radius:var(--radius-sm);padding:14px 6px;text-align:center;}
     .tod-icon{font-size:22px;margin-bottom:4px;}
     .tod-val{font-size:24px;font-weight:900;color:var(--brand);line-height:1;}
     .tod-lbl{font-size:11px;font-weight:600;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.4px;}
