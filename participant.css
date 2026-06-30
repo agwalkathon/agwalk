@@ -66,22 +66,24 @@
       gap:10px;
       width:100%;
       padding:14px;
-      background:#FC6100;
+      background:var(--brand);
       border:none;
-      border-radius:var(--radius-sm);
+      border-radius:24px;
       color:#fff;
-      font-size:14px;
-      font-weight:700;
+      font-size:13px;
+      font-weight:800;
       font-family:var(--font);
+      text-transform:uppercase;
+      letter-spacing:0.8px;
       text-decoration:none;
       cursor:pointer;
-      box-shadow:0 4px 16px rgba(252,97,0,0.25);
+      box-shadow:0 4px 12px rgba(232,98,42,0.25);
       transition:all 0.2s;
     }
     .btn-strava-connect:hover{
-      background:#e05600;
+      background:#d0511e;
       transform:translateY(-1px);
-      box-shadow:0 6px 20px rgba(252,97,0,0.35);
+      box-shadow:0 6px 16px rgba(232,98,42,0.35);
     }
     .btn-strava-connect:active{
       transform:translateY(1px);
@@ -129,19 +131,19 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
     }
     .tab-you-avatar {
-      width: 76px;
-      height: 76px;
+      width: 84px;
+      height: 84px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--brand) 0%, #FF8C00 100%);
+      background: radial-gradient(circle at 30% 30%, #f472b6 0%, #E8622A 70%, #c94a10 100%);
       color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 28px;
+      font-size: 32px;
       font-weight: 800;
       letter-spacing: 0.5px;
-      border: 3px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 0 20px rgba(232, 98, 42, 0.35);
+      border: none;
+      box-shadow: 0 0 0 3px rgba(232, 98, 42, 0.3), 0 4px 15px rgba(232, 98, 42, 0.2);
       margin: 0 auto 14px;
       transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
@@ -149,18 +151,19 @@
       transform: scale(1.06) rotate(3deg);
     }
     .tab-you-name {
-      font-size: 22px;
+      font-size: 24px;
       font-weight: 800;
       color: #fff;
       text-align: center;
-      letter-spacing: -0.3px;
+      letter-spacing: -0.5px;
+      font-family: 'Inter Tight', var(--font);
     }
     .tab-you-tags {
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
       justify-content: center;
-      margin-top: 8px;
+      margin-top: 10px;
     }
     .tab-you-detail-row {
       display: flex;
@@ -2113,39 +2116,46 @@
     margin-top: 12px;
   }
   .feed-react-btn {
-    background: none;
-    border: none;
-    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 6px 12px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     gap: 6px;
-    color: var(--muted);
-    font-size: 14px;
-    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    font-weight: 700;
     cursor: pointer;
     font-family: var(--font);
-    transition: transform 0.15s ease, color 0.15s ease;
+    transition: all 0.2s ease;
     user-select: none;
   }
   .feed-react-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.12);
     color: #fff;
   }
   .feed-react-btn:hover .reaction-fa {
-    transform: scale(1.15);
+    transform: scale(1.1);
   }
   .feed-react-btn .reaction-fa {
-    font-size: 18px;
+    font-size: 14px;
     display: inline-block;
     transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.15s ease;
   }
   .feed-react-btn:active {
-    transform: scale(0.9);
+    transform: scale(0.95);
   }
   .feed-react-btn.active.type-like {
     color: #3b82f6; /* Blue for Thumb */
+    background: rgba(59, 130, 246, 0.12);
+    border-color: rgba(59, 130, 246, 0.25);
   }
   .feed-react-btn.active.type-heart {
     color: #ef4444; /* Red for Heart */
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.25);
   }
   .feed-react-btn .count {
     font-size: 13px;
@@ -2340,30 +2350,28 @@
     margin-bottom: 20px;
   }
   .detail-field-item {
-    background: rgba(255, 255, 255, 0.02);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.015);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 12px;
     padding: 12px 14px;
     transition: border-color 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
     box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
   }
   .detail-field-item:hover {
-    border-color: rgba(232, 98, 42, 0.3);
-    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.03);
     transform: translateY(-2px);
   }
   .detail-field-label {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
-    color: var(--label);
+    color: rgba(255, 255, 255, 0.45);
     text-transform: uppercase;
     letter-spacing: 0.8px;
   }
   .detail-field-val {
-    font-size: 15px;
-    font-weight: 700;
+    font-size: 16px;
+    font-weight: 800;
     color: #fff;
     margin-top: 4px;
   }
@@ -2428,16 +2436,16 @@
   }
   .splits-table th {
     padding: 8px 0;
-    color: var(--label);
+    color: rgba(255, 255, 255, 0.45);
     font-weight: 700;
     text-transform: uppercase;
-    font-size: 11px;
-    letter-spacing: 0.5px;
+    font-size: 10px;
+    letter-spacing: 0.8px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
   .splits-table td {
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
   .splits-table tr:last-child td {
     border-bottom: none;
