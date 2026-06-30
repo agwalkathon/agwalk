@@ -1145,6 +1145,7 @@
     }
     .bnav-item.active svg {
       transform: scale(1.12);
+      filter: drop-shadow(0 2px 6px rgba(232, 98, 42, 0.45));
     }
     .bnav-indicator {
       position: absolute;
