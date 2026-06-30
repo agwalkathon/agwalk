@@ -334,7 +334,7 @@
       background: var(--surface2);
       border-radius: 20px;
       padding: 20px 12px 18px;
-      margin-bottom: 4px;
+      margin-bottom: 12px;
     }
     .hero-metrics-block{
       padding:0 0 16px;
