@@ -2670,6 +2670,13 @@ function openReactionsDetail(announcementId) {
   var listContainer = document.getElementById('reactions-detail-list');
   if (!listContainer) return;
 
+  var regMap = {};
+  if (Array.isArray(LB_REG)) {
+    LB_REG.forEach(function(r) {
+      regMap[String(r.strava_athlete_id)] = r;
+    });
+  }
+
   listContainer.innerHTML = item.reactions_detail.map(function(r) {
     var iconClass = r.type === 'heart' ? 'fa-solid fa-heart' : 'fa-solid fa-thumbs-up';
     var iconColor = r.type === 'heart' ? '#ef4444' : '#3b82f6';
