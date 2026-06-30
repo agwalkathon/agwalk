@@ -991,6 +991,12 @@ async function load(isBackgroundRefresh) {
     });
 
     safeSetText('streak-num', (streakIsLive&&streak>0?'🔥':'')+streak);
+    var hdrValEl = document.getElementById('hdr-streak-val');
+    if (hdrValEl) hdrValEl.textContent = streak;
+    var hdrBadge = document.getElementById('hdr-streak-badge');
+    if (hdrBadge) {
+      hdrBadge.style.display = (streakIsLive && streak > 0) ? 'flex' : 'none';
+    }
     safeSetText('streak-best-val', best);
     safeSetText('streak-msg', streakIsLive?(streak>=7?'Amazing streak!':streak>=3?'Keep it going!':'Good start!'):(lastActiveDay?'Last active '+lastActiveDay:'Start today!'));
 
