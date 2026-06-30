@@ -2057,7 +2057,7 @@ async function reactToAnnouncement(announcementId, reactionType, event, btnEleme
       }
       if (clickX && clickY) {
         var emoji = (reactionType === 'heart') ? '❤️' : '👍';
-        triggerConfettiBurst(clickX, clickY, emoji);
+        triggerReactionConfetti(clickX, clickY, emoji);
       }
       
       item.my_reactions.push(reactionType);
@@ -2139,29 +2139,20 @@ async function reactToAnnouncement(announcementId, reactionType, event, btnEleme
 }
 
 
-function triggerConfettiBurst(x, y, emoji) {
+function triggerReactionConfetti(x, y, emoji) {
   if (typeof confetti === 'function') {
-    var scalar = 2.5;
-    var shapes = [confetti.path({
-      matrix: [scalar, 0, 0, scalar, -15 * scalar, -15 * scalar],
-      path: 'M 10 10 L 20 10 L 20 20 L 10 20 Z'
-    })];
-    
-    var options = {
-      particleCount: 20,
-      spread: 40,
-      origin: { x: x / window.innerWidth, y: y / window.innerHeight },
-      colors: ['#E8622A', '#FC6100', '#FFD000'],
-      ticks: 120
-    };
-    
-    if (emoji) {
-      options.flat = true;
-      options.shapes = [confetti.shapeFromString(emoji)];
-      options.scalar = 1.6;
-      options.particleCount = 12;
+    try {
+      var options = {
+        particleCount: 20,
+        spread: 40,
+        origin: { x: x / window.innerWidth, y: y / window.innerHeight },
+        colors: ['#E8622A', '#FC6100', '#FFD000'],
+        ticks: 120
+      };
+      confetti(options);
+    } catch (e) {
+      console.warn("Reaction confetti error:", e);
     }
-    confetti(options);
   }
 }
 
