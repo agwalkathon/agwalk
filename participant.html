@@ -17,7 +17,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="participant.css?v=20260630_v70">
+  <link rel="stylesheet" href="participant.css?v=20260630_v71">
 </head>
 </head>
 <body>
@@ -405,16 +405,17 @@
 <!-- You tab -->
 <div class="content" id="tab-you">
 <div class="max-w">
-  <!-- Profile sub-tabs -->
-  <div class="lb-tabs" style="margin-bottom:14px;">
-    <button class="lb-tab" id="you-tab-info" onclick="switchYouTab('info')">Profile</button>
-    <button class="lb-tab active" id="you-tab-challenges" onclick="switchYouTab('challenges')">&#127919; Challenges</button>
-  </div>
-
+  <!-- Avatar always visible -->
   <div class="tab-you-profile">
     <div class="tab-you-avatar" id="you-avatar">PM</div>
     <div class="tab-you-name" id="you-name">—</div>
     <div class="tab-you-tags" id="you-tags"></div>
+  </div>
+
+  <!-- Sub-tabs: Challenges first -->
+  <div class="lb-tabs" style="margin-bottom:14px;">
+    <button class="lb-tab active" id="you-tab-challenges" onclick="switchYouTab('challenges')">&#127919; Challenges</button>
+    <button class="lb-tab" id="you-tab-info" onclick="switchYouTab('info')">Profile</button>
   </div>
 
   <!-- Info panel -->
