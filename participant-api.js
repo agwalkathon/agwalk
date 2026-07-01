@@ -70,7 +70,7 @@ function cacheGet(key, ttl) {
   } catch(e) { return null; }
 }
 function cacheClear(athleteId) {
-  var keys = ['reg_'+athleteId,'acts_'+athleteId,'config','challenges','special_days','medals','ranking_acts_v2','ranking_reg'];
+  var keys = ['reg_'+athleteId,'acts_'+athleteId,'config','challenges','special_days','medals','ranking_acts_v3','ranking_reg'];
   keys.forEach(function(k){ safeRemoveItem('agwalk_'+k); });
   console.log('[Cache] Cleared for athlete', athleteId);
 }
@@ -700,7 +700,7 @@ async function load(isBackgroundRefresh) {
     // ── Phase 2: Load ranking data in background ────────────────────
     (async function loadRanking(){
       try{
-        var _cachedRankActs = cacheGet('ranking_acts_v2', CACHE_TTL.ranking);
+        var _cachedRankActs = cacheGet('ranking_acts_v3', CACHE_TTL.ranking);
         var _cachedRankReg  = cacheGet('ranking_reg',  CACHE_TTL.ranking);
         if (_cachedRankActs && _cachedRankReg) {
           console.log('[Cache] Serving Phase 2 (ranking) from cache ✓');
@@ -718,7 +718,7 @@ async function load(isBackgroundRefresh) {
                     setTimeout(doReload, 300);
                   } else {
                     console.log('[Cache] Phase 2 background refresh complete. Re-rendering...');
-                    cacheSet('ranking_acts_v2', results[0]);
+                    cacheSet('ranking_acts_v3', results[0]);
                     cacheSet('ranking_reg', results[1]);
                     load(true);
                   }
@@ -733,7 +733,7 @@ async function load(isBackgroundRefresh) {
             fetchAllParallel(SUPABASE_URL+'/rest/v1/activities?is_deleted=is.false&activity_date=gte.2026-05-31T18:30:00Z&activity_date=lte.2026-06-30T18:30:00Z&order=id.asc&select=strava_activity_id,strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,activity_date_time_ist'),
             fetchAllParallel(SUPABASE_URL+'/rest/v1/registration?order=strava_athlete_id.asc&select=strava_athlete_id,full_name,gender,shift,leaderboard_team')
           ]);
-          allActsRaw = fetched[0]; cacheSet('ranking_acts_v2', allActsRaw);
+          allActsRaw = fetched[0]; cacheSet('ranking_acts_v3', allActsRaw);
           allRegRaw  = fetched[1]; cacheSet('ranking_reg',  allRegRaw);
         }
         allActs=allActsRaw; allRegRes=allRegRaw;
