@@ -618,7 +618,7 @@ td button.btn:last-child { margin-right: 0; }
         </div>
       </div>
 
-      <div class="card"><div id="placeholder" class="empty"><div class="icon">🔍</div><p>Use filters above and click <strong>Search</strong> to load activities.</p></div><div id="results" style="display:none"><div class="result-count"><span id="result-count"></span></div><div class="scroll-top" id="scroll-top"><div class="scroll-top-inner" id="scroll-top-inner"></div></div><div class="table-wrap" id="table-wrap"><table id="main-table"><thead><tr><th style="width:38px; text-align:center"><input type="checkbox" id="chk-all-rows-all" onchange="toggleAllRowsAll(this.checked)" style="cursor:pointer; width:15px; height:15px"></th><th style="min-width: 180px; width: 180px;">Status</th><th>IST Time</th><th>Participant Name</th><th>Activity Name</th><th>Type</th><th>Distance</th><th>Moving Time</th><th>Pace/Speed</th><th>Device</th><th>Actions</th></tr></thead><tbody id="activities-body"></tbody></table></div></div></div>
+      <div class="card"><div id="placeholder" class="empty"><div class="icon">🔍</div><p>Use filters above and click <strong>Search</strong> to load activities.</p></div><div id="results" style="display:none"><div class="result-count"><span id="result-count"></span></div><div class="scroll-top" id="scroll-top"><div class="scroll-top-inner" id="scroll-top-inner"></div></div><div class="table-wrap" id="table-wrap"><table id="main-table"><thead><tr><th style="width:38px; text-align:center"><input type="checkbox" id="chk-all-rows-all" onchange="toggleAllRowsAll(this.checked)" style="cursor:pointer; width:15px; height:15px"></th><th style="min-width: 180px; width: 180px;">Status</th><th>IST Time</th><th>Participant Name</th><th>Activity Name</th><th>Type</th><th>Distance</th><th>Moving Time</th><th>Pace/Speed</th><th>Actions</th></tr></thead><tbody id="activities-body"></tbody></table></div></div></div>
     </div>
 
     <!-- Tab 2 & 4: Under Review / Deleted Workouts -->
@@ -1659,14 +1659,13 @@ async function loadActivities(){
         + '<td data-label="Distance" class="editable" data-edit="dist" data-id="'+a.id+'" data-val="'+(a.distance_meters||0)+'" title="Double-click to edit">'+(a.distance_meters?(a.distance_meters/1000).toFixed(2)+' km':'—')+'</td>'
         + '<td data-label="Moving Time">'+(a.moving_time_seconds?fmtDur(a.moving_time_seconds):'—')+'</td>'
         + '<td data-label="Pace/Speed">'+fmtPS(a.avg_speed,a.sport_type)+'</td>'
-        + '<td data-label="Device">'+esc(a.device_name||'—')+'</td>'
         + '<td data-label="Actions">' + actionsCellHtml + '</td>'
         + '</tr>';
     }).join('');
     setTimeout(initScrollSync,100);
   }catch(e){
     console.error(e);
-    document.getElementById('activities-body').innerHTML='<tr><td colspan="11" style="text-align:center;padding:48px;color:#c62828">Error loading data. Please try again.</td></tr>';
+    document.getElementById('activities-body').innerHTML='<tr><td colspan="10" style="text-align:center;padding:48px;color:#c62828">Error loading data. Please try again.</td></tr>';
   }
   document.getElementById('searching-indicator').style.display='none';
 }
