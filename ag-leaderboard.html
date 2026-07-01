@@ -574,7 +574,7 @@ async function loadActivities() {
   // Fetch ALL activities using Supabase pagination
   var baseUrl = SB_URL+'/rest/v1/activities?is_deleted=eq.false'
     +'&activity_date=gte.2026-06-01T00:00:00'
-    +'&activity_date=lte.2026-06-30T23:59:59'
+    +'&activity_date=lte.2026-07-01T15:00:00'
     +'&select=strava_athlete_id,distance_meters,sport_type,activity_date,avg_speed,elevation_gain,strava_activity_id,is_flagged,manual_bonus,activity_name,start_time,description,activity_date_time_ist'
     +'&order=id.asc';
   var allActs = [];
