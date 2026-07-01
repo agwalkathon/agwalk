@@ -865,12 +865,27 @@ async function startImport(mode) {
 }
 
 function rowToActivity(row) {
+  var actDate = row['activity_date'];
+  var istDateStr = null;
+  if (actDate) {
+    try {
+      var dt = new Date(actDate);
+      if (!isNaN(dt.getTime())) {
+        var istMs = dt.getTime() + (5.5 * 60 * 60 * 1000);
+        istDateStr = new Date(istMs).toISOString().replace(/[Zz]$/, '');
+      }
+    } catch(e) {
+      console.warn('Failed to parse IST date:', e);
+    }
+  }
+
   return {
     strava_activity_id:   parseInt(row['strava_activity_id']),
     strava_athlete_id:    parseInt(row['strava_athlete_id']),
     activity_name:        row['activity_name'] || 'Imported Activity',
     sport_type:           row['sport_type'] || 'Walk',
-    activity_date:        row['activity_date'],
+    activity_date:        actDate,
+    activity_date_time_ist: istDateStr,
     distance_meters:      parseFloat(row['distance_meters']) || 0,
     moving_time_seconds:  parseInt(row['moving_time_seconds']) || null,
     elapsed_time_seconds: parseInt(row['elapsed_time_seconds']) || null,
@@ -1021,19 +1036,31 @@ function generateSQL(rows) {
   lines.push('');
   lines.push('INSERT INTO activities (');
   lines.push('  strava_activity_id, strava_athlete_id, activity_name, sport_type,');
-  lines.push('  activity_date, distance_meters, moving_time_seconds, elapsed_time_seconds,');
+  lines.push('  activity_date, activity_date_time_ist, distance_meters, moving_time_seconds, elapsed_time_seconds,');
   lines.push('  avg_speed, steps, elevation_gain, max_speed, avg_cadence,');
   lines.push('  calories, avg_heart_rate, max_heart_rate, is_flagged, is_deleted, flag_reason');
   lines.push(')');
   lines.push('VALUES');
 
   var vals = rows.map(function(r) {
+    var istDateStr = null;
+    if (r.activity_date) {
+      try {
+        var dt = new Date(r.activity_date);
+        if (!isNaN(dt.getTime())) {
+          var istMs = dt.getTime() + (5.5 * 60 * 60 * 1000);
+          istDateStr = new Date(istMs).toISOString().replace(/[Zz]$/, '');
+        }
+      } catch(e) {}
+    }
+
     return '  (' + [
       sqlVal(r.strava_activity_id),
       sqlVal(r.strava_athlete_id),
       sqlVal(r.activity_name),
       sqlVal(r.sport_type),
       sqlVal(r.activity_date),
+      sqlVal(istDateStr),
       sqlVal(r.distance_meters),
       sqlVal(r.moving_time_seconds),
       sqlVal(r.elapsed_time_seconds || r.moving_time_seconds),
