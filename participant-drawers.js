@@ -313,6 +313,27 @@ function openActivityDetail(id, event, isStravaId) {
       } else {
         mapWrap.style.display = 'none';
       }
+
+      var loggedInUser = null;
+      try { loggedInUser = JSON.parse(localStorage.getItem('wk_user') || '{}'); } catch(e) {}
+      var loggedInAthleteId = loggedInUser ? String(loggedInUser.athleteId) : '';
+      var ownerAthleteId = String(act.strava_athlete_id || act.athlete_id || '');
+      
+      window._currentReportActivityId = act.id;
+      window._currentReportOwnerId = ownerAthleteId;
+      
+      var reportSec = document.getElementById('detail-report-section');
+      if (reportSec) {
+        if (!loggedInAthleteId || loggedInAthleteId === ownerAthleteId) {
+          reportSec.style.display = 'none';
+        } else {
+          reportSec.style.display = 'block';
+          document.getElementById('report-form-container').style.display = 'none';
+          document.getElementById('btn-report-activity').style.display = 'flex';
+          document.getElementById('report-reason-select').value = '';
+          document.getElementById('report-comments').value = '';
+        }
+      }
     }
 
     var stravaActId = id;
@@ -811,4 +832,101 @@ function closeProfileDetail() {
   setTimeout(function() {
     modal.style.display = 'none';
   }, 350);
+}
+
+// Suspicious Activity Reporting Logic
+function toggleReportForm() {
+  var container = document.getElementById('report-form-container');
+  var btn = document.getElementById('btn-report-activity');
+  if (container.style.display === 'none') {
+    container.style.display = 'block';
+    btn.style.display = 'none';
+  } else {
+    container.style.display = 'none';
+    btn.style.display = 'flex';
+  }
+}
+
+function onReportReasonChange() {
+  var select = document.getElementById('report-reason-select');
+  var comments = document.getElementById('report-comments');
+  if (select.value === 'custom') {
+    comments.focus();
+  }
+}
+
+async function submitActivityReport() {
+  var activityId = window._currentReportActivityId;
+  var ownerId = window._currentReportOwnerId;
+  
+  if (!activityId || !ownerId) {
+    alert('Failed to report activity: Activity details not loaded.');
+    return;
+  }
+  
+  var select = document.getElementById('report-reason-select');
+  var reason = select.value;
+  var comments = document.getElementById('report-comments').value.trim();
+  
+  if (reason === 'custom') {
+    reason = comments;
+  }
+  
+  if (!reason) {
+    alert('Please select or specify a reason for reporting.');
+    return;
+  }
+  
+  var session = null;
+  try { session = JSON.parse(localStorage.getItem('wk_user') || '{}'); } catch(e) {}
+  var reporterId = session ? String(session.athleteId) : '';
+  
+  if (!reporterId) {
+    alert('You must be logged in to report activities.');
+    return;
+  }
+  
+  var btnSubmit = document.getElementById('btn-submit-report');
+  btnSubmit.disabled = true;
+  btnSubmit.textContent = 'Submitting...';
+  
+  var payload = {
+    activity_id: parseInt(activityId),
+    reported_by: reporterId,
+    athlete_id: ownerId,
+    reason: reason,
+    custom_comments: comments || null
+  };
+  
+  try {
+    var resp = await fetch(SUPABASE_URL + '/rest/v1/activity_reports', {
+      method: 'POST',
+      headers: {
+        apikey: ANON,
+        Authorization: 'Bearer ' + ANON,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(payload)
+    });
+    
+    if (resp.status === 404) {
+      alert('Report failed: Database table activity_reports not found. Please verify the SQL migration has been run in the Supabase Dashboard.');
+      return;
+    }
+    
+    if (!resp.ok) {
+      throw new Error('Database insert failed with status ' + resp.status);
+    }
+    
+    alert('Thank you. The activity has been reported to the administrator for review.');
+    toggleReportForm();
+    closeActivityDetail();
+    
+  } catch (e) {
+    alert('Error submitting report: ' + e.message);
+  } finally {
+    btnSubmit.disabled = false;
+    btnSubmit.textContent = 'Submit Report';
+  }
 }
