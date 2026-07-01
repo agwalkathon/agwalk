@@ -70,7 +70,7 @@ function cacheGet(key, ttl) {
   } catch(e) { return null; }
 }
 function cacheClear(athleteId) {
-  var keys = ['reg_'+athleteId,'acts_'+athleteId,'config','challenges','special_days','medals','ranking_acts_v3','ranking_reg'];
+  var keys = ['reg_'+athleteId,'acts_v3_'+athleteId,'config','challenges','special_days','medals','ranking_acts_v3','ranking_reg'];
   keys.forEach(function(k){ safeRemoveItem('agwalk_'+k); });
   console.log('[Cache] Cleared for athlete', athleteId);
 }
@@ -171,7 +171,7 @@ async function load(isBackgroundRefresh) {
   try {
     // ── Phase 1: Load personal data with cache ────────────────────────────────
     var _cachedReg   = cacheGet('reg_'+athleteId, CACHE_TTL.reg);
-    var _cachedActs  = cacheGet('acts_'+athleteId, CACHE_TTL.personal);
+    var _cachedActs  = cacheGet('acts_v3_'+athleteId, CACHE_TTL.personal);
     var _cachedCfg   = cacheGet('config', CACHE_TTL.config);
     var _cachedCh    = cacheGet('challenges', CACHE_TTL.config);
     var _cachedSd    = cacheGet('special_days', CACHE_TTL.config);
@@ -182,7 +182,7 @@ async function load(isBackgroundRefresh) {
       setTimeout(function(){
         Promise.all([
           fetch(getRegistrationFetchUrl(s),{headers:HDR}).then(function(r){return r.json();}).then(function(d){cacheSet('reg_'+athleteId,d);}),
-          fetchAll(SUPABASE_URL+'/rest/v1/activities?strava_athlete_id=eq.'+athleteId+'&is_deleted=is.false&activity_date=gte.2026-05-31T18:30:00Z&activity_date=lte.2026-06-30T18:30:00Z&order=activity_date.desc').then(function(d){cacheSet('acts_'+athleteId,d);}),
+          fetchAll(SUPABASE_URL+'/rest/v1/activities?strava_athlete_id=eq.'+athleteId+'&is_deleted=is.false&activity_date=gte.2026-05-31T18:30:00Z&activity_date=lte.2026-06-30T18:30:00Z&order=activity_date.desc').then(function(d){cacheSet('acts_v3_'+athleteId,d);}),
           fetch(SUPABASE_URL+'/rest/v1/leaderboard_config?select=config_key,config_value',{headers:HDR}).then(function(r){return r.json();}).then(function(d){cacheSet('config',d);}),
           fetch(SUPABASE_URL+'/rest/v1/challenges?is_active=is.true&select=*',{headers:HDR}).then(function(r){return r.json();}).then(function(d){cacheSet('challenges',d);}),
           fetch(SUPABASE_URL+'/rest/v1/special_scoring_days?select=special_date',{headers:HDR}).then(function(r){return r.json();}).then(function(d){cacheSet('special_days',d);}),
@@ -221,7 +221,7 @@ async function load(isBackgroundRefresh) {
         fetch(SUPABASE_URL+'/rest/v1/leaderboard_config?config_key=eq.medals&select=config_value',{headers:HDR})
       ]);
       regJsonData = await regRes.json(); cacheSet('reg_'+athleteId, regJsonData);
-      myActs      = myActsFetched;       cacheSet('acts_'+athleteId, myActs);
+      myActs      = myActsFetched;       cacheSet('acts_v3_'+athleteId, myActs);
       cfgRows     = await cfgRes.json(); cacheSet('config', cfgRows);
       chRows      = await chRes.json();  cacheSet('challenges', chRows);
       sdRows      = await sdRes.json();  cacheSet('special_days', sdRows);
