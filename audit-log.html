@@ -131,6 +131,30 @@
       .content { padding: 16px; }
       .topbar { padding: 0 16px; height: 54px; }
     }
+    /* Tab Bar Styles */
+    .tab-bar { display: flex; border-bottom: 1px solid var(--border); gap: 4px; overflow-x: auto; margin-bottom: 20px; padding-bottom: 1px; }
+    .tab-btn { font-family: var(--font); font-size: 13px; font-weight: 600; color: var(--text-secondary); background: none; border: none; padding: 10px 16px; border-bottom: 2px solid transparent; cursor: pointer; transition: all .16s; white-space: nowrap; outline: none; }
+    .tab-btn:hover { color: var(--text-primary); background: rgba(0,0,0,.02); }
+    .tab-btn.active { color: var(--brand); border-bottom-color: var(--brand); }
+    
+    /* Badges from reports.html */
+    .badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; border: 1px solid transparent; }
+    .badge-gold { background: #FEF3C7; color: #D97706; border-color: #FCD34D; }
+    .badge-silver { background: #F1F5F9; color: #475569; border-color: #CBD5E1; }
+    
+    /* Modal styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
   </style>
 </head>
 <body>
@@ -175,7 +199,14 @@
   </div>
 
   <div class="content">
-    <div class="filters">
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tab-btn-security" onclick="switchAuditTab('security')">🛡️ Security Events</button>
+      <button class="tab-btn" id="tab-btn-suspicious" onclick="switchAuditTab('suspicious')">🚨 Suspicious Reports</button>
+    </div>
+
+    <!-- Security Events Filters -->
+    <div class="filters" id="security-filters">
       <select class="filter-select" id="action-filter" onchange="applyFilter()">
         <option value="">All actions</option>
         <option value="admin_login">Admin Login</option>
@@ -188,7 +219,24 @@
       <span id="count-label" style="font-size:13px;color:var(--text-muted);margin-left:4px;"></span>
     </div>
 
-    <div class="card">
+    <!-- Suspicious Reports Filters -->
+    <div class="filters" id="suspicious-filters" style="display:none; gap:10px;">
+      <input class="filter-input" type="text" id="filter-reporter" placeholder="Filter by reporter..." oninput="applySuspiciousFilters()">
+      <input class="filter-input" type="text" id="filter-owner" placeholder="Filter by participant..." oninput="applySuspiciousFilters()">
+      <select class="filter-select" id="filter-reason" onchange="applySuspiciousFilters()">
+        <option value="">All reasons</option>
+        <option value="Distance is physically impossible">Distance is physically impossible</option>
+        <option value="Pace is unrealistic">Pace is unrealistic</option>
+        <option value="Vehicle used (Cycling, Driving, etc.)">Vehicle used (Cycling, Driving, etc.)</option>
+        <option value="Duplicate/Fake activity">Duplicate/Fake activity</option>
+        <option value="Other">Other / Custom comments</option>
+      </select>
+      <button class="btn-ghost" onclick="clearSuspiciousFilters()"><i class="ti ti-x"></i> Clear</button>
+      <span id="suspicious-count-label" style="font-size:13px;color:var(--text-muted);margin-left:4px;"></span>
+    </div>
+
+    <!-- Security Events Card -->
+    <div class="card" id="security-card">
       <div class="card-header">
         <div class="card-header-left">
           <div class="card-header-icon"><i class="ti ti-shield-check"></i></div>
@@ -210,6 +258,37 @@
           </thead>
           <tbody id="log-body">
             <tr><td colspan="4"><div class="empty-state"><i class="ti ti-loader"></i>Loading…</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Suspicious Reports Card -->
+    <div class="card" id="suspicious-card" style="display:none;">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-header-icon" style="background:#FEF2F2; color:#DC2626;"><i class="ti ti-alert-triangle"></i></div>
+          <div>
+            <h2>Suspicious Activity Reports</h2>
+            <div class="card-header-sub">Reports flagged by participants and reporting trends</div>
+          </div>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Date Reported</th>
+              <th>Reporter (Trend)</th>
+              <th>Participant Name (Owner)</th>
+              <th>Reason</th>
+              <th>Comments</th>
+              <th>Activity details</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="suspicious-log-body">
+            <tr><td colspan="7"><div class="empty-state"><i class="ti ti-loader"></i>Loading…</div></td></tr>
           </tbody>
         </table>
       </div>
@@ -318,7 +397,345 @@ function renderRows(rows) {
   tbody.innerHTML = html;
 }
 
-window.addEventListener('DOMContentLoaded', function() { loadLog(); });
+// ── Supabase & Metadata Configurations ────────────────────────────
+var SUPABASE_URL = 'https://jhdgkncpkrttvemvwukc.supabase.co';
+var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoZGdrbmNwa3J0dHZlbXZ3dWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NzgyNjMsImV4cCI6MjA5NzI1NDI2M30.d7mvXOYDq5G4aqs1Mbc6HFNgTBlQk4B6ah0eahE_yZE';
+var HDR = { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + SUPABASE_ANON };
+
+var REGISTRATIONS = [];
+var ACTIVITIES = [];
+
+async function loadMetadata() {
+  try {
+    var respReg = await fetch(SUPABASE_URL + '/rest/v1/registration', { headers: HDR });
+    if (respReg.ok) REGISTRATIONS = await respReg.json();
+    
+    // Also fetch activities so we can map details easily
+    var respAct = await fetch(SUPABASE_URL + '/rest/v1/activities', { headers: HDR });
+    if (respAct.ok) ACTIVITIES = await respAct.json();
+  } catch(e) {
+    console.error('Failed to load metadata:', e);
+  }
+}
+
+// ── Tab Switcher ──────────────────────────────────────────────────
+var currentTab = 'security';
+function switchAuditTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  
+  if (tab === 'security') {
+    document.getElementById('tab-btn-security').classList.add('active');
+    document.getElementById('security-filters').style.display = 'flex';
+    document.getElementById('security-card').style.display = 'block';
+    document.getElementById('suspicious-filters').style.display = 'none';
+    document.getElementById('suspicious-card').style.display = 'none';
+    loadLog();
+  } else {
+    document.getElementById('tab-btn-suspicious').classList.add('active');
+    document.getElementById('security-filters').style.display = 'none';
+    document.getElementById('security-card').style.display = 'none';
+    document.getElementById('suspicious-filters').style.display = 'flex';
+    document.getElementById('suspicious-card').style.display = 'block';
+    loadSuspiciousReports();
+  }
+}
+
+// ── Suspicious Reports Logic ──────────────────────────────────────
+var suspiciousReports = [];
+var filteredSuspiciousReports = [];
+
+async function loadSuspiciousReports() {
+  var tbody = document.getElementById('suspicious-log-body');
+  tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="ti ti-loader"></i>Loading…</div></td></tr>';
+  
+  try {
+    var resp = await fetch(SUPABASE_URL + '/rest/v1/activity_reports?order=created_at.desc', { headers: HDR });
+    if (!resp.ok) {
+      if (resp.status === 404) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px; color:#ef4444; font-weight:600;">Error: public.activity_reports database table not found. Please verify the SQL migration has been run in the Supabase Dashboard.</td></tr>';
+        return;
+      }
+      throw new Error('Database fetch failed with status: ' + resp.status);
+    }
+    suspiciousReports = await resp.json();
+    
+    // Clear filters
+    document.getElementById('filter-reporter').value = '';
+    document.getElementById('filter-owner').value = '';
+    document.getElementById('filter-reason').value = '';
+    
+    applySuspiciousFilters();
+    
+  } catch (e) {
+    console.error(e);
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="ti ti-alert-circle"></i>Failed to load: ' + e.message + '</div></td></tr>';
+  }
+}
+
+function applySuspiciousFilters() {
+  var reporterQ = norm(document.getElementById('filter-reporter').value);
+  var ownerQ = norm(document.getElementById('filter-owner').value);
+  var reasonQ = document.getElementById('filter-reason').value;
+  
+  var regMap = {};
+  REGISTRATIONS.forEach(function(r) {
+    regMap[String(r.strava_athlete_id)] = r;
+  });
+  
+  var reporterTrend = {};
+  suspiciousReports.forEach(function(rep) {
+    var repId = String(rep.reported_by);
+    reporterTrend[repId] = (reporterTrend[repId] || 0) + 1;
+  });
+  
+  filteredSuspiciousReports = suspiciousReports.filter(function(rep) {
+    var repReg = regMap[String(rep.reported_by)] || {};
+    var repName = repReg.full_name || 'Unknown Reporter (' + rep.reported_by + ')';
+    
+    var ownReg = regMap[String(rep.athlete_id)] || {};
+    var ownName = ownReg.full_name || 'Unknown User (' + rep.athlete_id + ')';
+    
+    if (reporterQ && !norm(repName).includes(reporterQ)) return false;
+    if (ownerQ && !norm(ownName).includes(ownerQ)) return false;
+    if (reasonQ) {
+      if (reasonQ === 'Other') {
+        var standard = ["Distance is physically impossible", "Pace is unrealistic", "Vehicle used (Cycling, Driving, etc.)", "Duplicate/Fake activity"];
+        if (standard.includes(rep.reason)) return false;
+      } else if (rep.reason !== reasonQ) {
+        return false;
+      }
+    }
+    return true;
+  });
+  
+  document.getElementById('suspicious-count-label').textContent = filteredSuspiciousReports.length + ' report' + (filteredSuspiciousReports.length !== 1 ? 's' : '');
+  renderSuspiciousTable(regMap, reporterTrend);
+}
+
+function clearSuspiciousFilters() {
+  document.getElementById('filter-reporter').value = '';
+  document.getElementById('filter-owner').value = '';
+  document.getElementById('filter-reason').value = '';
+  applySuspiciousFilters();
+}
+
+function renderSuspiciousTable(regMap, reporterTrend) {
+  var tbody = document.getElementById('suspicious-log-body');
+  
+  if (filteredSuspiciousReports.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px; color:#888;">No suspicious reports found matching filters.</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = filteredSuspiciousReports.map(function(rep) {
+    var repReg = regMap[String(rep.reported_by)] || {};
+    var reporterName = repReg.full_name || 'Unknown (' + rep.reported_by + ')';
+    
+    var ownReg = regMap[String(rep.athlete_id)] || {};
+    var ownerName = ownReg.full_name || 'Unknown (' + rep.athlete_id + ')';
+    
+    var trendCount = reporterTrend[String(rep.reported_by)] || 0;
+    var trendClass = trendCount >= 5 ? 'badge-gold' : 'badge-silver';
+    var trendText = trendCount + (trendCount === 1 ? ' report' : ' reports');
+    var trendBadge = '<span class="badge ' + trendClass + '" style="margin-left:6px; text-transform:none; font-size:10px; padding:2px 6px;">' + trendText + '</span>';
+    
+    var dateStr = '';
+    try {
+      var dt = new Date(rep.created_at);
+      if (!isNaN(dt.getTime())) {
+        dateStr = dt.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }) + ' &middot; ' + dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+      }
+    } catch(e) {}
+    
+    var detailsBtn = '<button class="btn-ghost" onclick="showAdminActivityDetails(' + rep.activity_id + ')" style="padding: 4px 8px; font-size: 11px; height:auto; line-height:1.2; font-family:inherit;">🔍 View Details</button>';
+    
+    var safeReason = esc(rep.reason).replace(/'/g, "\\'");
+    var actionHtml = '<div style="display:flex; gap:6px;">'
+      + '<button class="btn-primary" onclick="flagReportedActivity(' + rep.id + ', ' + rep.activity_id + ', \'' + safeReason + '\')" style="padding: 4px 8px; font-size: 11px; background:#b91c1c; border-color:#b91c1c; height:auto; line-height:1.2; font-family:inherit;">Flag</button>'
+      + '<button class="btn-ghost" onclick="dismissReport(' + rep.id + ')" style="padding: 4px 8px; font-size: 11px; height:auto; line-height:1.2; font-family:inherit;">Dismiss</button>'
+      + '</div>';
+      
+    return '<tr>'
+      + '<td>' + dateStr + '</td>'
+      + '<td>' + esc(reporterName) + trendBadge + '</td>'
+      + '<td>' + esc(ownerName) + '</td>'
+      + '<td><span class="badge badge-silver" style="text-transform:none; font-weight:500; font-size:11px;">' + esc(rep.reason) + '</span></td>'
+      + '<td>' + esc(rep.custom_comments || '—') + '</td>'
+      + '<td>' + detailsBtn + '</td>'
+      + '<td>' + actionHtml + '</td>'
+      + '</tr>';
+  }).join('');
+}
+
+async function showAdminActivityDetails(activityId) {
+  var act = ACTIVITIES.find(function(a) { return a.id === activityId; });
+  
+  if (!act) {
+    try {
+      var r = await fetch(SUPABASE_URL + '/rest/v1/activities?id=eq.' + activityId, { headers: HDR });
+      var data = await r.json();
+      if (data && data.length > 0) {
+        act = data[0];
+      }
+    } catch(e) {
+      console.warn('Failed to fetch activity details:', e);
+    }
+  }
+  
+  if (!act) {
+    alert('Activity details not found in database.');
+    return;
+  }
+  
+  document.getElementById('adm-det-subtitle').textContent = 'Activity ID: #' + act.id + ' | Strava ID: ' + act.strava_activity_id;
+  document.getElementById('adm-det-name').textContent = act.activity_name || '—';
+  document.getElementById('adm-det-type').textContent = act.sport_type || 'Walk';
+  document.getElementById('adm-det-distance').textContent = act.distance_meters ? (act.distance_meters/1000).toFixed(2) + ' km' : '0.00 km';
+  document.getElementById('adm-det-time').textContent = act.moving_time_seconds ? fmtDur(act.moving_time_seconds) : '—';
+  
+  var paceStr = '—';
+  if (act.distance_meters && act.moving_time_seconds) {
+    var speed = act.distance_meters / act.moving_time_seconds;
+    if (act.sport_type === 'Run' || act.sport_type === 'Walk' || act.sport_type === 'Hike') {
+      var minPerKm = 16.6667 / speed;
+      var mins = Math.floor(minPerKm);
+      var secs = Math.floor((minPerKm - mins) * 60);
+      paceStr = mins + ':' + (secs < 10 ? '0' : '') + secs + ' /km';
+    } else {
+      paceStr = (speed * 3.6).toFixed(1) + ' km/h';
+    }
+  }
+  document.getElementById('adm-det-pace').textContent = paceStr;
+  document.getElementById('adm-det-device').textContent = act.device_name || '—';
+  
+  var localDateStr = '—';
+  if (act.activity_date_time_ist) {
+    localDateStr = act.activity_date_time_ist.replace('T', ' ');
+  } else if (act.activity_date) {
+    localDateStr = new Date(act.activity_date).toLocaleString('en-IN');
+  }
+  document.getElementById('adm-det-date').textContent = localDateStr;
+  document.getElementById('adm-det-desc').textContent = act.description || '—';
+  
+  document.getElementById('admin-activity-detail-modal').style.display = 'flex';
+}
+
+function closeAdminActivityModal(event) {
+  if (event.target === document.getElementById('admin-activity-detail-modal')) {
+    document.getElementById('admin-activity-detail-modal').style.display = 'none';
+  }
+}
+
+async function flagReportedActivity(reportId, activityId, reason) {
+  if (!confirm('Are you sure you want to flag this activity? It will mark the activity as flagged in the main workouts list.')) return;
+  
+  try {
+    var resp = await fetch(SUPABASE_URL + '/rest/v1/activities?id=eq.' + activityId, {
+      method: 'PATCH',
+      headers: {
+        apikey: SUPABASE_ANON,
+        Authorization: 'Bearer ' + SUPABASE_ANON,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ is_flagged: true, flag_reason: 'Reported: ' + reason, is_reviewed: false })
+    });
+    if (!resp.ok) throw new Error('Database patch failed with status: ' + resp.status);
+    
+    var BACKEND_URL = 'https://walkathon-backend-hv9j.onrender.com';
+    await fetch(BACKEND_URL + '/flag', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        activity_id: activityId,
+        action: 'flag',
+        flag_reason: 'Reported: ' + reason
+      })
+    });
+    
+    await fetch(SUPABASE_URL + '/rest/v1/activity_reports?id=eq.' + reportId, {
+      method: 'DELETE',
+      headers: {
+        apikey: SUPABASE_ANON,
+        Authorization: 'Bearer ' + SUPABASE_ANON
+      }
+    });
+    
+    alert('Activity successfully flagged and report dismissed.');
+    loadSuspiciousReports();
+    
+  } catch(e) {
+    alert('Action failed: ' + e.message);
+  }
+}
+
+async function dismissReport(reportId) {
+  if (!confirm('Are you sure you want to dismiss this report? The report will be deleted, but the activity will remain valid.')) return;
+  
+  try {
+    var resp = await fetch(SUPABASE_URL + '/rest/v1/activity_reports?id=eq.' + reportId, {
+      method: 'DELETE',
+      headers: {
+        apikey: SUPABASE_ANON,
+        Authorization: 'Bearer ' + SUPABASE_ANON
+      }
+    });
+    if (!resp.ok) throw new Error('Database delete failed with status: ' + resp.status);
+    
+    alert('Report dismissed.');
+    loadSuspiciousReports();
+  } catch(e) {
+    alert('Action failed: ' + e.message);
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+function esc(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+function norm(str) {
+  return String(str || '').toLowerCase().trim();
+}
+function fmtDur(s) {
+  var h = Math.floor(s / 3600);
+  var m = Math.floor((s % 3600) / 60);
+  var sec = s % 60;
+  return (h ? h + 'h ' : '') + (m ? m + 'm ' : '') + sec + 's';
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+  loadMetadata();
+  loadLog();
+});
 </script>
+
+<!-- Activity Details Modal Overlay for Reports View -->
+<div id="admin-activity-detail-modal" class="modal-overlay" onclick="closeAdminActivityModal(event)">
+  <div style="background: #fff; border-radius: 14px; width: 90%; max-width: 500px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); position: relative; font-family: inherit;" onclick="event.stopPropagation()">
+    <h3 style="font-size: 16px; font-weight: 700; color: #0F1117; margin-bottom: 4px;">Activity Details</h3>
+    <p id="adm-det-subtitle" style="font-size: 12px; color: #6B7280; margin-bottom: 16px; border-bottom: 1px solid rgba(0,0,0,0.06); padding-bottom: 8px;">Activity ID: #—</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; font-size: 13px; color: #374151; margin-bottom: 20px;">
+      <div><span style="font-weight: 600; color: #6B7280; display: block; font-size: 10.5px; text-transform: uppercase;">Activity Name</span> <span id="adm-det-name">—</span></div>
+      <div><span style="font-weight: 600; color: #6B7280; display: block; font-size: 10.5px; text-transform: uppercase;">Sport Type</span> <span id="adm-det-type">—</span></div>
+      <div><span style="font-weight: 600; color: #6B7280; display: block; font-size: 10.5px; text-transform: uppercase;">Distance</span> <span id="adm-det-distance">—</span></div>
+      <div><span style="font-weight: 600; color: #6B7280; display: block; font-size: 10.5px; text-transform: uppercase;">Moving Time</span> <span id="adm-det-time">—</span></div>
+      <div><span style="font-weight: 600; color: #6B7280; display: block; font-size: 10.5px; text-transform: uppercase;">Pace/Speed</span> <span id="adm-det-pace">—</span></div>
+      <div><span style="font-weight: 600; color: #6B7280; display: block; font-size: 10.5px; text-transform: uppercase;">Device Name</span> <span id="adm-det-device">—</span></div>
+      <div style="grid-column: span 2;"><span style="font-weight: 600; color: #6B7280; display: block; font-size: 10.5px; text-transform: uppercase;">Date / Time (IST)</span> <span id="adm-det-date">—</span></div>
+      <div style="grid-column: span 2;"><span style="font-weight: 600; color: #6B7280; display: block; font-size: 10.5px; text-transform: uppercase;">Activity Description</span> <span id="adm-det-desc">—</span></div>
+    </div>
+    
+    <div style="display: flex; justify-content: flex-end; gap: 8px;">
+      <button class="btn-ghost" onclick="document.getElementById('admin-activity-detail-modal').style.display = 'none'" style="font-size:12px; padding:6px 12px;">Close</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
