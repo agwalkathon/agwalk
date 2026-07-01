@@ -1062,6 +1062,9 @@
       font-size: var(--fs-md);
       font-weight: 700;
       color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .ch-sub {
       font-size: var(--fs-sm);
@@ -1073,6 +1076,7 @@
       font-weight: 700;
       flex-shrink: 0;
     }
+    .ch-pts { font-size: 12px; font-weight: 700; flex-shrink: 0; }
     .ch-pts.won{color:#22C55E;} .ch-pts.avail{color:#FFD000;} .ch-pts.missed{color:var(--muted);}
     .ch-status-bar {
       display: flex;
