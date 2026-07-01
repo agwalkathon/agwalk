@@ -2701,7 +2701,7 @@ function toggleNotificationDropdown(e) {
   dd.style.display = isVisible ? 'none' : 'block';
 }
 
-function clearNotifications(e) {
+async function clearNotifications(e) {
   if (e) e.stopPropagation();
   var badge = document.getElementById('notification-badge');
   if (badge) badge.style.display = 'none';
@@ -2709,6 +2709,22 @@ function clearNotifications(e) {
   if (list) list.style.display = 'none';
   var empty = document.getElementById('notif-empty');
   if (empty) empty.style.display = 'block';
+
+  _notificationsList = [];
+
+  try {
+    var session = JSON.parse(safeGetItem('wk_user') || '{}');
+    var athleteId = session.athleteId;
+    if (athleteId) {
+      await fetch(BACKEND + '/notifications/clear', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ athlete_id: athleteId })
+      });
+    }
+  } catch (err) {
+    console.warn('Failed to clear notifications:', err);
+  }
 }
 
 document.addEventListener('click', function(e) {
