@@ -49,6 +49,42 @@
 </div>
 <!-- ──────────────────────────────────────────────────────────────────── -->
 
+<!-- ── Maintenance Block Overlay ─────────────────────────────────────────── -->
+<div id="maintenance-overlay" style="
+  position:fixed;inset:0;z-index:20000;
+  background:#0E1012;
+  display:none;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;padding:32px;
+">
+  <div style="
+    width:88px;height:88px;border-radius:50%;
+    background:rgba(232,98,42,0.12);
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:28px;
+    animation:maintPulse 2s ease-in-out infinite;
+  ">
+    <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="#E8622A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="animation:maintSpin 3.5s linear infinite;">
+      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+    </svg>
+  </div>
+  <div style="font-size:20px;font-weight:800;color:#fff;font-family:var(--font);margin-bottom:10px;" id="maintenance-message">App is Under Maintenance</div>
+  <div style="font-size:14px;color:rgba(255,255,255,0.55);font-family:var(--font);max-width:320px;line-height:1.5;">
+    We're making some improvements. Please check back shortly.
+  </div>
+</div>
+<style>
+@keyframes maintPulse {
+  0%, 100% { transform:scale(1); box-shadow:0 0 0 0 rgba(232,98,42,0.25); }
+  50% { transform:scale(1.06); box-shadow:0 0 0 14px rgba(232,98,42,0); }
+}
+@keyframes maintSpin {
+  from { transform:rotate(0deg); }
+  to { transform:rotate(360deg); }
+}
+</style>
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+
 <header class="header">
   <div class="hdr-inner">
   <div class="hdr-left" style="display: flex; align-items: center; gap: 8px;">
