@@ -1543,7 +1543,7 @@ async function saveDist(cell,actId,val){
       var t = sessionStorage.getItem('wk_admin_token');
       if (t) adminEmail = JSON.parse(atob(t.split('.')[1])).email || 'admin@arcgate.com';
     } catch(e){}
-    await fetch(SUPABASE_URL+'/rest/v1/activities?id=eq.'+actId,{
+    var resp = await fetch(SUPABASE_URL+'/rest/v1/activities?id=eq.'+actId,{
       method:'PATCH',
       headers:{
         apikey:SUPABASE_ANON,
@@ -1556,6 +1556,24 @@ async function saveDist(cell,actId,val){
         flagged_by: adminEmail
       })
     });
+    if (!resp.ok) {
+      if (resp.status === 400) {
+        var retryResp = await fetch(SUPABASE_URL+'/rest/v1/activities?id=eq.'+actId,{
+          method:'PATCH',
+          headers:{
+            apikey:SUPABASE_ANON,
+            Authorization:'Bearer '+SUPABASE_ANON,
+            'Content-Type':'application/json'
+          },
+          body:JSON.stringify({
+            distance_meters:meters
+          })
+        });
+        if (!retryResp.ok) throw new Error('Retry failed: ' + retryResp.status);
+      } else {
+        throw new Error('Patch failed: ' + resp.status);
+      }
+    }
     cell.setAttribute('data-val',meters);
     cell.innerHTML=km.toFixed(2)+' km';
     loadActivities();
@@ -1579,7 +1597,7 @@ async function saveType(cell,actId,newType){
       var t = sessionStorage.getItem('wk_admin_token');
       if (t) adminEmail = JSON.parse(atob(t.split('.')[1])).email || 'admin@arcgate.com';
     } catch(e){}
-    await fetch(SUPABASE_URL+'/rest/v1/activities?id=eq.'+actId,{
+    var resp = await fetch(SUPABASE_URL+'/rest/v1/activities?id=eq.'+actId,{
       method:'PATCH',
       headers:{
         apikey:SUPABASE_ANON,
@@ -1592,6 +1610,24 @@ async function saveType(cell,actId,newType){
         flagged_by: adminEmail
       })
     });
+    if (!resp.ok) {
+      if (resp.status === 400) {
+        var retryResp = await fetch(SUPABASE_URL+'/rest/v1/activities?id=eq.'+actId,{
+          method:'PATCH',
+          headers:{
+            apikey:SUPABASE_ANON,
+            Authorization:'Bearer '+SUPABASE_ANON,
+            'Content-Type':'application/json'
+          },
+          body:JSON.stringify({
+            sport_type:newType
+          })
+        });
+        if (!retryResp.ok) throw new Error('Retry failed: ' + retryResp.status);
+      } else {
+        throw new Error('Patch failed: ' + resp.status);
+      }
+    }
     cell.setAttribute('data-val',newType);
     cell.innerHTML='<span class="badge '+bc(newType)+'">'+newType+'</span>';
     loadActivities();
@@ -3839,7 +3875,35 @@ async function saveEditModal() {
       },
       body: JSON.stringify(updates)
     });
-    if (!resp.ok) throw new Error('Database patch failed with status: ' + resp.status);
+    if (!resp.ok) {
+      if (resp.status === 400) {
+        var cleanUpdates = {
+          is_flagged: is_flagged,
+          flag_reason: is_flagged ? flag_reason : null,
+          is_reviewed: is_reviewed,
+          activity_date: activity_date,
+          activity_date_time_ist: activity_date_time_ist,
+          sport_type: sport_type,
+          distance_meters: new_distance_meters,
+          is_deleted: is_deleted,
+          deleted_reason: is_deleted ? deleted_reason : null,
+          manual_bonus: manual_bonus,
+          raw_data: rawData
+        };
+        var retryResp = await fetch(SUPABASE_URL + '/rest/v1/activities?id=eq.' + currentId, {
+          method: 'PATCH',
+          headers: {
+            apikey: SUPABASE_ANON,
+            Authorization: 'Bearer ' + SUPABASE_ANON,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(cleanUpdates)
+        });
+        if (!retryResp.ok) throw new Error('Database patch failed with status: ' + retryResp.status);
+      } else {
+        throw new Error('Database patch failed with status: ' + resp.status);
+      }
+    }
     
     var backendAction = 'unflag';
     if (is_deleted) backendAction = 'delete';
