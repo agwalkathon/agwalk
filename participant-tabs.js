@@ -2078,7 +2078,9 @@ function renderFeed() {
   });
 
   if (filteredFeed.length > _feedVisibleCount) {
-    html += '<div style="text-align:center; padding:8px 0 20px 0;"><button class="show-more-btn" onclick="showMoreAnnouncements()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08); border-radius:20px; color:#fff; font-size:12px; font-weight:700; padding:8px 18px; cursor:pointer; font-family:var(--font); letter-spacing:0.3px; transition:all 0.15s ease;">Show More</button></div>';
+    html += '<div id="feed-sentinel" class="feed-spinner-wrap"><div class="feed-infinite-spinner"></div></div>';
+  } else if (filteredFeed.length > 0) {
+    html += '<div style="text-align:center; padding:24px 0 32px; color:var(--muted); font-size:11px; font-weight:800; letter-spacing:1px; opacity:0.5;">✨ YOU\'RE ALL CAUGHT UP</div>';
   }
   list.innerHTML = html;
   initFeedMaps();
@@ -2789,3 +2791,193 @@ function closeReactionsDetail() {
   var modal = document.getElementById('reactions-detail-modal');
   if (modal) modal.classList.remove('open');
 }
+
+// Premium Pull-to-Refresh & Infinite Scroll Controller
+(function() {
+  var startY = 0;
+  var pullOffset = 0;
+  var isPulling = false;
+  var isRefreshing = false;
+  var threshold = 75; // px
+  
+  var indicator = document.getElementById('pull-refresh-indicator');
+  var circle = indicator ? indicator.querySelector('.pull-refresh-circle') : null;
+  var spinnerCircle = indicator ? indicator.querySelector('.pull-refresh-spinner circle') : null;
+  
+  function getActiveScrollContainer() {
+    return document.getElementById('tab-' + _currentTab);
+  }
+  
+  function isAnyModalOpen() {
+    var actModal = document.getElementById('activity-detail-modal');
+    var profModal = document.getElementById('profile-detail-modal');
+    var highModal = document.getElementById('highlight-detail-modal');
+    var rxModal = document.getElementById('reactions-detail-modal');
+    return (actModal && actModal.classList.contains('open')) ||
+           (profModal && profModal.classList.contains('open')) ||
+           (highModal && highModal.style.display === 'flex') ||
+           (rxModal && rxModal.classList.contains('open'));
+  }
+
+  window.addEventListener('touchstart', function(e) {
+    if (e.touches.length !== 1 || isRefreshing || isAnyModalOpen()) return;
+    
+    var container = getActiveScrollContainer();
+    if (!container || container.scrollTop > 0) return;
+    
+    startY = e.touches[0].clientY;
+    isPulling = true;
+    
+    if (indicator) {
+      indicator.style.transition = 'none';
+      indicator.classList.add('visible');
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchmove', function(e) {
+    if (!isPulling || e.touches.length !== 1 || isRefreshing) return;
+    
+    var currentY = e.touches[0].clientY;
+    var deltaY = currentY - startY;
+    
+    if (deltaY <= 0) {
+      pullOffset = 0;
+      if (indicator) {
+        indicator.style.transform = 'translate(-50%, -100px) scale(0.3)';
+        indicator.classList.remove('visible');
+      }
+      return;
+    }
+    
+    // Logarithmic spring physics
+    pullOffset = Math.pow(deltaY, 0.82);
+    if (pullOffset > 130) pullOffset = 130;
+    
+    var progress = Math.min(1, pullOffset / threshold);
+    
+    if (indicator) {
+      var translateY = -100 + (pullOffset * 1.5);
+      if (translateY > 40) translateY = 40; 
+      
+      var scale = 0.3 + (progress * 0.7);
+      indicator.style.transform = 'translate(-50%, ' + translateY + 'px) scale(' + scale + ')';
+      
+      if (spinnerCircle) {
+        var circumference = 62.8;
+        var offset = circumference - (progress * circumference);
+        spinnerCircle.style.strokeDashoffset = offset;
+      }
+      
+      var spinner = indicator.querySelector('.pull-refresh-spinner');
+      if (spinner) {
+        spinner.style.transform = 'rotate(' + (pullOffset * 2.5) + 'deg)';
+      }
+      
+      if (pullOffset >= threshold && !indicator._hasVibrated) {
+        if (navigator.vibrate) navigator.vibrate(10);
+        indicator._hasVibrated = true;
+      } else if (pullOffset < threshold) {
+        indicator._hasVibrated = false;
+      }
+    }
+    
+    var container = getActiveScrollContainer();
+    if (container && container.scrollTop === 0 && e.cancelable) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  window.addEventListener('touchend', function() {
+    if (!isPulling) return;
+    isPulling = false;
+    
+    if (indicator) {
+      indicator._hasVibrated = false;
+    }
+    
+    if (pullOffset >= threshold) {
+      isRefreshing = true;
+      pullOffset = 0;
+      
+      if (indicator) {
+        indicator.style.transition = 'transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        indicator.style.transform = 'translate(-50%, 20px) scale(1)';
+        indicator.classList.add('refreshing');
+        if (spinnerCircle) {
+          spinnerCircle.style.strokeDashoffset = 0;
+        }
+      }
+      
+      if (typeof load === 'function') {
+        load(true).then(resetPullIndicator).catch(resetPullIndicator);
+      } else {
+        setTimeout(resetPullIndicator, 1500);
+      }
+    } else {
+      resetPullIndicator();
+    }
+  }, { passive: true });
+
+  function resetPullIndicator() {
+    isRefreshing = false;
+    pullOffset = 0;
+    if (indicator) {
+      indicator.style.transition = 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease';
+      indicator.style.transform = 'translate(-50%, -100px) scale(0.3)';
+      indicator.classList.remove('refreshing');
+      setTimeout(function() {
+        indicator.classList.remove('visible');
+      }, 300);
+    }
+  }
+  
+  window.resetPullIndicator = resetPullIndicator;
+  
+  // --- IntersectionObserver Infinite Scroll ---
+  var observer = null;
+  var isObserving = false;
+  
+  function initInfiniteScrollObserver() {
+    var sentinel = document.getElementById('feed-sentinel');
+    if (!sentinel) return;
+    
+    if (observer) {
+      observer.disconnect();
+    }
+    
+    observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting && !isPulling && !isRefreshing) {
+          if (_feedData.length > _feedVisibleCount) {
+            console.log('[InfiniteScroll] Loading next 30 items...');
+            showMoreAnnouncements();
+          }
+        }
+      });
+    }, {
+      root: document.getElementById('tab-feed'),
+      rootMargin: '180px'
+    });
+    
+    observer.observe(sentinel);
+    isObserving = true;
+  }
+  
+  var originalShowTab = window.showTab;
+  if (typeof originalShowTab === 'function') {
+    window.showTab = function(tabId) {
+      originalShowTab(tabId);
+      if (tabId === 'feed') {
+        setTimeout(initInfiniteScrollObserver, 100);
+      }
+    };
+  }
+  
+  function checkObserverStatus() {
+    if (_currentTab === 'feed') {
+      setTimeout(initInfiniteScrollObserver, 100);
+    }
+  }
+  
+  setTimeout(checkObserverStatus, 1000);
+})();
