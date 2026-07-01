@@ -15,7 +15,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="participant.css?v=20260630_v75">
+  <link rel="stylesheet" href="participant.css?v=20260630_v76">
 </head>
 </head>
 <body>
@@ -733,7 +733,7 @@
         Back
       </button>
       <div id="detail-top-date" style="font-size:16px; font-weight:800; color:#fff; text-align:center;">Activity</div>
-      <div style="width:50px;"></div> <!-- placeholder for symmetry -->
+      <button id="detail-share-btn" onclick="showShareSheet()" style="width:50px;background:none;border:none;color:rgba(255,255,255,0.6);cursor:pointer;display:flex;align-items:center;justify-content:flex-end;padding:0;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
     </div>
 
     <!-- Hero Map Section -->
@@ -886,7 +886,7 @@
         Back
       </button>
       <div style="font-size:16px; font-weight:800; color:#fff; text-align:center;">Profile</div>
-      <div style="width:50px;"></div> <!-- placeholder for symmetry -->
+      <button id="detail-share-btn" onclick="showShareSheet()" style="width:50px;background:none;border:none;color:rgba(255,255,255,0.6);cursor:pointer;display:flex;align-items:center;justify-content:flex-end;padding:0;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
     </div>
 
     <!-- Profile content -->
@@ -1037,5 +1037,25 @@
     </div>
   </div>
 
+
+<!-- Share Activity Sheet -->
+<div id="share-sheet" style="display:none;position:fixed;inset:0;z-index:20001;background:rgba(0,0,0,0.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);align-items:flex-end;justify-content:center;" onclick="hideShareSheet()">
+  <div style="background:var(--surface);border-radius:20px 20px 0 0;padding:24px 20px 32px;width:100%;max-width:540px;box-sizing:border-box;" onclick="event.stopPropagation()">
+    <div style="width:36px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:0 auto 20px;"></div>
+    <div style="text-align:center;font-size:16px;font-weight:800;color:#fff;margin-bottom:6px;">Share Activity</div>
+    <div style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:20px;">Choose a format to share or save</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      <button onclick="shareActivityCard('whatsapp')" style="padding:16px 12px;background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.25);border-radius:12px;color:#25D366;font-size:14px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <span style="font-size:24px;">&#128241;</span>WhatsApp Card
+        <span style="font-size:10px;color:var(--muted);font-weight:600;">4:3 &middot; 900&times;675px</span>
+      </button>
+      <button onclick="shareActivityCard('story')" style="padding:16px 12px;background:rgba(232,98,42,0.1);border:1px solid rgba(232,98,42,0.25);border-radius:12px;color:var(--brand);font-size:14px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <span style="font-size:24px;">&#128248;</span>Instagram Story
+        <span style="font-size:10px;color:var(--muted);font-weight:600;">9:16 &middot; 540&times;960px</span>
+      </button>
+    </div>
+    <button onclick="hideShareSheet()" style="width:100%;padding:14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:var(--muted);font-size:14px;font-weight:700;cursor:pointer;">Cancel</button>
+  </div>
+</div>
 </body>
 </html>
