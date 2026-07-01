@@ -136,6 +136,71 @@ function userGuard() {
   }
 }
 function logout() { safeRemoveItem('wk_user'); try { sessionStorage.removeItem('wk_admin'); } catch(e){} window.location.href = 'index.html'; }
+
+// ── Maintenance Mode Gate ────────────────────────────────────────────────
+var _maintPollTimer = null;
+
+async function checkMaintenanceGate(athleteId) {
+  try {
+    var r = await fetch(BACKEND + '/maintenance-status?athlete_id=' + encodeURIComponent(athleteId));
+    var d = await r.json();
+    if (d.blocked) {
+      showMaintenanceOverlay(d.message);
+      startMaintenancePolling(athleteId);
+      return true;
+    }
+    hideMaintenanceOverlay();
+    startMaintenancePolling(athleteId);
+    return false;
+  } catch (e) {
+    console.warn('[Maintenance] status check failed, failing open:', e);
+    startMaintenancePolling(athleteId);
+    return false;
+  }
+}
+
+function showMaintenanceOverlay(message) {
+  var ov = document.getElementById('maintenance-overlay');
+  if (!ov) return;
+  var msgEl = document.getElementById('maintenance-message');
+  if (msgEl) msgEl.textContent = message || 'App is Under Maintenance';
+  ov.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  var sp = document.getElementById('splash-screen');
+  if (sp) sp.style.display = 'none';
+}
+
+function hideMaintenanceOverlay() {
+  var ov = document.getElementById('maintenance-overlay');
+  if (!ov || ov.style.display === 'none') return;
+  ov.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function startMaintenancePolling(athleteId) {
+  if (_maintPollTimer) return; // already polling, don't stack timers
+  _maintPollTimer = setInterval(function () {
+    if (document.hidden) return;
+    pollMaintenance(athleteId);
+  }, 25000);
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) pollMaintenance(athleteId);
+  });
+}
+
+async function pollMaintenance(athleteId) {
+  try {
+    var r = await fetch(BACKEND + '/maintenance-status?athlete_id=' + encodeURIComponent(athleteId));
+    var d = await r.json();
+    if (d.blocked) {
+      showMaintenanceOverlay(d.message);
+    } else {
+      hideMaintenanceOverlay();
+    }
+  } catch (e) {
+    console.warn('[Maintenance] poll failed:', e);
+  }
+}
 function esc(v) { return String(v==null?'':v).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
 function getAvatarStyle(name) {
   var colors = [
