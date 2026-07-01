@@ -405,13 +405,6 @@
 <!-- You tab -->
 <div class="content" id="tab-you">
 <div class="max-w">
-  <!-- Avatar always visible -->
-  <div class="tab-you-profile">
-    <div class="tab-you-avatar" id="you-avatar">PM</div>
-    <div class="tab-you-name" id="you-name">—</div>
-    <div class="tab-you-tags" id="you-tags"></div>
-  </div>
-
   <!-- Sub-tabs: Challenges first -->
   <div class="lb-tabs" style="margin-bottom:14px;">
     <button class="lb-tab active" id="you-tab-challenges" onclick="switchYouTab('challenges')">&#127919; Challenges</button>
@@ -420,6 +413,13 @@
 
   <!-- Info panel -->
   <div id="you-panel-info" style="display:none;">
+
+  <!-- Avatar / name card - Profile tab only -->
+  <div class="tab-you-profile">
+    <div class="tab-you-avatar" id="you-avatar">PM</div>
+    <div class="tab-you-name" id="you-name">—</div>
+    <div class="tab-you-tags" id="you-tags"></div>
+  </div>
 
   <!-- Push Notifications Subscription Card -->
   <div class="card" id="push-notifications-card" style="margin-top:10px;padding:16px 20px;background:rgba(26,29,32,0.65);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius-sm);display:none;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 4px 15px rgba(0,0,0,0.15);transition:transform 0.2s ease,border-color 0.2s ease;" onmouseover="this.style.transform='translateY(-1.5px)';this.style.borderColor='rgba(255,255,255,0.15)';" onmouseout="this.style.transform='';this.style.borderColor='';">
