@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -225,25 +228,28 @@ tr:hover td{background:#FAFAFA}
 }</style>
 </head>
 <body>
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
     <div class="sb-logo">
       <div class="sb-logo-icon"><i class="ti ti-trophy"></i></div>
       <div class="sb-logo-text">Arcgate Walk<span>Organizers</span></div>
     </div>
-<div class="sb-section">Main</div>
-<a href="admin.html" class="sb-item"><i class="ti ti-layout-dashboard"></i><span class="sb-label">Dashboard</span></a>
-<a href="activities.html" class="sb-item"><i class="ti ti-run"></i><span class="sb-label">Activities</span></a>
-<a href="ag-leaderboard.html" class="sb-item"><i class="ti ti-trophy"></i><span class="sb-label">Leaderboard</span></a>
-<a href="athletedtl.html" class="sb-item"><i class="ti ti-users"></i><span class="sb-label">Participants</span></a>
-<a href="reports.html" class="sb-item"><i class="ti ti-chart-bar"></i><span class="sb-label">Reports</span></a>
-<div class="sb-section" style="margin-top:10px;">Config</div>
-<a href="config.html" class="sb-item"><i class="ti ti-settings-2"></i><span class="sb-label">Configuration</span></a>
-    <a href="feed-config.html" class="sb-item"><i class="ti ti-rss"></i><span class="sb-label">Feed Settings</span></a>
-<a href="data-upload.html" class="sb-item"><i class="ti ti-upload"></i><span class="sb-label">Data Upload</span></a>
-<a href="email-send.html" class="sb-item active"><i class="ti ti-mail"></i><span class="sb-label">Email Send</span></a>
-<a href="audit-log.html" class="sb-item"><i class="ti ti-shield-check"></i><span class="sb-label">Audit Log</span></a>
-<a href="push-notifications.html" class="sb-item"><i class="ti ti-bell"></i><span class="sb-label">Notifications</span></a>
-<div class="sb-spacer"></div><div class="sb-divider"></div><button class="sb-signout" onclick="logout()"><i class="ti ti-logout"></i><span class="sb-label">Sign out</span></button></aside>
+
+  <div class="sb-section">Main</div>
+  <a href="admin.html" class="sb-item "><i class="ti ti-layout-dashboard"></i><span class="sb-label">Dashboard</span></a>
+  <a href="events.html" class="sb-item "><i class="ti ti-calendar-event"></i><span class="sb-label">Events</span></a>
+  <a href="celebrate-config.html" class="sb-item "><i class="ti ti-confetti"></i><span class="sb-label">Celebrate</span></a>
+  <a href="reports.html" class="sb-item "><i class="ti ti-chart-bar"></i><span class="sb-label">Reports</span></a>
+
+  <div class="sb-section" style="margin-top:10px;">Config</div>
+  <a href="data-upload.html" class="sb-item "><i class="ti ti-upload"></i><span class="sb-label">Data Upload</span></a>
+  <a href="email-send.html" class="sb-item active"><i class="ti ti-mail"></i><span class="sb-label">Email Send</span></a>
+  <a href="audit-log.html" class="sb-item "><i class="ti ti-shield-check"></i><span class="sb-label">Audit Log</span></a>
+  <a href="push-notifications.html" class="sb-item "><i class="ti ti-bell"></i><span class="sb-label">Notifications</span></a>
+
+  <div class="sb-spacer"></div>
+  <div class="sb-divider"></div>
+  <button class="sb-signout" onclick="logout()"><i class="ti ti-logout"></i><span class="sb-label">Sign out</span></button>
+</aside>
 <div class="main">
 <header class="topbar"><div class="topbar-left"><h1>Email Send</h1><p>Send bulk or individual emails to participants</p></div><div class="topbar-right"><a href="admin.html" class="topbar-back"><i class="ti ti-arrow-left"></i> Dashboard</a></div></header>
   <div class="content">
@@ -541,7 +547,7 @@ var SB = 'https://jhdgkncpkrttvemvwukc.supabase.co';
 var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoZGdrbmNwa3J0dHZlbXZ3dWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NzgyNjMsImV4cCI6MjA5NzI1NDI2M30.d7mvXOYDq5G4aqs1Mbc6HFNgTBlQk4B6ah0eahE_yZE';
 var H = { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' };
 
-var _BU='https://walkathon-backend-hv9j.onrender.com';function authGuard(){var t=sessionStorage.getItem('wk_admin_token');if(!t){window.location.href='admin-login.html';return;}try{var p=JSON.parse(atob(t.split('.')[1]));if(p.exp&&p.exp*1000<Date.now()){sessionStorage.removeItem('wk_admin_token');window.location.href='admin-login.html';}}catch(e){sessionStorage.removeItem('wk_admin_token');window.location.href='admin-login.html';}}function logout(){sessionStorage.removeItem('wk_admin_token');sessionStorage.removeItem('wk_admin');window.location.href='admin-login.html';}
+var _BU='https://agwalk-backend.onrender.com';function authGuard(){var t=sessionStorage.getItem('wk_admin_token');if(!t){window.location.href='admin-login.html';return;}try{var p=JSON.parse(atob(t.split('.')[1]));if(p.exp&&p.exp*1000<Date.now()){sessionStorage.removeItem('wk_admin_token');window.location.href='admin-login.html';}}catch(e){sessionStorage.removeItem('wk_admin_token');window.location.href='admin-login.html';}}function logout(){sessionStorage.removeItem('wk_admin_token');sessionStorage.removeItem('wk_admin');window.location.href='admin-login.html';}
 authGuard();
 
 // ── Supabase helpers ───────────────────────────────────
@@ -632,7 +638,7 @@ function toggleProviderFields() {
 
 async function loadEmailStatus() {
   try {
-    var r = await fetch('https://walkathon-backend-hv9j.onrender.com/email/status');
+    var r = await fetch('https://agwalk-backend.onrender.com/email/status');
     var d = await r.json();
     var widget = document.getElementById('brevo-usage-widget');
     if (widget && d.success) {
@@ -687,7 +693,7 @@ async function loadEmailStatus() {
 
 async function loadSmtp() {
   try {
-    var r = await fetch('https://walkathon-backend-hv9j.onrender.com/get-smtp');
+    var r = await fetch('https://agwalk-backend.onrender.com/get-smtp');
     var d = await r.json();
     if (d.success && d.data && d.data.config) {
       var s = d.data.config;
@@ -714,7 +720,7 @@ async function saveSmtp() {
     if (el) cfg[k] = el.value.trim();
   });
   try {
-    var r = await fetch('https://walkathon-backend-hv9j.onrender.com/save-smtp', {
+    var r = await fetch('https://agwalk-backend.onrender.com/save-smtp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ config: cfg })
@@ -736,7 +742,7 @@ async function testSmtp() {
   setStatus('smtp-status', 'wait', '⏳ Saving & sending test email to ' + testTo + '...');
   await saveSmtp();
   try {
-    var r = await fetch('https://walkathon-backend-hv9j.onrender.com/test-email', {
+    var r = await fetch('https://agwalk-backend.onrender.com/test-email', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ to: testTo })
     });
@@ -1197,7 +1203,7 @@ async function startSend(testOnly) {
     if (!recips.length) { log('⚠️ No recipients with valid email addresses.', 'log-warn'); return; }
 
     log('🚀 Sending via backend...');
-    var r = await fetch('https://walkathon-backend-hv9j.onrender.com/send-email', {
+    var r = await fetch('https://agwalk-backend.onrender.com/send-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ recipients: recips, subject: tpls[0].subject, body_html: tpls[0].body_html, test_only: testOnly, test_email: testEmail })
