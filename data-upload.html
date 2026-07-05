@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -153,24 +156,24 @@ body{font-family:var(--font);background:var(--page-bg);color:var(--text-primary)
   </style>
 </head>
 <body>
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
     <div class="sb-logo">
       <div class="sb-logo-icon"><i class="ti ti-trophy"></i></div>
       <div class="sb-logo-text">Arcgate Walk<span>Organizers</span></div>
     </div>
+
   <div class="sb-section">Main</div>
-  <a href="admin.html" class="sb-item"><i class="ti ti-layout-dashboard"></i><span class="sb-label">Dashboard</span></a>
-  <a href="activities.html" class="sb-item"><i class="ti ti-run"></i><span class="sb-label">Activities</span></a>
-  <a href="ag-leaderboard.html" class="sb-item"><i class="ti ti-trophy"></i><span class="sb-label">Leaderboard</span></a>
-  <a href="athletedtl.html" class="sb-item"><i class="ti ti-users"></i><span class="sb-label">Participants</span></a>
-<a href="reports.html" class="sb-item"><i class="ti ti-chart-bar"></i><span class="sb-label">Reports</span></a>
-  <div class="sb-section" style="margin-top:10px">Config</div>
-  <a href="config.html" class="sb-item"><i class="ti ti-settings-2"></i><span class="sb-label">Configuration</span></a>
-    <a href="feed-config.html" class="sb-item"><i class="ti ti-rss"></i><span class="sb-label">Feed Settings</span></a>
+  <a href="admin.html" class="sb-item "><i class="ti ti-layout-dashboard"></i><span class="sb-label">Dashboard</span></a>
+  <a href="events.html" class="sb-item "><i class="ti ti-calendar-event"></i><span class="sb-label">Events</span></a>
+  <a href="celebrate-config.html" class="sb-item "><i class="ti ti-confetti"></i><span class="sb-label">Celebrate</span></a>
+  <a href="reports.html" class="sb-item "><i class="ti ti-chart-bar"></i><span class="sb-label">Reports</span></a>
+
+  <div class="sb-section" style="margin-top:10px;">Config</div>
   <a href="data-upload.html" class="sb-item active"><i class="ti ti-upload"></i><span class="sb-label">Data Upload</span></a>
-  <a href="email-send.html" class="sb-item"><i class="ti ti-mail"></i><span class="sb-label">Email Send</span></a>
-<a href="audit-log.html" class="sb-item"><i class="ti ti-shield-check"></i><span class="sb-label">Audit Log</span></a>
-<a href="push-notifications.html" class="sb-item"><i class="ti ti-bell"></i><span class="sb-label">Notifications</span></a>
+  <a href="email-send.html" class="sb-item "><i class="ti ti-mail"></i><span class="sb-label">Email Send</span></a>
+  <a href="audit-log.html" class="sb-item "><i class="ti ti-shield-check"></i><span class="sb-label">Audit Log</span></a>
+  <a href="push-notifications.html" class="sb-item "><i class="ti ti-bell"></i><span class="sb-label">Notifications</span></a>
+
   <div class="sb-spacer"></div>
   <div class="sb-divider"></div>
   <button class="sb-signout" onclick="logout()"><i class="ti ti-logout"></i><span class="sb-label">Sign out</span></button>
@@ -183,6 +186,7 @@ body{font-family:var(--font);background:var(--page-bg);color:var(--text-primary)
       <p>Batch import activities from raw Excel/CSV data</p>
     </div>
     <div class="topbar-right">
+      <select id="ev-select" style="padding:8px 12px;border:1px solid rgba(0,0,0,.1);border-radius:8px;font-family:inherit;font-size:13px;background:#fff;max-width:230px"></select>
       <a href="admin.html" class="topbar-back"><i class="ti ti-arrow-left"></i> Dashboard</a>
     </div>
   </header>
@@ -458,9 +462,25 @@ body{font-family:var(--font);background:var(--page-bg);color:var(--text-primary)
 
 <script>
 var SUPABASE_URL = 'https://jhdgkncpkrttvemvwukc.supabase.co';
+var EV_ID = 1;
+async function loadEventSelector(){
+  try{
+    var r=await fetch(SUPABASE_URL+"/rest/v1/events?status=neq.draft&select=id,name,status&order=start_date.desc",{headers:HDR});
+    var evs=await r.json(); var sel=document.getElementById("ev-select"); if(!sel||!Array.isArray(evs))return;
+    sel.innerHTML="";
+    evs.forEach(function(e){var o=document.createElement("option");o.value=e.id;o.textContent=e.name+(e.status==="live"?" \u25CF LIVE":"");sel.appendChild(o);});
+    sel.value="1"; EV_ID=1;
+    sel.addEventListener("change",function(){
+      EV_ID=parseInt(this.value)||1;
+      var log=document.getElementById('progress-log');
+      if(log){ document.getElementById('progress-wrap').style.display='block'; log.innerHTML += '<div style="color:#90caf9">\ud83d\udccc Import target set to: '+sel.options[sel.selectedIndex].textContent+'</div>'; }
+    });
+  }catch(e){console.warn("event selector failed",e);}
+}
+document.addEventListener('DOMContentLoaded', loadEventSelector);
 var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoZGdrbmNwa3J0dHZlbXZ3dWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NzgyNjMsImV4cCI6MjA5NzI1NDI2M30.d7mvXOYDq5G4aqs1Mbc6HFNgTBlQk4B6ah0eahE_yZE';
 var HDR = { apikey: SUPABASE_ANON, Authorization: 'Bearer ' + SUPABASE_ANON };
-var BACKEND_URL  = 'https://walkathon-backend-hv9j.onrender.com';
+var BACKEND_URL  = 'https://agwalk-backend.onrender.com';
       const ADMIN_SECRET = 'agwalk-admin-2026-xK9mPqR7';
 
 function toggleFormatRef() {
@@ -471,7 +491,7 @@ function toggleFormatRef() {
   chev.textContent = open ? '▼ Show' : '▲ Hide';
 }
 
-var _BU='https://walkathon-backend-hv9j.onrender.com';function authGuard(){var t=sessionStorage.getItem('wk_admin_token');if(!t){window.location.href='admin-login.html';return;}try{var p=JSON.parse(atob(t.split('.')[1]));if(p.exp&&p.exp*1000<Date.now()){sessionStorage.removeItem('wk_admin_token');window.location.href='admin-login.html';}}catch(e){sessionStorage.removeItem('wk_admin_token');window.location.href='admin-login.html';}}function logout(){sessionStorage.removeItem('wk_admin_token');sessionStorage.removeItem('wk_admin');window.location.href='admin-login.html';}
+var _BU='https://agwalk-backend.onrender.com';function authGuard(){var t=sessionStorage.getItem('wk_admin_token');if(!t){window.location.href='admin-login.html';return;}try{var p=JSON.parse(atob(t.split('.')[1]));if(p.exp&&p.exp*1000<Date.now()){sessionStorage.removeItem('wk_admin_token');window.location.href='admin-login.html';}}catch(e){sessionStorage.removeItem('wk_admin_token');window.location.href='admin-login.html';}}function logout(){sessionStorage.removeItem('wk_admin_token');sessionStorage.removeItem('wk_admin');window.location.href='admin-login.html';}
 authGuard();
 
 // ── Tab switching ────────────────────────────────────────────
@@ -798,8 +818,9 @@ async function startImport(mode) {
 
   // Use converted data if raw format was uploaded
   var allActivities = toImport.map(function(r){
-    if (r.isRaw && r.converted) return r.converted;
-    return rowToActivity(r.row);
+    var act = (r.isRaw && r.converted) ? r.converted : rowToActivity(r.row);
+    act.event_id = EV_ID;
+    return act;
   });
 
   addLog('🚀 Starting import of ' + allActivities.length + ' activities…');
