@@ -35,20 +35,47 @@
 :root{--brand:#E8622A;--brand-light:#FFF0EA;--sidebar-bg:#0F1117;--sidebar-w:64px;--sidebar-exp:220px;--page-bg:#F4F6FA;--card-bg:#fff;--text:#1a1a2e;--sub:#6b7280}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Poppins',sans-serif;background:var(--page-bg);color:var(--text);display:flex;min-height:100vh}
-.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);background:var(--sidebar-bg);display:flex;flex-direction:column;align-items:center;padding:16px 0;transition:width .25s ease;overflow:hidden;z-index:100}
-.sidebar:hover{width:var(--sidebar-exp)}
-.sb-section{font-size:9px;font-weight:600;color:#4b5563;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;opacity:0;width:100%;padding:0 16px;margin:12px 0 4px;transition:opacity .2s}
-.sidebar:hover .sb-section{opacity:1}
-.sb-item{display:flex;align-items:center;gap:12px;width:100%;padding:10px 20px;color:#9ca3af;text-decoration:none;font-size:13px;font-weight:500;border-radius:0;transition:background .15s,color .15s;white-space:nowrap}
-.sb-item:hover,.sb-item.active{background:rgba(232,98,42,.15);color:#E8622A}
-.sb-item i{font-size:20px;flex-shrink:0}
-.sb-label{opacity:0;transition:opacity .2s;overflow:hidden}
-.sidebar:hover .sb-label{opacity:1}
-.sb-spacer{flex:1}
-.sb-divider{width:80%;height:1px;background:#1f2937;margin:8px 0}
-.sb-signout{display:flex;align-items:center;gap:12px;width:100%;padding:10px 20px;background:none;border:none;color:#6b7280;font-size:13px;cursor:pointer;white-space:nowrap}
-.sb-signout:hover{color:#ef4444}
-.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+
+    /* Sidebar styling */
+    
+    /* Sidebar styling */
+    
+    /* Sidebar styling */
+    .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: var(--sidebar-w); background: var(--sidebar-bg); display: flex; flex-direction: column; align-items: center; padding: 12px 0; z-index: 300; transition: width .24s cubic-bezier(.4,0,.2,1); overflow-x: hidden; overflow-y: hidden; }
+    .sidebar:hover { width: var(--sidebar-exp); overflow-y: auto; }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 4px; }
+    .sidebar:hover::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.22); }
+    .sb-logo { display: flex; align-items: center; width: 100%; padding: 4px 14px 12px; text-decoration: none; gap: 10px; flex-shrink: 0; }
+    .sb-logo-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--brand); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .sb-logo-icon i { color: #fff; font-size: 20px; }
+    .sb-logo-text { font-size: 13px; font-weight: 600; color: #fff; opacity: 0; white-space: nowrap; transition: opacity .18s; line-height: 1.3; }
+    .sb-logo-text span { display: block; font-size: 10px; font-weight: 400; color: rgba(255,255,255,.45); }
+    .sidebar:hover .sb-logo-text { opacity: 1; }
+    .sb-scroll-area { width: 100%; display: flex; flex-direction: column; }
+    .sb-section { font-size: 9px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.22); padding: 8px 14px 4px; width: 100%; opacity: 0; transition: opacity .15s; white-space: nowrap; }
+    .sidebar:hover .sb-section { opacity: 1; }
+    .sb-item { display: flex; align-items: center; width: 100%; padding: 0 12px; min-height: 34px; text-decoration: none; gap: 10px; border-left: 3px solid transparent; transition: all .16s; margin-bottom: 2px; }
+    .sb-item:hover { background: rgba(255,255,255,.06); border-left-color: rgba(232,98,42,.5); }
+    .sb-item.active { background: rgba(232,98,42,.12); border-left-color: var(--brand); }
+    .sb-item i { font-size: 18px; color: rgba(255,255,255,.38); flex-shrink: 0; width: 28px; text-align: center; transition: color .16s; }
+    .sb-item:hover i { color: rgba(255,255,255,.7); }
+    .sb-item.active i { color: var(--brand); }
+    .sb-label { font-size: 13px; font-weight: 500; color: rgba(255,255,255,.5); white-space: nowrap; opacity: 0; transition: opacity .15s; }
+    .sidebar:hover .sb-label { opacity: 1; }
+    .sb-item:hover .sb-label { color: rgba(255,255,255,.9); }
+    .sb-item.active .sb-label { color: #fff; font-weight: 600; }
+    .sb-spacer { flex: 1; }
+    .sb-divider { width: calc(100% - 24px); height: 1px; background: rgba(255,255,255,.07); margin: 6px 12px; flex-shrink: 0; }
+    .sb-signout { display: flex; align-items: center; width: 100%; padding: 0 12px; min-height: 34px; gap: 10px; border: none; background: none; cursor: pointer; transition: all .16s; font-family: var(--font); }
+    .sb-signout:hover { background: rgba(255,80,80,.08); }
+    .sb-signout i { font-size: 18px; color: rgba(255,255,255,.25); flex-shrink: 0; width: 28px; text-align: center; }
+    .sb-signout:hover i { color: #ff6b6b; }
+    .sb-signout .sb-label { color: rgba(255,255,255,.3); }
+    .sb-signout:hover .sb-label { color: #ff6b6b; }
+    
+    .main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
 .topbar{height:64px;background:#fff;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:50}
 .topbar h1{font-size:18px;font-weight:600}
 .topbar p{font-size:12px;color:var(--sub);margin-top:2px}
@@ -93,31 +120,46 @@ body{font-family:'Poppins',sans-serif;background:var(--page-bg);color:var(--text
 .bc-result{font-size:13px;color:#555;margin-left:8px}
 footer.site-footer{margin-top:auto;padding:16px 28px;font-size:12px;color:#aaa;border-top:1px solid #f0f0f0;display:flex;justify-content:space-between}
 footer.site-footer a{color:#aaa;text-decoration:none;margin-left:16px}
-@media(max-width:768px){.rule-fields{grid-template-columns:1fr}.bc-grid{grid-template-columns:1fr}}
+@media(max-width:768px){.rule-fields{grid-template-columns:1fr}.bc-grid{grid-template-columns:1fr} }
+
+/* Section tabs */
+.section-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:24px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-ms-overflow-style:none;padding-bottom:2px;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
+.section-tabs::-webkit-scrollbar{display:none}
+.stab{padding:10px 20px;font-size:13px;font-weight:500;color:var(--text-secondary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font);white-space:nowrap}
+.stab:hover{color:var(--text-primary)}
+.stab.active{color:var(--brand);border-bottom-color:var(--brand);font-weight:600}
+.push-tab-panel{display:none}
+.push-tab-panel.active{display:block}
   </style>
 </head>
 <body>
-  <aside class="sidebar">
+          <aside class="sidebar">
     <div class="sb-logo">
       <div class="sb-logo-icon"><i class="ti ti-trophy"></i></div>
       <div class="sb-logo-text">Arcgate Walk<span>Organizers</span></div>
     </div>
-    <div class="sb-section">Main</div>
-    <a href="admin.html" class="sb-item"><i class="ti ti-layout-dashboard"></i><span class="sb-label">Dashboard</span></a>
-    <a href="events.html" class="sb-item"><i class="ti ti-calendar-event"></i><span class="sb-label">Events</span></a>
-    <a href="celebrate-config.html" class="sb-item"><i class="ti ti-confetti"></i><span class="sb-label">Celebrate</span></a>
-    <a href="activities.html" class="sb-item"><i class="ti ti-run"></i><span class="sb-label">Activities</span></a>
-    <a href="ag-leaderboard.html" class="sb-item"><i class="ti ti-trophy"></i><span class="sb-label">Leaderboard</span></a>
-    <a href="athletedtl.html" class="sb-item"><i class="ti ti-users"></i><span class="sb-label">Participants</span></a>
-    <a href="reports.html" class="sb-item"><i class="ti ti-chart-bar"></i><span class="sb-label">Reports</span></a>
     
-    <div class="sb-section" style="margin-top:10px;">Config</div>
-    <a href="config.html" class="sb-item"><i class="ti ti-settings-2"></i><span class="sb-label">Configuration</span></a>
-    <a href="feed-config.html" class="sb-item"><i class="ti ti-rss"></i><span class="sb-label">Feed Settings</span></a>
-    <a href="data-upload.html" class="sb-item"><i class="ti ti-upload"></i><span class="sb-label">Data Upload</span></a>
-    <a href="email-send.html" class="sb-item"><i class="ti ti-mail"></i><span class="sb-label">Email Send</span></a>
-    <a href="audit-log.html" class="sb-item"><i class="ti ti-shield-check"></i><span class="sb-label">Audit Log</span></a>
-    <a href="push-notifications.html" class="sb-item active"><i class="ti ti-bell"></i><span class="sb-label">Notifications</span></a>
+    <div class="sb-scroll-area">
+      <div class="sb-section">Operations</div>
+      <a href="admin.html" class="sb-item"><i class="ti ti-layout-dashboard"></i><span class="sb-label">Dashboard</span></a>
+      <a href="events.html" class="sb-item"><i class="ti ti-calendar-event"></i><span class="sb-label">Events</span></a>
+      <a href="ag-leaderboard.html" class="sb-item"><i class="ti ti-trophy"></i><span class="sb-label">Leaderboard</span></a>
+      <a href="athletedtl.html" class="sb-item"><i class="ti ti-users"></i><span class="sb-label">Participants</span></a>
+      <a href="reports.html" class="sb-item"><i class="ti ti-chart-bar"></i><span class="sb-label">Reports</span></a>
+
+      <div class="sb-section">Social Feed</div>
+      <a href="feed-config.html" class="sb-item"><i class="ti ti-rss"></i><span class="sb-label">Feed Settings</span></a>
+      <a href="celebrate-config.html" class="sb-item"><i class="ti ti-confetti"></i><span class="sb-label">Celebrate</span></a>
+      <a href="push-notifications.html" class="sb-item active"><i class="ti ti-bell"></i><span class="sb-label">Notifications</span></a>
+      <a href="email-send.html" class="sb-item"><i class="ti ti-mail"></i><span class="sb-label">Email Send</span></a>
+
+      <div class="sb-section">System</div>
+      <a href="config.html" class="sb-item"><i class="ti ti-settings-2"></i><span class="sb-label">Configuration</span></a>
+      <a href="activities.html" class="sb-item"><i class="ti ti-run"></i><span class="sb-label">Activities</span></a>
+      <a href="data-upload.html" class="sb-item"><i class="ti ti-upload"></i><span class="sb-label">Data Upload</span></a>
+      <a href="audit-log.html" class="sb-item"><i class="ti ti-shield-check"></i><span class="sb-label">Audit Log</span></a>
+    </div>
+
     <div class="sb-spacer"></div>
     <div class="sb-divider"></div>
     <button class="sb-signout" onclick="logout()"><i class="ti ti-logout"></i><span class="sb-label">Sign out</span></button>
@@ -136,6 +178,16 @@ footer.site-footer a{color:#aaa;text-decoration:none;margin-left:16px}
   <div class="stat-box"><div class="stat-val" id="stat-disabled" style="color:#9ca3af">—</div><div class="stat-lbl">Rules disabled</div></div>
 </div>
 
+<!-- Tabs Navigation -->
+<div class="section-tabs">
+  <button class="stab active" data-target="triggers" onclick="switchPushTab('triggers')">🔔 Notification Triggers</button>
+  <button class="stab" data-target="broadcast" onclick="switchPushTab('broadcast')">📢 Broadcast Message</button>
+  <button class="stab" data-target="history" onclick="switchPushTab('history')">📊 Broadcast History</button>
+  <button class="stab" data-target="devices" onclick="switchPushTab('devices')">📱 Subscribed Devices</button>
+</div>
+
+<!-- Tab Panel: Triggers -->
+<div class="push-tab-panel active" id="panel-triggers">
 <!-- Trigger Rules -->
 <div class="card">
   <div class="card-header">
@@ -143,48 +195,16 @@ footer.site-footer a{color:#aaa;text-decoration:none;margin-left:16px}
     <div><div class="card-title">Notification Triggers</div><div class="card-sub">Toggle which events send a push notification. Edit the title and message text per trigger.</div></div>
   </div>
   <div class="card-body">
-    <!-- Trigger Selector Dropdown -->
-    <div style="margin-bottom: 20px;">
-      <label for="trigger-select" style="font-size: 11px; font-weight: 600; color: var(--sub); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; display: block;">Select Trigger Event</label>
-      <select id="trigger-select" onchange="selectTrigger(this.value)" style="padding: 10px 12px; border: 1px solid #e8e8e8; border-radius: 8px; font-size: 13px; font-family: inherit; width: 100%; max-width: 450px; background: #fff; cursor: pointer; color: var(--text); outline: none;">
-        <option value="">Loading triggers...</option>
-      </select>
-    </div>
-
-    <!-- Active Trigger Card -->
-    <div id="active-trigger-card" style="display: none; background: #f8f9fa; border: 1px solid #eee; border-radius: 10px; padding: 18px 20px; margin-bottom: 20px;">
-      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <label class="toggle-wrap" style="margin-top: 0;">
-            <input type="checkbox" id="active-trigger-enabled" onchange="toggleActiveTrigger(this.checked)">
-            <span class="toggle-track" id="active-trigger-track" style="background: #d1d5db;">
-              <span class="toggle-thumb" id="active-trigger-thumb" style="transform: translateX(0);"></span>
-            </span>
-          </label>
-          <span id="active-trigger-label" style="font-size: 14px; font-weight: 600; color: var(--text);">—</span>
-        </div>
-        <span class="rule-key" id="active-trigger-key" style="margin: 0;">—</span>
-      </div>
-
-      <div class="rule-fields">
-        <div class="fld">
-          <label>Notification Title</label>
-          <input type="text" id="active-trigger-title" oninput="updateActiveTrigger()">
-        </div>
-        <div class="fld">
-          <label>Notification Body — use {distance} {name} {rank} {medal}</label>
-          <input type="text" id="active-trigger-body" oninput="updateActiveTrigger()">
-        </div>
-      </div>
-    </div>
-
-    <div style="display:flex;align-items:center">
-      <button class="btn" onclick="saveRules()">Save all rules</button>
-      <span class="saved" id="rules-saved">Saved!</span>
+    <div id="rules-list-container" style="display: flex; flex-direction: column; gap: 16px;">
+      <p style="color:var(--text-muted);font-size:13px;padding:8px 0">Loading notification triggers...</p>
     </div>
   </div>
 </div>
 
+</div>
+
+<!-- Tab Panel: Broadcast -->
+<div class="push-tab-panel" id="panel-broadcast">
 <!-- Broadcast -->
 <div class="card">
   <div class="card-header">
@@ -205,8 +225,12 @@ footer.site-footer a{color:#aaa;text-decoration:none;margin-left:16px}
   </div>
 </div>
 
+</div>
+
+<!-- Tab Panel: History -->
+<div class="push-tab-panel" id="panel-history">
 <!-- Sent Broadcast History -->
-<div class="card" style="margin-top: 24px;">
+<div class="card">
   <div class="card-header">
     <div class="card-icon"><i class="ti ti-history"></i></div>
     <div><div class="card-title">Sent Broadcast History</div><div class="card-sub">History of sent broadcast messages. Deleting a message here removes it from the feed and participant notifications.</div></div>
@@ -232,8 +256,12 @@ footer.site-footer a{color:#aaa;text-decoration:none;margin-left:16px}
   </div>
 </div>
 
+</div>
+
+<!-- Tab Panel: Devices -->
+<div class="push-tab-panel" id="panel-devices">
 <!-- Subscribed Devices List -->
-<div class="card" style="margin-top: 24px;">
+<div class="card">
   <div class="card-header">
     <div class="card-icon"><i class="ti ti-devices"></i></div>
     <div><div class="card-title">Subscribed Devices</div><div class="card-sub">List of participants who have subscribed to receive push notifications on their devices.</div></div>
@@ -259,6 +287,7 @@ footer.site-footer a{color:#aaa;text-decoration:none;margin-left:16px}
       </table>
     </div>
   </div>
+</div>
 </div>
 
 </div><!-- /content -->
@@ -313,132 +342,105 @@ async function loadRules() {
     renderRules();
     loadStats();
   } catch(e) {
-    document.getElementById('rules-list').innerHTML = '<p style="color:#c62828;font-size:13px;padding:8px 0">Could not load rules — backend may be starting up. Refresh in a moment.</p>';
+    document.getElementById('rules-list-container').innerHTML = '<p style="color:#c62828;font-size:13px;padding:8px 0">Could not load rules — backend may be starting up. Refresh in a moment.</p>';
   }
 }
-
-var selectedTriggerIndex = 0;
 
 function renderRules() {
   var on = rulesData.filter(function(r){return r.enabled;}).length;
   document.getElementById('stat-enabled').textContent = on;
   document.getElementById('stat-disabled').textContent = rulesData.length - on;
   
-  var select = document.getElementById('trigger-select');
-  if (select) {
-    var originalValue = select.value;
-    select.innerHTML = rulesData.map(function(rule, idx) {
-      var status = rule.enabled ? '🟢' : '⚪';
-      return '<option value="' + idx + '">' + status + ' ' + esc(rule.title) + ' (' + esc(rule.trigger_key) + ')</option>';
+  var container = document.getElementById('rules-list-container');
+  if (container) {
+    container.innerHTML = rulesData.map(function(rule, idx) {
+      var isEnabled = rule.enabled;
+      var trackBg = isEnabled ? '#22c55e' : '#d1d5db';
+      var thumbTranslate = isEnabled ? 'translateX(18px)' : 'translateX(0)';
+      
+      return '<div class="rule-item-row" id="rule-row-' + idx + '" style="background: #f8f9fa; border: 1px solid #eee; border-radius: 10px; padding: 18px 20px;">' +
+             '  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">' +
+             '    <div style="display: flex; align-items: center; gap: 12px;">' +
+             '      <label class="toggle-wrap" style="margin-top: 0;">' +
+             '        <input type="checkbox" id="chk-rule-' + idx + '" ' + (isEnabled ? 'checked' : '') + ' onchange="autoSaveToggle(' + idx + ', this.checked)" style="display:none">' +
+             '        <span class="toggle-track" id="track-rule-' + idx + '" style="background: ' + trackBg + '; display: inline-block; width: 34px; height: 16px; border-radius: 9999px; position: relative; cursor: pointer; transition: background .2s;">' +
+             '          <span class="toggle-thumb" id="thumb-rule-' + idx + '" style="transform: ' + thumbTranslate + '; display: block; width: 12px; height: 12px; border-radius: 50%; background: #fff; position: absolute; top: 2px; left: 2px; transition: transform .2s;"></span>' +
+             '        </span>' +
+             '      </label>' +
+             '      <span style="font-size: 14px; font-weight: 600; color: var(--text);" id="label-rule-' + idx + '">' + esc(rule.title) + '</span>' +
+             '    </div>' +
+             '    <div style="display: flex; align-items: center; gap: 8px;">' +
+             '      <span class="rule-key" style="margin: 0; padding: 3px 8px; background: #e5e7eb; border-radius: 6px; font-size: 11px; font-weight: 500;">' + esc(rule.trigger_key) + '</span>' +
+             '      <span class="saved" id="saved-indicator-' + idx + '" style="font-size: 12px; color: #16a34a; opacity: 0; transition: opacity .3s; font-weight: 600;">Saved!</span>' +
+             '    </div>' +
+             '  </div>' +
+             '  <div class="rule-fields" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">' +
+             '    <div class="fld" style="margin:0;">' +
+             '      <label style="font-size: 11px; text-transform: uppercase; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Notification Title</label>' +
+             '      <input type="text" id="title-rule-' + idx + '" value="' + esc(rule.title) + '" onblur="autoSaveText(' + idx + ')" style="width: 100%; padding: 8px 12px; border: 1px solid #e8e8e8; border-radius: 6px; font-size:13px; outline:none; background:#fff;">' +
+             '    </div>' +
+             '    <div class="fld" style="margin:0;">' +
+             '      <label style="font-size: 11px; text-transform: uppercase; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Notification Body — use {distance} {name} {rank} {medal}</label>' +
+             '      <input type="text" id="body-rule-' + idx + '" value="' + esc(rule.body) + '" onblur="autoSaveText(' + idx + ')" style="width: 100%; padding: 8px 12px; border: 1px solid #e8e8e8; border-radius: 6px; font-size:13px; outline:none; background:#fff;">' +
+             '    </div>' +
+             '  </div>' +
+             '</div>';
     }).join('');
-    
-    if (originalValue !== '' && originalValue < rulesData.length) {
-      select.value = originalValue;
-      selectedTriggerIndex = parseInt(originalValue);
-    } else {
-      select.value = selectedTriggerIndex;
-    }
   }
-  showActiveTrigger();
 }
 
-function selectTrigger(idx) {
-  selectedTriggerIndex = parseInt(idx);
-  showActiveTrigger();
-}
-
-function showActiveTrigger() {
-  var rule = rulesData[selectedTriggerIndex];
-  if (!rule) return;
-
-  var card = document.getElementById('active-trigger-card');
-  if (card) card.style.display = 'block';
-
-  var label = document.getElementById('active-trigger-label');
-  var key = document.getElementById('active-trigger-key');
-  var checkbox = document.getElementById('active-trigger-enabled');
-  var track = document.getElementById('active-trigger-track');
-  var thumb = document.getElementById('active-trigger-thumb');
-  var titleInput = document.getElementById('active-trigger-title');
-  var bodyInput = document.getElementById('active-trigger-body');
-
-  if (label) label.textContent = rule.title;
-  if (key) key.textContent = rule.trigger_key;
-  if (checkbox) checkbox.checked = rule.enabled;
-  
-  if (track) track.style.background = rule.enabled ? '#22c55e' : '#d1d5db';
-  if (thumb) thumb.style.transform = rule.enabled ? 'translateX(18px)' : 'translateX(0)';
-  
-  if (titleInput) titleInput.value = rule.title;
-  if (bodyInput) bodyInput.value = rule.body;
-}
-
-function toggleActiveTrigger(val) {
-  rulesData[selectedTriggerIndex].enabled = val;
-  
-  var track = document.getElementById('active-trigger-track');
-  var thumb = document.getElementById('active-trigger-thumb');
+async function autoSaveToggle(idx, val) {
+  rulesData[idx].enabled = val;
+  var track = document.getElementById('track-rule-' + idx);
+  var thumb = document.getElementById('thumb-rule-' + idx);
   if (track) track.style.background = val ? '#22c55e' : '#d1d5db';
   if (thumb) thumb.style.transform = val ? 'translateX(18px)' : 'translateX(0)';
-
-  // Update option text in dropdown
-  var select = document.getElementById('trigger-select');
-  if (select) {
-    var option = select.options[selectedTriggerIndex];
-    var status = val ? '🟢' : '⚪';
-    var rule = rulesData[selectedTriggerIndex];
-    option.textContent = status + ' ' + rule.title + ' (' + rule.trigger_key + ')';
-  }
-
+  
   var on = rulesData.filter(function(r){return r.enabled;}).length;
   document.getElementById('stat-enabled').textContent = on;
   document.getElementById('stat-disabled').textContent = rulesData.length - on;
+
+  await executeAutoSave(idx);
 }
 
-function updateActiveTrigger() {
-  var titleVal = document.getElementById('active-trigger-title').value;
-  var bodyVal = document.getElementById('active-trigger-body').value;
-  rulesData[selectedTriggerIndex].title = titleVal;
-  rulesData[selectedTriggerIndex].body = bodyVal;
-
-  var label = document.getElementById('active-trigger-label');
+async function autoSaveText(idx) {
+  var titleVal = document.getElementById('title-rule-' + idx).value.trim();
+  var bodyVal = document.getElementById('body-rule-' + idx).value.trim();
+  
+  if (rulesData[idx].title === titleVal && rulesData[idx].body === bodyVal) return;
+  
+  rulesData[idx].title = titleVal;
+  rulesData[idx].body = bodyVal;
+  
+  var label = document.getElementById('label-rule-' + idx);
   if (label) label.textContent = titleVal;
-
-  // Update option text in dropdown
-  var select = document.getElementById('trigger-select');
-  if (select) {
-    var option = select.options[selectedTriggerIndex];
-    var status = rulesData[selectedTriggerIndex].enabled ? '🟢' : '⚪';
-    option.textContent = status + ' ' + titleVal + ' (' + rulesData[selectedTriggerIndex].trigger_key + ')';
-  }
+  
+  await executeAutoSave(idx);
 }
 
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-async function saveRules() {
-  // Ensure the visible inputs are synchronized
-  var titleInput = document.getElementById('active-trigger-title');
-  var bodyInput = document.getElementById('active-trigger-body');
-  if (titleInput) rulesData[selectedTriggerIndex].title = titleInput.value;
-  if (bodyInput) rulesData[selectedTriggerIndex].body = bodyInput.value;
-
+async function executeAutoSave(idx) {
   try {
     var r = await fetch(BU + '/push/rules', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ rules: rulesData })
     });
     var j = await r.json();
-    if (j.success) { showSaved('rules-saved'); }
-    else { alert('Save failed: ' + (j.error || 'unknown')); }
-  } catch(e) { alert('Error: ' + e.message); }
+    if (j.success) {
+      showSaved('saved-indicator-' + idx);
+    }
+  } catch(e) {
+    console.error('Auto-save failed:', e);
+  }
 }
 
 function showSaved(id) {
   var el = document.getElementById(id);
   if (!el) return;
-  el.classList.add('show');
-  setTimeout(function(){ el.classList.remove('show'); }, 2000);
+  el.style.opacity = '1';
+  setTimeout(function(){ el.style.opacity = '0'; }, 1500);
 }
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 async function loadStats() {
   try {
@@ -603,6 +605,15 @@ async function deleteBroadcast(id) {
     alert('Error: ' + e.message);
   }
 }
+
+window.switchPushTab = function(tabName) {
+  document.querySelectorAll('.stab').forEach(function(btn) {
+    btn.classList.toggle('active', btn.getAttribute('data-target') === tabName);
+  });
+  document.querySelectorAll('.push-tab-panel').forEach(function(panel) {
+    panel.classList.toggle('active', panel.id === 'panel-' + tabName);
+  });
+};
 
 loadRules();
 loadSubscribers();
