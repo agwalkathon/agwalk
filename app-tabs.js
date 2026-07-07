@@ -3323,7 +3323,7 @@ function setupAppLayout(isParticipant) {
     // Default to activities sub-tab under Profile
     if (typeof switchYouTab === 'function') switchYouTab('info');
   } else {
-    TAB_ORDER = ['celebrate', 'events', 'leaderboard', 'you'];
+    TAB_ORDER = ['celebrate', 'events', 'you'];
     
     allTabs.forEach(function(t) {
       var isVisible = TAB_ORDER.indexOf(t) !== -1;
