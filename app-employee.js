@@ -146,6 +146,19 @@ function formatRichText(text) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
   
+  // Convert URLs to clickable links
+  var urlRegex = /(\bhttps?:\/\/[^\s<]+)/gi;
+  esc = esc.replace(urlRegex, function(url) {
+    var trailing = '';
+    var match;
+    while ((match = url.match(/(&(?:amp|lt|gt|quot|apos|#39);|[.,!?;:])$/i))) {
+      trailing = match[1] + trailing;
+      url = url.substring(0, url.length - match[1].length);
+    }
+    var cleanUrl = url.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+    return '<a href="' + cleanUrl + '" target="_blank" rel="noopener noreferrer" style="color:var(--brand);text-decoration:underline;">' + url + '</a>' + trailing;
+  });
+
   // Convert bold formatting: **text** to <strong>text</strong>
   esc = esc.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
   

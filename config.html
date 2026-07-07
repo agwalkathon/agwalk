@@ -581,6 +581,42 @@ tr:hover td{background:#FAFAFA}
     </div>
   </div>
 
+  <div class="section">
+    <div class="section-header" onclick="toggleSection('feedconfig')">
+      <div class="section-header-left">
+        <span>📢</span>
+        <div>
+          <div class="section-title">Feed Tab Settings <span class="ev-context-badge"></span></div>
+          <div class="section-sub-inline">Configure what types of updates are included in the Social Feed</div>
+        </div>
+      </div>
+      <span class="section-chevron" id="chev-feedconfig">&#9660;</span>
+    </div>
+    <div class="section-body" id="body-feedconfig" style="padding: 24px;">
+      <div style="margin-bottom: 20px;">
+        <strong style="font-size:13.5px; display:block; margin-bottom:8px; color: var(--text-primary);">Configure Feed Content</strong>
+        <div class="check-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+          <label class="check-item" style="display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="feed-opt-activities" checked>
+            <div>
+              <span style="font-weight: 600; display: block; font-size: 13px;">Include Standard Activities</span>
+              <span style="font-size: 11px; color: var(--text-secondary);">Show users' runs, walks, hikes, etc.</span>
+            </div>
+          </label>
+          <label class="check-item" style="display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="feed-opt-milestones" checked>
+            <div>
+              <span style="font-weight: 600; display: block; font-size: 13px;">Include Milestone Achievements</span>
+              <span style="font-size: 11px; color: var(--text-secondary);">Show medals, clubs, and Rank #1 awards</span>
+            </div>
+          </label>
+        </div>
+      </div>
+      <button class="save-btn" onclick="saveFeedConfig()">Save feed settings</button>
+      <span class="saved-msg" id="feedconfig-saved">&#9989; Saved!</span>
+    </div>
+  </div>
+
   <div class="section"><div class="section-header" onclick="toggleSection('cachemgmt')"><div class="section-header-left"><span>&#129529;</span><div><div class="section-title">Cache Management</div><div class="section-sub-inline">Clear browser local cache to see updates immediately</div></div></div><span class="section-chevron" id="chev-cachemgmt">&#9660;</span></div><div class="section-body" id="body-cachemgmt"><div class="rule-box"><strong>Application Cache:</strong><br>The frontend caches leaderboard and configuration data to reduce database load. If you applied manual bonuses, added new challenges, or flagged activities, it may take up to 5 minutes to show up. Click below to clear your local cache and reload immediately.</div><button class="save-btn" onclick="clearMyCache()">ðŸ§¹ Clear My Browser Cache</button><span class="saved-msg" id="cache-saved">&#9989; Cache Cleared!</span></div></div>
 </div>
 
@@ -793,7 +829,8 @@ async function upsertConfig(key,value){
   await fetch(SB_URL+'/rest/v1/leaderboard_config?on_conflict=config_key,event_id',{method:'POST',headers:Object.assign({},HDR,{Prefer:'resolution=merge-duplicates'}),body:JSON.stringify({config_key:key,event_id:EV_ID,config_value:value,updated_at:new Date().toISOString()})});
 }
 async function loadConfig(){
-  loadPWARestrictions();
+    loadPWARestrictions();
+    loadFeedConfig();
   // Reset fields first so a switch to an unconfigured event shows blanks, not the previous event's stale values
   ['gold-male','gold-female','silver-male','silver-female','bronze-male','bronze-female','base-per-km'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   var lm=document.getElementById('login-method-select'); if(lm) lm.value='';
@@ -853,6 +890,84 @@ async function loadConfig(){
     }
   });if(!rows.find(function(r){return r.config_key==='bonus_points'}))renderBonusRows()}
 async function saveLoginMethod(){var val=document.getElementById('login-method-select').value;await upsertConfig('login_method',val);showSaved('loginmethod-saved');}
+async function loadFeedConfig() {
+  try {
+    var r = await fetch(SB_URL + '/rest/v1/leaderboard_config?config_key=eq.feed_config' + evq(), { headers: HDR });
+    var rows = await r.json();
+    var hasAct = true;
+    var hasMedal = true;
+    if (rows && rows.length > 0) {
+      var config = typeof rows[0].config_value === 'string' ? JSON.parse(rows[0].config_value) : rows[0].config_value;
+      if (config && config.rules) {
+        if (config.rules.allow_standard_activities !== undefined) {
+          hasAct = config.rules.allow_standard_activities === true || config.rules.allow_standard_activities === 'true';
+        }
+        if (config.rules.allow_medals !== undefined) {
+          hasMedal = config.rules.allow_medals === true || config.rules.allow_medals === 'true';
+        }
+      }
+    }
+    var actEl = document.getElementById('feed-opt-activities');
+    var medalEl = document.getElementById('feed-opt-milestones');
+    if (actEl) actEl.checked = hasAct;
+    if (medalEl) medalEl.checked = hasMedal;
+  } catch(e) {
+    console.error('Failed to load Feed settings:', e);
+  }
+}
+
+async function saveFeedConfig() {
+  try {
+    var r = await fetch(SB_URL + '/rest/v1/leaderboard_config?config_key=eq.feed_config' + evq(), { headers: HDR });
+    var rows = await r.json();
+    var config = { rules: {}, filters: {} };
+    var rowId = null;
+    if (rows && rows.length > 0) {
+      rowId = rows[0].id;
+      config = typeof rows[0].config_value === 'string' ? JSON.parse(rows[0].config_value) : rows[0].config_value;
+    }
+    if (!config.rules) config.rules = {};
+    
+    config.rules.allow_standard_activities = document.getElementById('feed-opt-activities').checked;
+    
+    var isMedal = document.getElementById('feed-opt-milestones').checked;
+    config.rules.allow_medals = isMedal;
+    config.rules.allow_distance_clubs = isMedal;
+    config.rules.allow_rank_top1 = isMedal;
+    
+    if (config.rules.allow_flagged_activities === undefined) config.rules.allow_flagged_activities = false;
+    if (config.rules.allow_private_profiles === undefined) config.rules.allow_private_profiles = true;
+    if (!config.filters) config.filters = { minimum_activity_distance_km: 1.0, allowed_sports: ["Walk", "Run", "Hike", "Ride"] };
+    
+    var payload = {
+      config_value: JSON.stringify(config),
+      updated_at: new Date().toISOString()
+    };
+    
+    var url = SB_URL + '/rest/v1/leaderboard_config';
+    var method = 'POST';
+    if (rowId) {
+      url += '?id=eq.' + rowId;
+      method = 'PATCH';
+    } else {
+      payload.config_key = 'feed_config';
+      payload.event_id = EV_ID;
+    }
+    var res = await fetch(url, {
+      method: method,
+      headers: Object.assign({}, HDR, { 'Content-Type': 'application/json' }),
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      showSaved('feedconfig-saved');
+    } else {
+      throw new Error('Save failed: ' + res.statusText);
+    }
+  } catch (e) {
+    alert('Failed to save Feed settings: ' + e.message);
+  }
+}
+
 async function savePersonalBestsConfig() {
   try {
     var cfg = {};

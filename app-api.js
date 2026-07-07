@@ -366,6 +366,7 @@ async function load(isBackgroundRefresh) {
     SPECIAL_DAYS_LB=Array.isArray(sdRows)?sdRows.map(function(x){return x.special_date;}):[];
     var regs=regJsonData; var reg=Array.isArray(regs)&&regs.length?regs[0]:{};
     LB_ME=reg;
+    window._lbCurrentEventId = reg.event_id || 1;
     var name=reg.full_name||s.name||'Participant';
 
     var initials = typeof get2Initials === 'function' ? get2Initials(name) : name.substring(0,2).toUpperCase();
@@ -886,17 +887,17 @@ async function load(isBackgroundRefresh) {
           if (pbConfig[key] !== false) {
             var d = statDefs[key];
             var clickAttr = '';
-            if (key === 'longest_activity' && longestAct) {
-              clickAttr = ' onclick="openActivityDetail(\'' + (longestAct.strava_activity_id || longestAct.id) + '\', event, true)"';
-            } else if (key === 'best_pace' && bestPaceAct) {
-              clickAttr = ' onclick="openActivityDetail(\'' + (bestPaceAct.strava_activity_id || bestPaceAct.id) + '\', event, true)"';
-            } else if (key === 'longest_session' && longestSessionAct) {
-              clickAttr = ' onclick="openActivityDetail(\'' + (longestSessionAct.strava_activity_id || longestSessionAct.id) + '\', event, true)"';
-            } else if (key === 'max_elevation' && maxElevationAct) {
-              clickAttr = ' onclick="openActivityDetail(\'' + (maxElevationAct.strava_activity_id || maxElevationAct.id) + '\', event, true)"';
-            } else if (key === 'max_speed' && maxSpeedAct) {
-              clickAttr = ' onclick="openActivityDetail(\'' + (maxSpeedAct.strava_activity_id || maxSpeedAct.id) + '\', event, true)"';
-            } else if (key === 'best_day' && bestDayDate) {
+             if (key === 'longest_activity' && longestAct) {
+               clickAttr = ' onclick="openActivityDetail(\'' + (longestAct.strava_activity_id || longestAct.id) + '\', event, ' + (longestAct.strava_activity_id ? 'true' : 'false') + ')"';
+             } else if (key === 'best_pace' && bestPaceAct) {
+               clickAttr = ' onclick="openActivityDetail(\'' + (bestPaceAct.strava_activity_id || bestPaceAct.id) + '\', event, ' + (bestPaceAct.strava_activity_id ? 'true' : 'false') + ')"';
+             } else if (key === 'longest_session' && longestSessionAct) {
+               clickAttr = ' onclick="openActivityDetail(\'' + (longestSessionAct.strava_activity_id || longestSessionAct.id) + '\', event, ' + (longestSessionAct.strava_activity_id ? 'true' : 'false') + ')"';
+             } else if (key === 'max_elevation' && maxElevationAct) {
+               clickAttr = ' onclick="openActivityDetail(\'' + (maxElevationAct.strava_activity_id || maxElevationAct.id) + '\', event, ' + (maxElevationAct.strava_activity_id ? 'true' : 'false') + ')"';
+             } else if (key === 'max_speed' && maxSpeedAct) {
+               clickAttr = ' onclick="openActivityDetail(\'' + (maxSpeedAct.strava_activity_id || maxSpeedAct.id) + '\', event, ' + (maxSpeedAct.strava_activity_id ? 'true' : 'false') + ')"';
+             } else if (key === 'best_day' && bestDayDate) {
               clickAttr = ' onclick="showDateDetails(\'' + bestDayDate + '\')"';
             }
 

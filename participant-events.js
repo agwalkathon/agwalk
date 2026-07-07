@@ -123,10 +123,24 @@ function buildEventCard(ev, group) {
 
   var top = document.createElement('div');
   top.className = 'ev-card-top';
+  
+  var nameContainer = document.createElement('div');
+  nameContainer.style.cssText = 'display:flex;align-items:center;flex:1;min-width:0;';
+  
   var name = document.createElement('div');
   name.className = 'ev-card-name';
   name.textContent = ev.name;
-  top.appendChild(name);
+  nameContainer.appendChild(name);
+
+  var infoBtn = document.createElement('button');
+  infoBtn.className = 'ev-info-btn';
+  infoBtn.style.cssText = 'background:none;border:none;color:rgba(255,255,255,.45);cursor:pointer;display:inline-flex;align-items:center;padding:4px;margin-left:6px;vertical-align:middle;transition:color 0.2s;flex-shrink:0;';
+  infoBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+  infoBtn.title = 'Event details';
+  infoBtn.addEventListener('click', function(e) { e.stopPropagation(); openEventDetailsModal(ev); });
+  nameContainer.appendChild(infoBtn);
+  
+  top.appendChild(nameContainer);
   if (enrolled) {
     var en = document.createElement('span'); en.className = 'ev-pill ev-pill-enrolled'; en.textContent = '✓ Enrolled'; top.appendChild(en);
   } else if (group === 'live') {
@@ -494,4 +508,49 @@ async function submitEventRegistration(ev) {
     err.textContent = e.message;
     btn.disabled = false; btn.textContent = 'Submit Registration Request';
   }
+}
+
+function openEventDetailsModal(ev) {
+  var id = 'event-details-modal-container';
+  var modal = document.getElementById(id);
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = id;
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:10000;display:none;align-items:center;justify-content:center;padding:16px;';
+    document.body.appendChild(modal);
+  }
+  
+  var start = evFmtDate(ev.start_date);
+  var end = evFmtDate(ev.end_date);
+  var sports = Array.isArray(ev.sport_types) ? ev.sport_types.join(', ') : (ev.sport_types || 'Walk/Run');
+  var tracking = ev.tracking_mode === 'strava' ? 'Strava Integration' : 'Manual Entry';
+  var rules = ev.rules_config || {};
+  var metric = (rules.metric === 'distance_km') ? 'Distance (km)' : 'Points';
+  
+  var bannerHtml = ev.banner_url ? '<img src="' + ev.banner_url + '" style="width:100%;max-height:160px;object-fit:cover;border-radius:12px;margin-bottom:14px;">' : '';
+  
+  modal.innerHTML = 
+    '<div class="glass-card" style="width:100%;max-width:480px;background:rgba(22,27,33,.85);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:20px;color:#fff;box-shadow:0 12px 40px rgba(0,0,0,.5);position:relative;">' +
+      '<button id="close-ev-details-btn" style="position:absolute;top:14px;right:14px;background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;padding:6px;">✕</button>' +
+      bannerHtml +
+      '<div style="font-size:18px;font-weight:800;margin-bottom:6px;line-height:1.2;padding-right:24px;">' + ev.name + '</div>' +
+      '<div style="font-size:12px;font-weight:600;color:var(--brand);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;">' + (ev.status === 'live' ? '● Live Event' : (ev.status === 'upcoming' ? 'Upcoming Event' : 'Past Event')) + '</div>' +
+      
+      '<div style="display:flex;flex-direction:column;gap:12px;font-size:13px;border-top:1px solid rgba(255,255,255,.06);padding-top:14px;margin-bottom:14px;">' +
+        '<div><strong style="color:rgba(255,255,255,.5);">Duration:</strong> <span style="float:right;">' + start + ' — ' + end + '</span></div>' +
+        '<div><strong style="color:rgba(255,255,255,.5);">Sports Allowed:</strong> <span style="float:right;">' + sports + '</span></div>' +
+        '<div><strong style="color:rgba(255,255,255,.5);">Tracking Mode:</strong> <span style="float:right;">' + tracking + '</span></div>' +
+        '<div><strong style="color:rgba(255,255,255,.5);">Primary Goal Metric:</strong> <span style="float:right;">' + metric + '</span></div>' +
+      '</div>' +
+      
+      (ev.description ? '<div style="font-size:13px;color:rgba(255,255,255,.75);line-height:1.5;background:rgba(255,255,255,.03);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,.04);max-height:120px;overflow-y:auto;">' + ev.description + '</div>' : '') +
+    '</div>';
+    
+  modal.style.display = 'flex';
+  document.getElementById('close-ev-details-btn').onclick = function() {
+    modal.style.display = 'none';
+  };
+  modal.onclick = function(e) {
+    if (e.target === modal) modal.style.display = 'none';
+  };
 }

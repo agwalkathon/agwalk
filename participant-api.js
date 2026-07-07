@@ -280,6 +280,7 @@ async function load(isBackgroundRefresh) {
     SPECIAL_DAYS_LB=Array.isArray(sdRows)?sdRows.map(function(x){return x.special_date;}):[];
     var regs=regJsonData; var reg=Array.isArray(regs)&&regs.length?regs[0]:{};
     LB_ME=reg;
+    window._lbCurrentEventId = reg.event_id || 1;
     var name=reg.full_name||s.name||'Participant';
 
     var initials=(function(){var parts=(name||'').trim().split(/\s+/);if(parts.length>=2)return(parts[0][0]+(parts[parts.length-1][0])).toUpperCase();return(parts[0]||'?')[0].toUpperCase();})();
@@ -583,7 +584,7 @@ async function load(isBackgroundRefresh) {
         var card = pbLongest.closest('.pb-card');
         if (card) {
           if (maxDistM > 0 && longestAct) {
-            card.onclick = function(e) { openActivityDetail(longestAct.strava_activity_id || longestAct.id, e, true); };
+            card.onclick = function(e) { openActivityDetail(longestAct.strava_activity_id || longestAct.id, e, !!longestAct.strava_activity_id); };
             card.style.cursor = 'pointer';
           } else {
             card.onclick = null;
@@ -598,7 +599,7 @@ async function load(isBackgroundRefresh) {
         var card = pbPace.closest('.pb-card');
         if (card) {
           if (maxSpeed > 0 && bestPaceAct) {
-            card.onclick = function(e) { openActivityDetail(bestPaceAct.strava_activity_id || bestPaceAct.id, e, true); };
+            card.onclick = function(e) { openActivityDetail(bestPaceAct.strava_activity_id || bestPaceAct.id, e, !!bestPaceAct.strava_activity_id); };
             card.style.cursor = 'pointer';
           } else {
             card.onclick = null;
@@ -613,7 +614,7 @@ async function load(isBackgroundRefresh) {
         var card = pbTime.closest('.pb-card');
         if (card) {
           if (maxTimeSec > 0 && longestSessionAct) {
-            card.onclick = function(e) { openActivityDetail(longestSessionAct.strava_activity_id || longestSessionAct.id, e, true); };
+            card.onclick = function(e) { openActivityDetail(longestSessionAct.strava_activity_id || longestSessionAct.id, e, !!longestSessionAct.strava_activity_id); };
             card.style.cursor = 'pointer';
           } else {
             card.onclick = null;
