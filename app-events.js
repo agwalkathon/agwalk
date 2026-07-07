@@ -254,18 +254,13 @@ function buildEventCard(ev, group) {
   // Event Details Info Button (placed first, before other action buttons)
   var infoBtn = document.createElement('button');
   infoBtn.className = 'ev-btn';
-  infoBtn.style.background = 'rgba(255, 255, 255, 0.08)';
-  infoBtn.style.color = '#fff';
   infoBtn.style.height = '42px';
   infoBtn.style.display = 'inline-flex';
   infoBtn.style.alignItems = 'center';
   infoBtn.style.justifyContent = 'center';
   infoBtn.style.gap = '6px';
-  infoBtn.style.transition = 'background 0.2s';
   infoBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Event Info';
   infoBtn.addEventListener('click', function(e) { e.stopPropagation(); openEventDetailsModal(ev); });
-  infoBtn.addEventListener('mouseenter', function(){ infoBtn.style.background = 'rgba(255, 255, 255, 0.16)'; });
-  infoBtn.addEventListener('mouseleave', function(){ infoBtn.style.background = 'rgba(255, 255, 255, 0.08)'; });
   actions.appendChild(infoBtn);
 
   var today0 = new Date().toISOString().split('T')[0];
@@ -275,55 +270,40 @@ function buildEventCard(ev, group) {
   // Leaderboard Button (always visible)
   var lb = document.createElement('button');
   lb.className = 'ev-btn';
-  lb.style.background = 'rgba(255, 255, 255, 0.08)';
-  lb.style.color = '#fff';
   lb.style.height = '42px';
   lb.style.display = 'inline-flex';
   lb.style.alignItems = 'center';
   lb.style.justifyContent = 'center';
   lb.style.gap = '6px';
-  lb.style.transition = 'background 0.2s';
   lb.innerHTML = (group === 'past' ? '🏆 Final Results' : '🏆 Leaderboard');
   lb.addEventListener('click', function(){ openEventLeaderboard(ev); });
-  lb.addEventListener('mouseenter', function(){ lb.style.background = 'rgba(255, 255, 255, 0.16)'; });
-  lb.addEventListener('mouseleave', function(){ lb.style.background = 'rgba(255, 255, 255, 0.08)'; });
   actions.appendChild(lb);
 
   // Register Now (Green) / Registered (Orange) Button (hidden on past events)
   if (group !== 'past') {
     var regBtn = document.createElement('button');
-    regBtn.className = 'ev-btn ev-btn-primary';
     regBtn.style.height = '42px';
     regBtn.style.display = 'inline-flex';
     regBtn.style.alignItems = 'center';
     regBtn.style.justifyContent = 'center';
     regBtn.style.gap = '6px';
-    regBtn.style.transition = 'background 0.2s';
     if (isApproved || enrolled) {
-      regBtn.style.background = '#e8622a'; // Orange
-      regBtn.style.color = '#fff';
+      regBtn.className = 'ev-btn ev-btn-registered';
       regBtn.textContent = '✓ Registered';
       regBtn.style.cursor = 'default';
-      regBtn.addEventListener('mouseenter', function(){ regBtn.style.background = '#d2521e'; });
-      regBtn.addEventListener('mouseleave', function(){ regBtn.style.background = '#e8622a'; });
     } else if (isPending) {
-      regBtn.style.background = '#e8622a'; // Orange
-      regBtn.style.color = '#fff';
+      regBtn.className = 'ev-btn ev-btn-registered';
       regBtn.textContent = '⌛ Registered (Pending)';
       regBtn.style.cursor = 'default';
-      regBtn.addEventListener('mouseenter', function(){ regBtn.style.background = '#d2521e'; });
-      regBtn.addEventListener('mouseleave', function(){ regBtn.style.background = '#e8622a'; });
     } else if (regOpenNow || group === 'upcoming') {
-      regBtn.style.background = '#10b981'; // Green
-      regBtn.style.color = '#fff';
+      regBtn.className = 'ev-btn ev-btn-register';
       regBtn.textContent = hasRegDraft(ev.id) ? '▶ Resume Registration' : 'Register Now';
       regBtn.addEventListener('click', function(){ openEventRegistration(ev); });
-      regBtn.addEventListener('mouseenter', function(){ regBtn.style.background = '#059669'; });
-      regBtn.addEventListener('mouseleave', function(){ regBtn.style.background = '#10b981'; });
+      regBtn.style.cursor = 'pointer';
     } else {
       // Registration not open or closed
-      regBtn.style.background = 'rgba(255, 255, 255, 0.08)';
-      regBtn.style.color = 'rgba(255, 255, 255, 0.4)';
+      regBtn.className = 'ev-btn';
+      regBtn.style.opacity = '0.5';
       regBtn.style.cursor = 'not-allowed';
       regBtn.disabled = true;
       regBtn.textContent = ev.registration_open_date ? 'Registration Opens ' + evFmtDate(ev.registration_open_date) : 'Registration Closed';
