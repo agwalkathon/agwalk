@@ -254,7 +254,10 @@ function setLbTitle(txt) {
   if (el) { el.textContent = txt || ''; el.style.display = txt ? 'block' : 'none'; }
   var btn = document.getElementById('lb-back-to-events-row');
   var defaultId = window._lbRegisteredEventId || 2;
-  if (btn) { btn.style.display = (window._lbCurrentEventId && window._lbCurrentEventId !== defaultId) ? 'block' : 'none'; }
+  var bnavLb = document.getElementById('bnav-leaderboard');
+  var bnavLbHidden = bnavLb && bnavLb.style.display === 'none';
+  var alwaysShowBack = window._lbCameFromEvents || bnavLbHidden;
+  if (btn) { btn.style.display = (alwaysShowBack || (window._lbCurrentEventId && window._lbCurrentEventId !== defaultId)) ? 'block' : 'none'; }
 }
 
 function saveDefaultLbState() {
@@ -301,6 +304,7 @@ async function fetchEventLbState(evId) {
 }
 
 async function openEventLeaderboard(ev) {
+  window._lbCameFromEvents = true;
   try {
     var suffix = (ev.status === 'ended' || ev.status === 'archived') ? ' — Final Results' : '';
     var defaultId = window._lbRegisteredEventId || 2;

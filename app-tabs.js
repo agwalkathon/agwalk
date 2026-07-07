@@ -48,6 +48,9 @@ function clearLeaderboardTab() {
 }
 
 function showTab(tab) {
+  if (tab !== 'leaderboard') {
+    window._lbCameFromEvents = false;
+  }
   if (tab === 'feed' && CONFIG_LB.announcements_enabled === false) return;
   if (_currentTab === tab) {
     var container = document.getElementById('tab-' + tab);

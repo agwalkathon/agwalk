@@ -341,6 +341,9 @@ async function load(isBackgroundRefresh) {
         }
       });
       if (typeof setupAppLayout === 'function') {
+        if (window.EVENT_ROW && window.EVENT_ROW.status === 'live') {
+          window._currentTab = 'dashboard';
+        }
         setupAppLayout(true);
       }
     }
