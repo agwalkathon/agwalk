@@ -220,23 +220,11 @@ function buildEventCard(ev, group) {
   var top = document.createElement('div');
   top.className = 'ev-card-top';
   
-  var nameContainer = document.createElement('div');
-  nameContainer.style.cssText = 'display:flex;align-items:center;flex:1;min-width:0;';
-  
   var name = document.createElement('div');
   name.className = 'ev-card-name';
+  name.style.cssText = 'flex:1;min-width:0;';
   name.textContent = ev.name;
-  nameContainer.appendChild(name);
-
-  var infoBtn = document.createElement('button');
-  infoBtn.className = 'ev-info-btn';
-  infoBtn.style.cssText = 'background:none;border:none;color:rgba(255,255,255,.45);cursor:pointer;display:inline-flex;align-items:center;padding:4px;margin-left:6px;vertical-align:middle;transition:color 0.2s;flex-shrink:0;';
-  infoBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
-  infoBtn.title = 'Event details';
-  infoBtn.addEventListener('click', function(e) { e.stopPropagation(); openEventDetailsModal(ev); });
-  nameContainer.appendChild(infoBtn);
-  
-  top.appendChild(nameContainer);
+  top.appendChild(name);
   
   if (isApproved) {
     var en = document.createElement('span'); en.className = 'ev-pill ev-pill-enrolled'; en.textContent = '✓ Enrolled'; top.appendChild(en);
@@ -267,6 +255,17 @@ function buildEventCard(ev, group) {
 
   var actions = document.createElement('div');
   actions.className = 'ev-card-actions';
+
+  // Flat Event Details Info Button (placed first, before other action buttons)
+  var infoBtn = document.createElement('button');
+  infoBtn.className = 'ev-btn-info';
+  infoBtn.style.cssText = 'width:42px;height:41px;border:none;border-radius:12px;background:rgba(255,255,255,.08);color:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:background 0.2s,color 0.2s;flex-shrink:0;margin-right:8px;';
+  infoBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+  infoBtn.title = 'Event details';
+  infoBtn.addEventListener('click', function(e) { e.stopPropagation(); openEventDetailsModal(ev); });
+  infoBtn.addEventListener('mouseenter', function(){ infoBtn.style.background = 'rgba(255,255,255,.15)'; });
+  infoBtn.addEventListener('mouseleave', function(){ infoBtn.style.background = 'rgba(255,255,255,.08)'; });
+  actions.appendChild(infoBtn);
 
   var today0 = new Date().toISOString().split('T')[0];
   var regOpenNow = ev.registration_open_date && ev.registration_close_date &&
