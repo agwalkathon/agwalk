@@ -3325,14 +3325,17 @@ function setupAppLayout(isParticipant) {
     // Default to activities sub-tab under Profile
     if (typeof switchYouTab === 'function') switchYouTab('info');
   } else {
-    TAB_ORDER = ['celebrate', 'events', 'you'];
+    TAB_ORDER = ['celebrate', 'events', 'leaderboard', 'you'];
     
     allTabs.forEach(function(t) {
       var isVisible = TAB_ORDER.indexOf(t) !== -1;
       var bnavBtn = document.getElementById('bnav-' + t);
       var tabPane = document.getElementById('tab-' + t);
       
-      if (bnavBtn) bnavBtn.style.display = isVisible ? 'flex' : 'none';
+      // Bottom nav button is only visible for celebrate, events, you (hide leaderboard/dashboard)
+      var showBnav = isVisible && (t !== 'leaderboard');
+      
+      if (bnavBtn) bnavBtn.style.display = showBnav ? 'flex' : 'none';
       if (tabPane) {
         if (isVisible) tabPane.classList.remove('hidden-tab');
         else tabPane.classList.add('hidden-tab');
