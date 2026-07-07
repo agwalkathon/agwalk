@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- build: 108 -->
 <html lang="en">
 <head>
   <script>
@@ -99,9 +100,8 @@
         isPart = u && u.loggedIn;
       } catch(e){}
       if (isEmp || isPart) {
-        var cb = "v=" + Date.now();
-        var qs = window.location.search ? ("&" + window.location.search.substring(1)) : "";
-        window.location.replace("app.html?" + cb + qs);
+        var qs = window.location.search ? window.location.search : "";
+        window.location.replace("app.html" + qs);
       } else {
         document.write('<style>#splash-screen { display: none !important; }</style>');
       }
@@ -207,8 +207,8 @@
 }
 </style>
 
-<script src="app-config.js?v=20260704_v102" defer></script>
-<script src="app-employee.js?v=20260704_v102" defer></script>
+<script src="app-config.js?v=20260706_v107" defer></script>
+<script src="app-employee.js?v=20260706_v107" defer></script>
 <script>
   window.addEventListener('load', function() {
     if (typeof loadBranding === 'function') {

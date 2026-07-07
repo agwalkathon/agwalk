@@ -13,7 +13,7 @@ var _activeInsight = null;
 var _activeRecovery = null;
 var _notificationsList = [];
 var _notificationsLoaded = false;
-var TAB_ORDER = ['dashboard', 'activities', 'leaderboard', 'you'];
+var TAB_ORDER = ['dashboard', 'leaderboard', 'events', 'celebrate', 'you'];
 
 // Tab Order for indicator rendering
 function updateNavIndicator() {
@@ -21,7 +21,7 @@ function updateNavIndicator() {
   var indicator = document.getElementById('nav-indicator');
   var activeItem = bnav ? bnav.querySelector('.bnav-item.active') : null;
   if (!bnav || !indicator || !activeItem) return;
-  var items = Array.from(bnav.querySelectorAll('.bnav-item'));
+  var items = Array.from(bnav.querySelectorAll('.bnav-item')).filter(function(el){ return el.offsetParent !== null; });
   var idx = items.indexOf(activeItem);
   if (idx === -1) return;
   var w = 100 / items.length;
@@ -95,6 +95,13 @@ function showTab(tab) {
   }
   if (tab === 'leaderboard') {
     lbBoot();
+  }
+  if (tab === 'events') {
+    if (typeof loadEventsTab === 'function') loadEventsTab();
+  }
+  if (tab === 'celebrate') {
+    var cf = document.getElementById('celebrate-frame');
+    if (cf && !cf.src) cf.src = cf.getAttribute('data-src') + '&_t=' + Date.now();
   }
   if (tab === 'feed') {
     safeSetItem('ag_last_viewed_announcements', new Date().toISOString());
@@ -760,7 +767,7 @@ function precomputeLBScores() {
   LB_REG.forEach(function(p) {
     var aid = String(p.strava_athlete_id);
     var pActs = actsByAthlete[aid] || [];
-    LB_SCORES[aid] = calcFullPts(pActs, p.gender, p.shift);
+    LB_SCORES[aid] = calcFullPtsAdaptive(pActs, p.gender, p.shift);
   });
 }
 
@@ -816,6 +823,8 @@ function renderRows(rows, prevRanks) {
   prevRanks = prevRanks || {};
   var meId = LB_ME ? String(LB_ME.strava_athlete_id) : '', list = document.getElementById('lb-list');
   if (!list) return;
+  if (typeof window._lbRenderToken === 'undefined') window._lbRenderToken = 0;
+  var _renderTok = ++window._lbRenderToken;
   if (rows.length === 0) {
     list.innerHTML = '<div class="empty-box"><div class="ei">🏃</div><p>No activities yet in this category.</p></div>';
     safeSetText('lb-my-rank', '—');
@@ -899,8 +908,8 @@ function renderRows(rows, prevRanks) {
         '</div>' +
         '<div class="row-right" style="display:flex;align-items:center;gap:6px;">' +
           '<div class="row-pts">' +
-            '<span class="row-pts-num">' + r.pts.total.toFixed(2) + '</span>' +
-            '<span class="row-pts-unit"> pts</span>' +
+            '<span class="row-pts-num">' + r.pts.total.toFixed(lbScoringMode()==='raw'?lbMetricMeta().dec:2) + '</span>' +
+            '<span class="row-pts-unit"> ' + (lbScoringMode()==='raw' ? lbMetricMeta().short.toLowerCase() : 'pts') + '</span>' +
             (rowMedal ? '<span class="row-medal">' + rowMedal + '</span>' : '') +
           '</div>' +
           '<span class="row-chevron">▼</span>' +
@@ -914,14 +923,19 @@ function renderRows(rows, prevRanks) {
       ? '<div class="detail-cell"><div class="detail-cell-lbl">🎯 Challenge</div><div class="detail-cell-val green">' + r.pts.challengePts.toFixed(1) + '</div></div>'
       : '';
 
-    detail.innerHTML =
+    var _mm = lbMetricMeta();
+    var _raw = lbScoringMode()==='raw';
+    var _metricCell = '<div class="detail-cell"><div class="detail-cell-lbl">📏 ' + (_raw||lbIsLegacyScoring()===false ? _mm.label : 'Distance') + '</div><div class="detail-cell-val blue">' + r.pts.km.toFixed(_mm.dec===0?0:1) + (lbScoringMetric()==='distance_km'?' km':'') + '</div></div>';
+    detail.innerHTML = (_raw ?
+      ''
+      :
       '<div class="detail-grid">' +
-        '<div class="detail-cell"><div class="detail-cell-lbl">📏 Distance</div><div class="detail-cell-val blue">' + r.pts.km.toFixed(1) + ' km</div></div>' +
-        '<div class="detail-cell"><div class="detail-cell-lbl">⭐ Dist Pts</div><div class="detail-cell-val brand">' + r.pts.distPts.toFixed(1) + '</div></div>' +
+        _metricCell +
+        '<div class="detail-cell"><div class="detail-cell-lbl">⭐ ' + (lbIsLegacyScoring() ? 'Dist Pts' : 'Metric Pts') + '</div><div class="detail-cell-val brand">' + r.pts.distPts.toFixed(1) + '</div></div>' +
         '<div class="detail-cell"><div class="detail-cell-lbl">⚡ Bonus</div><div class="detail-cell-val gold">' + r.pts.bonusPts + '</div></div>' +
         (chalHtml || '<div class="detail-cell"><div class="detail-cell-lbl">🎯 Challenge</div><div class="detail-cell-val" style="color:var(--label)">—</div></div>') +
         '<div class="detail-cell" style="grid-column:span ' + (r.pts.challengePts > 0 ? '2' : '3') + '"><div class="detail-cell-lbl">🏆 Total</div><div class="detail-cell-val brand" style="font-size:18px;">' + r.pts.total.toFixed(2) + '</div></div>' +
-      '</div>' +
+      '</div>') +
       '<div class="detail-meta">' +
         '<span class="last-active-chip' + (laInfo.recent ? ' recent' : '') + '">' + laInfo.text + '</span>' +
         sparkHtml +
@@ -956,6 +970,8 @@ function renderRows(rows, prevRanks) {
     }
   });
   requestAnimationFrame(function() {
+    if (_renderTok !== window._lbRenderToken) return; // a newer render superseded this one
+    list.innerHTML = '';
     list.appendChild(frag);
     var rnkEl = document.getElementById('lb-my-rank');
     if (rnkEl && myRank > 0) rnkEl.textContent = '#' + myRank;
@@ -1077,7 +1093,7 @@ function lbRender() {
         }).map(function(q) {
           var aid = String(q.strava_athlete_id);
           var acts = oldActsMap[aid] || [];
-          return { id: aid, pts: calcFullPts(acts, q.gender, q.shift).total };
+          return { id: aid, pts: calcFullPtsAdaptive(acts, q.gender, q.shift).total };
         }).filter(function(r) { return r.pts > 0; }).sort(function(a, b) { return b.pts - a.pts; });
         
         var oldRank = oldRows.findIndex(function(r) { return r.id === String(meId); }) + 1;
@@ -1341,7 +1357,7 @@ function initializeFeedTab(enabled) {
   
   if (enabled) {
     if (TAB_ORDER.indexOf('feed') === -1) {
-      TAB_ORDER.splice(3, 0, 'feed');
+      TAB_ORDER.splice(4, 0, 'feed');
     }
     if (bnavFeed) bnavFeed.style.display = '';
     if (tabFeed) tabFeed.classList.remove('hidden-tab');
@@ -2497,12 +2513,16 @@ function renderNotifications() {
 }
 
 function switchYouTab(tab) {
+  var acts = document.getElementById('you-panel-activities');
   var info = document.getElementById('you-panel-info');
   var chal = document.getElementById('you-panel-challenges');
+  var btnActs = document.getElementById('you-tab-activities');
   var btnInfo = document.getElementById('you-tab-info');
   var btnChal = document.getElementById('you-tab-challenges');
+  if (acts) acts.style.display = (tab === 'activities') ? 'block' : 'none';
   if (info) info.style.display = (tab === 'info') ? 'block' : 'none';
   if (chal) chal.style.display = (tab === 'challenges') ? 'block' : 'none';
+  if (btnActs) btnActs.classList.toggle('active', tab === 'activities');
   if (btnInfo) btnInfo.classList.toggle('active', tab === 'info');
   if (btnChal) btnChal.classList.toggle('active', tab === 'challenges');
 }
@@ -2523,7 +2543,11 @@ function clearPWACache(btn) {
   };
 
   if ('serviceWorker' in navigator) {
-    caches.keys().then(function(names) {
+    navigator.serviceWorker.getRegistrations().then(function(regs) {
+      return Promise.all(regs.map(function(r) { return r.unregister(); }));
+    }).then(function() {
+      return caches.keys();
+    }).then(function(names) {
       return Promise.all(names.map(function(name) { return caches.delete(name); }));
     }).then(function() {
       setTimeout(reloadPage, 800);
@@ -2538,7 +2562,7 @@ function clearPWACache(btn) {
 // ── Service Worker & Push Notifications ──────────────────────────────
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
-    navigator.serviceWorker.register('/agwalk/sw.js')
+    navigator.serviceWorker.register('/agwalk-staging/sw.js')
       .then(function(reg) { 
         console.log('[SW] Registered:', reg.scope); 
         setTimeout(checkPushSubscriptionState, 1000);
@@ -2804,10 +2828,11 @@ document.addEventListener('click', function(e) {
   try{
     var d = new Date();
     var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    var daysArr = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     var monthName = months[d.getMonth()];
     var day = d.getDate();
     var year = d.getFullYear();
-    var formattedDate = monthName + ', ' + day + ', ' + year;
+    var formattedDate = daysArr[d.getDay()] + ' ' + monthName + ' ' + day + ', ' + year;
     var dateEl = document.getElementById('hdr-today-date');
     if(dateEl) dateEl.textContent = formattedDate;
   }catch(e){}

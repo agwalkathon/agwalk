@@ -1,6 +1,6 @@
 // Global Configuration and State Variables
 var SUPABASE_URL = 'https://jhdgkncpkrttvemvwukc.supabase.co';
-var BACKEND      = 'https://walkathon-backend-hv9j.onrender.com';
+var BACKEND      = 'https://agwalk-backend.onrender.com';
 var _currentTab  = 'dashboard';
 var _feedData    = [];
 var LB_REG       = [];
@@ -119,10 +119,26 @@ function safeSetStyle(id, prop, val) {
   if (el) el.style[prop] = val;
 }
 
+function employeeTokenValid() {
+  try {
+    var t = localStorage.getItem('ag_emp_token');
+    if (!t) return false;
+    var p = JSON.parse(atob(t.split('.')[1]));
+    return p.exp && p.exp * 1000 > Date.now();
+  } catch(e){ return false; }
+}
 function userGuard() {
   try {
     var s = JSON.parse(safeGetItem('wk_user') || '{}');
-    if (!s.loggedIn) { window.location.href = 'index.html'; return null; }
+    if (!s.loggedIn) {
+      // Post-rename routing: index.html is now the universal Employee App home.
+      // Only an explicit "Open Event App" tap (?login=1) sends someone straight to Strava connect;
+      // every other session-less visitor (known employee or total stranger) lands home first,
+      // where OTP login (checked against employees_master) decides who they really are.
+      var wantLogin = new URLSearchParams(window.location.search).get('login') === '1';
+      if (wantLogin) { window.location.href = 'connect-strava.html'; return null; }
+      window.location.href = 'index.html'; return null;
+    }
     if (!s.athleteId || s.athleteId === 'null' || s.athleteId === 'undefined') {
       if (!s.empCode && !s.email) {
         window.location.href = 'index.html';
@@ -135,7 +151,14 @@ function userGuard() {
     return null;
   }
 }
-function logout() { safeRemoveItem('wk_user'); try { sessionStorage.removeItem('wk_admin'); } catch(e){} window.location.href = 'index.html'; }
+function logout() {
+  safeRemoveItem('wk_user');
+  safeRemoveItem('ag_emp_token');
+  safeRemoveItem('ag_emp');
+  safeRemoveItem('ag_push_emp_synced');
+  try { sessionStorage.removeItem('wk_admin'); } catch(e){}
+  window.location.href = 'index.html';
+}
 
 // ── Maintenance Mode Gate ────────────────────────────────────────────────
 var _maintPollTimer = null;
@@ -791,5 +814,69 @@ function calcFullPts(myActs, gender, shift) {
     total: parseFloat((totalDistPts + totalBonus + totalChallenge).toFixed(2)),
     dayBreakdown: dayBreakdown, actBreakdown: actBreakdown,
     earnedPts: earnedPts, earnedChallenges: earnedChallenges
+  };
+}
+
+/* ===== Adaptive (multi-event) scoring — mirrors ag-leaderboard.html calcPointsAdaptive.
+   GOLDEN RULE: any change here must ship together with ag-leaderboard.html. ===== */
+var _LB_EV_RULES = null; /* rules_config of currently viewed event; null = legacy Walkathon distance scoring */
+function lbScoringMode(){ return (_LB_EV_RULES && _LB_EV_RULES.scoring_mode) || 'single_metric'; }
+function lbScoringMetric(){ return (_LB_EV_RULES && _LB_EV_RULES.metric) || 'distance_km'; }
+function lbIsLegacyScoring(){ return !_LB_EV_RULES || (lbScoringMode()==='single_metric' && lbScoringMetric()==='distance_km'); }
+var LB_METRIC_META = {
+  distance_km:     { label:'Distance (km)', short:'KM',    dec:2 },
+  elevation_m:     { label:'Elevation (m)', short:'M',     dec:0 },
+  moving_time_min: { label:'Moving Time (min)', short:'MIN', dec:0 },
+  steps:           { label:'Steps', short:'STEPS', dec:0 },
+  activity_count:  { label:'Activities', short:'ACTS', dec:0 }
+};
+function lbMetricMeta(){ return LB_METRIC_META[lbScoringMetric()] || LB_METRIC_META.distance_km; }
+function lbActMetricValue(a, m){
+  if (m==='elevation_m')     return parseFloat(a.elevation_gain)||0;
+  if (m==='moving_time_min') return (parseFloat(a.moving_time_seconds)||0)/60;
+  if (m==='steps')           return parseFloat(a.steps)||0;
+  if (m==='activity_count')  return 1;
+  return (parseFloat(a.distance_meters)||0)/1000;
+}
+function calcFullPtsAdaptive(myActs, gender, shift){
+  if (lbIsLegacyScoring()) return calcFullPts(myActs, gender, shift);
+  var mode=lbScoringMode(), metric=lbScoringMetric();
+  var comp=(_LB_EV_RULES&&_LB_EV_RULES.composite)||{};
+  var rate=parseFloat(_LB_EV_RULES&&_LB_EV_RULES.rate); if(isNaN(rate))rate=1;
+  var validActs=myActs.filter(function(a){return !a.is_flagged;});
+  var byDay={};
+  validActs.forEach(function(a){var day=getActDate(a);if(!day)return;(byDay[day]=byDay[day]||[]).push(a);});
+  var dayBreakdown={},total=0,totalBase=0,totalBonus=0,totalKm=0;
+  Object.keys(byDay).forEach(function(day){
+    var dayVal=0,dayBase=0,dayKm=0;
+    byDay[day].forEach(function(a){
+      dayKm+=(parseFloat(a.distance_meters)||0)/1000;
+      if(mode==='composite'){
+        Object.keys(comp).forEach(function(m){
+          var v=lbActMetricValue(a,m),cap=parseFloat(comp[m].cap)||0;
+          if(cap>0)v=Math.min(v,cap);
+          dayBase+=v*(parseFloat(comp[m].rate)||0);
+        });
+      } else {
+        dayVal+=lbActMetricValue(a,metric);
+      }
+    });
+    var base = mode==='raw' ? 0 : (mode==='composite' ? dayBase : dayVal*rate);
+    var bonus=0;
+    if(mode!=='raw'&&CONFIG_LB&&Array.isArray(CONFIG_LB.bonus)){
+      var basis=(mode==='composite')?base:dayVal;
+      CONFIG_LB.bonus.forEach(function(b){ if(basis>=b.km) bonus=Math.max(bonus,b.points); });
+    }
+    var dayTotal=(mode==='raw')?dayVal:(base+bonus);
+    total+=dayTotal;totalBase+=base;totalBonus+=bonus;totalKm+=dayKm;
+    dayBreakdown[day]={km:(mode==='composite'?dayKm:dayVal),distPts:(mode==='raw'?dayVal:base),bonusPts:bonus,challenges:[]};
+  });
+  return {
+    km: totalKm, distPts: parseFloat(totalBase.toFixed(2)), bonusPts: totalBonus,
+    challengePts: 0,
+    total: parseFloat(total.toFixed(2)),
+    dayBreakdown: dayBreakdown, actBreakdown: [],
+    earnedPts: [], earnedChallenges: [],
+    adaptive: { mode: mode, metric: metric }
   };
 }

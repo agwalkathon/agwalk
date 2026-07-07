@@ -30,55 +30,20 @@ async function fetchEventsData() {
   var evRes = await fetch(SUPABASE_URL + '/rest/v1/events?status=neq.draft&select=*&order=start_date.desc', { headers: HDR });
   _eventsData = await evRes.json();
 
-  // which events am I enrolled/registered in?
-  var athleteId = null, empCode = null, email = null;
+  // which events am I enrolled in?
+  var athleteId = null;
   try {
     var u = JSON.parse(safeGetItem('wk_user') || '{}');
     athleteId = u.athleteId || null;
-    empCode = u.empCode || null;
-    email = u.email || null;
   } catch (e) {}
-  if (!athleteId && typeof currentSession !== 'undefined' && currentSession) {
-    athleteId = currentSession.athleteId;
-    empCode = currentSession.empCode;
-    email = currentSession.email;
-  }
-  if (!empCode || !email) {
-    try {
-      var emp = JSON.parse(safeGetItem('ag_emp') || '{}');
-      if (emp) {
-        if (!empCode) empCode = emp.emp_code || null;
-        if (!email) email = emp.email || null;
-      }
-    } catch(e){}
-  }
-
-  _myEventRegistrations = {}; // mapping of event_id -> status
+  if (!athleteId && typeof currentSession !== 'undefined' && currentSession) athleteId = currentSession.athleteId;
   _myEventIds = [];
-
-  if (athleteId || empCode || email) {
+  if (athleteId) {
     try {
-      var filterParts = [];
-      if (athleteId && athleteId !== 'null' && athleteId !== 'undefined') filterParts.push('strava_athlete_id.eq.' + encodeURIComponent(athleteId));
-      if (empCode && empCode !== 'null' && empCode !== 'undefined') filterParts.push('emp_code.eq.' + encodeURIComponent(empCode));
-      if (email && email !== 'null' && email !== 'undefined') filterParts.push('email.ilike.' + encodeURIComponent(email));
-
-      var url = SUPABASE_URL + '/rest/v1/registration?select=event_id,status';
-      if (filterParts.length > 0) {
-        url += '&or=(' + filterParts.join(',') + ')';
-      }
-      
-      var rr = await fetch(url, { headers: HDR });
+      var rr = await fetch(SUPABASE_URL + '/rest/v1/registration?strava_athlete_id=eq.' + athleteId + '&select=event_id', { headers: HDR });
       var rows = await rr.json();
-      (rows || []).forEach(function(x){
-        if (x.event_id != null) {
-          _myEventRegistrations[x.event_id] = x.status || 'approved';
-        }
-      });
-      _myEventIds = Object.keys(_myEventRegistrations).map(Number);
-    } catch (e) {
-      console.warn('Failed to load user event registrations:', e);
-    }
+      _myEventIds = (rows || []).map(function(x){ return x.event_id; }).filter(function(x){ return x != null; });
+    } catch (e) {}
   }
 
   // light stats for live + ended events (top 5 only)
@@ -86,14 +51,9 @@ async function fetchEventsData() {
   await Promise.all(statEvents.map(async function(ev){
     try {
       var s = await fetch(SUPABASE_URL + '/rest/v1/activities?event_id=eq.' + ev.id +
-        '&is_deleted=eq.false&is_flagged=eq.false&select=distance_meters', { headers: HDR });
+        '&is_deleted=is.false&is_flagged=is.false&select=total_km:distance_meters.sum(),acts:id.count()', { headers: HDR });
       var d = await s.json();
-      if (Array.isArray(d)) {
-        ev._stats = {
-          km: d.reduce((sum, a) => sum + (a.distance_meters || 0), 0) / 1000,
-          acts: d.length
-        };
-      }
+      if (d && d[0]) ev._stats = { km: (d[0].total_km || 0) / 1000, acts: d[0].acts || 0 };
       var c = await fetch(SUPABASE_URL + '/rest/v1/registration?event_id=eq.' + ev.id + '&select=id&limit=1', {
         headers: Object.assign({}, HDR, { Prefer: 'count=exact' })
       });
@@ -143,67 +103,11 @@ function renderEventsTab() {
   }
 }
 
-function detectEventSportType(ev) {
-  var name = (ev.name || '').toLowerCase();
-  var sports = ev.allowed_sports || [];
-  if (Array.isArray(sports)) {
-    sports = sports.map(function(s) { return s.toLowerCase(); });
-  } else if (typeof sports === 'string') {
-    try {
-      sports = JSON.parse(sports).map(function(s) { return s.toLowerCase(); });
-    } catch(e) {
-      sports = [sports.toLowerCase()];
-    }
-  }
-
-  var hasRide = sports.indexOf('ride') > -1 || sports.indexOf('mountainbikeride') > -1 || name.indexOf('ride') > -1 || name.indexOf('cycle') > -1 || name.indexOf('bike') > -1;
-  var hasWalk = sports.indexOf('walk') > -1 || name.indexOf('walk') > -1;
-  var hasRun = sports.indexOf('run') > -1 || sports.indexOf('virtualrun') > -1 || name.indexOf('run') > -1 || name.indexOf('marathon') > -1;
-  var hasHike = sports.indexOf('hike') > -1 || name.indexOf('hike') > -1 || name.indexOf('trek') > -1;
-
-  if (hasRide && !hasWalk && !hasRun && !hasHike) return 'ride';
-  if (hasWalk && !hasRide && !hasRun && !hasHike) return 'walk';
-  if (hasRun && !hasRide && !hasWalk && !hasHike) return 'run';
-  if (hasHike && !hasRide && !hasWalk && !hasRun) return 'hike';
-  return 'mixed';
-}
-
 function buildEventCard(ev, group) {
-  var registrationStatus = _myEventRegistrations ? _myEventRegistrations[ev.id] : null;
   var enrolled = _myEventIds.indexOf(ev.id) > -1;
-  var isApproved = enrolled && (registrationStatus === 'approved' || registrationStatus === 'active');
-  var isPending = enrolled && (registrationStatus === 'pending');
-
   var card = document.createElement('div');
   card.className = 'ev-card-p';
   card.style.borderLeft = '4px solid ' + (ev.accent_color || '#E8622A');
-
-  /**
-   * Event Card Premium Background & Badge Loader
-   * How it works: If no banner image exists, sets a subtle, sport-specific CSS linear-gradient background 
-   * and appends a floating glass round badge containing the sport icon via the global renderIcon() function.
-   * Impact: Creates a high-fidelity visual identity for each event on the Events tab.
-   */
-  var sportType = detectEventSportType(ev);
-  if (!ev.banner_url) {
-    card.classList.add('has-badge');
-    if (sportType === 'walk') {
-      card.style.background = 'linear-gradient(135deg, rgba(34, 197, 94, 0.09) 0%, #171B24 100%)';
-    } else if (sportType === 'run') {
-      card.style.background = 'linear-gradient(135deg, rgba(232, 98, 42, 0.09) 0%, #171B24 100%)';
-    } else if (sportType === 'hike') {
-      card.style.background = 'linear-gradient(135deg, rgba(244, 63, 94, 0.09) 0%, #171B24 100%)';
-    } else if (sportType === 'ride') {
-      card.style.background = 'linear-gradient(135deg, rgba(251, 191, 36, 0.09) 0%, #171B24 100%)';
-    } else {
-      card.style.background = 'linear-gradient(135deg, rgba(167, 139, 250, 0.09) 0%, #171B24 100%)';
-    }
-
-    var badge = document.createElement('div');
-    badge.className = 'ev-card-sport-badge';
-    badge.innerHTML = renderIcon(sportType === 'ride' ? 'Ride' : sportType === 'run' ? 'Run' : sportType === 'hike' ? 'Hike' : sportType === 'walk' ? 'Walk' : 'Mixed');
-    card.appendChild(badge);
-  }
 
   if (ev.banner_url) {
     var img = document.createElement('img');
@@ -223,11 +127,8 @@ function buildEventCard(ev, group) {
   name.className = 'ev-card-name';
   name.textContent = ev.name;
   top.appendChild(name);
-  
-  if (isApproved) {
+  if (enrolled) {
     var en = document.createElement('span'); en.className = 'ev-pill ev-pill-enrolled'; en.textContent = '✓ Enrolled'; top.appendChild(en);
-  } else if (isPending) {
-    var regPill = document.createElement('span'); regPill.className = 'ev-pill ev-pill-registered'; regPill.textContent = '⌛ Registered'; top.appendChild(regPill);
   } else if (group === 'live') {
     var lv = document.createElement('span'); lv.className = 'ev-pill ev-pill-live'; lv.textContent = '● LIVE'; top.appendChild(lv);
   }
@@ -249,7 +150,16 @@ function buildEventCard(ev, group) {
     body.appendChild(desc);
   }
 
-
+  if (ev._stats) {
+    var st = document.createElement('div');
+    st.className = 'ev-card-stats';
+    var bits = [];
+    if (ev._participants) bits.push(ev._participants + ' participants');
+    bits.push(Math.round(ev._stats.km).toLocaleString('en-IN') + ' km total');
+    bits.push(ev._stats.acts.toLocaleString('en-IN') + ' activities');
+    st.textContent = bits.join('  ·  ');
+    body.appendChild(st);
+  }
 
   var actions = document.createElement('div');
   actions.className = 'ev-card-actions';
@@ -263,22 +173,12 @@ function buildEventCard(ev, group) {
     lb.textContent = group === 'past' ? '🏆 Final Results' : '🏆 Leaderboard';
     lb.addEventListener('click', function(){ openEventLeaderboard(ev); });
     actions.appendChild(lb);
-    
     if (group === 'live' && !enrolled && regOpenNow) {
       var jrb = document.createElement('button');
       jrb.className = 'ev-btn ev-btn-primary';
       jrb.style.background = ev.accent_color || '';
       jrb.textContent = hasRegDraft(ev.id) ? '▶ Resume Registration' : 'Register Now';
       jrb.addEventListener('click', function(){ openEventRegistration(ev); });
-      actions.appendChild(jrb);
-    } else if (group === 'live' && isPending) {
-      var jrb = document.createElement('button');
-      jrb.className = 'ev-btn ev-btn-primary';
-      jrb.style.background = 'rgba(255, 255, 255, 0.08)';
-      jrb.style.color = 'rgba(255, 255, 255, 0.4)';
-      jrb.style.cursor = 'not-allowed';
-      jrb.disabled = true;
-      jrb.textContent = 'Registered (Pending)';
       actions.appendChild(jrb);
     } else if (group === 'live' && !enrolled) {
       var sp = document.createElement('div');
@@ -290,20 +190,11 @@ function buildEventCard(ev, group) {
 
   if (group === 'upcoming') {
     var regOpen = regOpenNow;
-    if (isApproved) {
+    if (enrolled) {
       var ok = document.createElement('div');
       ok.className = 'ev-spectator-note';
-      ok.textContent = "You're enrolled. Get ready! 💪";
+      ok.textContent = "You're registered. Get ready! 💪";
       body.appendChild(ok);
-    } else if (isPending) {
-      var rb = document.createElement('button');
-      rb.className = 'ev-btn ev-btn-primary';
-      rb.style.background = 'rgba(255, 255, 255, 0.08)';
-      rb.style.color = 'rgba(255, 255, 255, 0.4)';
-      rb.style.cursor = 'not-allowed';
-      rb.disabled = true;
-      rb.textContent = 'Registered (Pending)';
-      actions.appendChild(rb);
     } else if (regOpen) {
       var rb = document.createElement('button');
       rb.className = 'ev-btn ev-btn-primary';
@@ -349,27 +240,16 @@ function applyLbState(st) {
   CHALLENGES_LB = st.challenges; SPECIAL_DAYS_LB = st.specialDays;
   LB_SCORES = {};
   _lbReady = false;
-
-  // Resolve LB_ME for the selected event
-  var s = {};
-  try { s = JSON.parse(localStorage.getItem('wk_user') || '{}'); } catch(e){}
-  LB_ME = null;
-  if (s.athleteId && Array.isArray(LB_REG)) {
-    LB_ME = LB_REG.find(function(r){ return String(r.strava_athlete_id) === String(s.athleteId); }) || null;
-  }
-  if (!LB_ME && Array.isArray(LB_REG) && LB_REG.length > 0) {
-    LB_ME = LB_REG[0];
-  }
 }
 
 async function fetchEventLbState(evId) {
   if (_lbEventCache[evId]) return _lbEventCache[evId];
   var slimActs = '&select=strava_activity_id,strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,activity_date_time_ist';
   var results = await Promise.all([
-    fetchAllParallel(SUPABASE_URL + '/rest/v1/activities?event_id=eq.' + evId + '&is_deleted=eq.false&order=id.asc' + slimActs),
+    fetchAllParallel(SUPABASE_URL + '/rest/v1/activities?event_id=eq.' + evId + '&is_deleted=is.false&order=id.asc' + slimActs),
     fetchAllParallel(SUPABASE_URL + '/rest/v1/registration?event_id=eq.' + evId + '&order=strava_athlete_id.asc&select=strava_athlete_id,full_name,gender,shift,leaderboard_team'),
     fetch(SUPABASE_URL + '/rest/v1/leaderboard_config?event_id=eq.' + evId + '&select=config_key,config_value', { headers: HDR }).then(function(r){ return r.json(); }),
-    fetch(SUPABASE_URL + '/rest/v1/challenges?event_id=eq.' + evId + '&is_active=eq.true&select=*', { headers: HDR }).then(function(r){ return r.json(); }),
+    fetch(SUPABASE_URL + '/rest/v1/challenges?event_id=eq.' + evId + '&is_active=is.true&select=*', { headers: HDR }).then(function(r){ return r.json(); }),
     fetch(SUPABASE_URL + '/rest/v1/special_scoring_days?event_id=eq.' + evId + '&select=special_date', { headers: HDR }).then(function(r){ return r.json(); })
   ]);
   var bonus = null, basePer = 1;
@@ -391,17 +271,12 @@ async function fetchEventLbState(evId) {
 async function openEventLeaderboard(ev) {
   try {
     var suffix = (ev.status === 'ended' || ev.status === 'archived') ? ' — Final Results' : '';
-    
-    // Check if default leaderboard data is actually loaded in memory
-    var dataLoaded = (typeof LB_REG !== 'undefined' && LB_REG && LB_REG.length > 0);
-    
-    if (ev.id === _lbCurrentEventId && dataLoaded) {
+    if (ev.id === _lbCurrentEventId) {
       setLbTitle(_lbCurrentEventId === 1 ? '' : '🏆 ' + ev.name + suffix);
       showTab('leaderboard');
       return;
     }
-    
-    if (ev.id === 1 && _lbDefaultState && dataLoaded) {
+    if (ev.id === 1 && _lbDefaultState) {
       applyLbState(_lbDefaultState);
       _LB_EV_RULES = null;
       _lbCurrentEventId = 1;
@@ -410,27 +285,13 @@ async function openEventLeaderboard(ev) {
       lbBoot();
       return;
     }
-    
-    if (ev.id !== 1 && dataLoaded) {
-      saveDefaultLbState();
-    }
-    
-    var st;
-    if (ev.id === 1 && !_lbDefaultState) {
-      st = await fetchEventLbState(ev.id);
-      _lbDefaultState = st;
-    } else {
-      st = await fetchEventLbState(ev.id);
-    }
-    
+    saveDefaultLbState();
+    var st = await fetchEventLbState(ev.id);
     applyLbState(st);
     _LB_EV_RULES = ev.rules_config || null;
     _lbCurrentEventId = ev.id;
-    setLbTitle(ev.id === 1 ? '' : '🏆 ' + ev.name + suffix);
+    setLbTitle('🏆 ' + ev.name + suffix);
     showTab('leaderboard');
-    
-    // Force re-calculation and rendering
-    _lbReady = false;
     lbBoot();
   } catch (e) {
     console.warn('openEventLeaderboard failed:', e);
@@ -478,13 +339,6 @@ function regPrefill() {
     if (u.empCode) pre.emp_code = u.empCode;
     if (u.email) pre.email = u.email;
     if (u.athleteId) pre.strava_url = 'https://www.strava.com/athletes/' + u.athleteId;
-  } catch(e) {}
-  try {
-    var emp = JSON.parse(safeGetItem('ag_emp') || '{}');
-    if (!pre.full_name && emp.full_name) pre.full_name = emp.full_name;
-    if (!pre.emp_code && emp.emp_code) pre.emp_code = emp.emp_code;
-    if (!pre.email && emp.email) pre.email = emp.email;
-    if (!pre.gender && emp.gender) pre.gender = emp.gender;
   } catch(e) {}
   if (typeof LB_ME !== 'undefined' && LB_ME) {
     if (LB_ME.gender) pre.gender = LB_ME.gender;
@@ -544,13 +398,6 @@ function openEventRegistration(ev) {
     inp.id = 'ereg-' + f.k;
     inp.value = draft[f.k] !== undefined ? draft[f.k] : (pre[f.k] || '');
     inp.style.cssText = 'width:100%;padding:11px 12px;background:var(--surface2,#1E2230);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;font-size:14px;font-family:inherit;box-sizing:border-box;';
-    if (f.k === 'full_name' || f.k === 'emp_code' || f.k === 'email') {
-      if (pre[f.k]) {
-        inp.disabled = true;
-        inp.style.opacity = '0.7';
-        inp.style.cursor = 'not-allowed';
-      }
-    }
     inp.addEventListener('input', function(){ saveRegDraft(ev.id); });
     inp.addEventListener('change', function(){ saveRegDraft(ev.id); });
     fw.appendChild(inp);
@@ -616,15 +463,17 @@ async function submitEventRegistration(ev) {
   btn.disabled = true; btn.textContent = 'Submitting…';
   try {
     var payload = Object.assign({}, d, { event_name: ev.slug, event_id: ev.id, status: 'pending' });
-    var backendUrl = (typeof BACKEND !== 'undefined' ? BACKEND : 'https://agwalk-backend.onrender.com');
-    var r = await fetch(backendUrl + '/register-request', {
+    var r = await fetch(SUPABASE_URL + '/rest/v1/registration_requests', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: Object.assign({}, HDR, { 'Content-Type':'application/json', Prefer:'return=minimal' }),
       body: JSON.stringify(payload)
     });
-    if (!r.ok) {
-      var errData = await r.json().catch(function(){return{};});
-      throw new Error(errData.error || ('Submission failed (' + r.status + '). Please try again.'));
+    if (!r.ok && r.status !== 201) {
+      var body = await r.text();
+      if (body.indexOf('duplicate') > -1 || body.indexOf('unique') > -1 || r.status === 409) {
+        throw new Error('A request with this Employee Code already exists for review.');
+      }
+      throw new Error('Submission failed (' + r.status + '). Please try again.');
     }
     safeSetItem(regDraftKey(ev.id), '');
     try { localStorage.removeItem(regDraftKey(ev.id)); } catch(e) {}

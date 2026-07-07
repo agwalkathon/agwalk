@@ -1,5 +1,5 @@
 /* ============================================================
-   app-dashboard.js — Dynamic per-event dashboard rings
+   participant-dashboard.js — Dynamic per-event dashboard rings
    Reads rules_config.dashboard of the participant's active event.
    No config => leaves the classic Walkathon layout untouched.
    ============================================================ */
@@ -35,7 +35,7 @@
     return r.json();
   }
 
-  async function getActiveEvent(){
+  async function getActiveEventWithDash(){
     try {
       var s = JSON.parse(safeGetItem('wk_user') || '{}');
       if (!s.athleteId) return null;
@@ -43,23 +43,16 @@
       if (!Array.isArray(evs) || !evs.length) return null;
       var regs = await fetchJSON(SUPABASE_URL + '/rest/v1/registration?strava_athlete_id=eq.' + s.athleteId + '&select=event_id');
       var myEvIds = (Array.isArray(regs)?regs:[]).map(function(r){ return r.event_id; });
-      
+      // prefer a LIVE enrolled event with dashboard config, then any enrolled with config
       var pick = null;
       evs.forEach(function(ev){
         if (myEvIds.indexOf(ev.id) === -1) return;
+        var hasDash = ev.rules_config && ev.rules_config.dashboard &&
+                      Array.isArray(ev.rules_config.dashboard.rings) && ev.rules_config.dashboard.rings.length;
+        if (!hasDash) return;
         if (!pick) pick = ev;
         else if (ev.status === 'live' && pick.status !== 'live') pick = ev;
       });
-      
-      // Fallback: If user is not registered for any live event, pick the first live event in the list for dashboard rendering
-      if (!pick) {
-        evs.forEach(function(ev){
-          if (ev.status === 'live') {
-            if (!pick) pick = ev;
-          }
-        });
-      }
-      
       return pick ? { ev: pick, athleteId: s.athleteId } : null;
     } catch(e){ return null; }
   }
@@ -89,134 +82,35 @@
   }
 
   async function applyDynamicDashboard(){
-    var ctx = await getActiveEvent();
-    if (!ctx) return;
-    var ev = ctx.ev;
-    
-    // 1. Update the Event Logo or Event Display Name
-    var host = document.getElementById('medal-rings');
-    var blk = host ? (host.closest('.hero-rings-block') || host.parentNode) : null;
-    if (blk) {
-      // remove any previous text logo to avoid duplicates on double render
-      var oldTxt = blk.querySelector('#app-logo-text');
-      if (oldTxt) oldTxt.remove();
-    }
-    var im = blk ? blk.querySelector('#app-logo') : null;
-
-    if (ev.rules_config && ev.rules_config.logo_url) {
-      if (im) {
-        im.style.display = 'block';
-        im.onerror = function() {
-          this.src = 'logo-white.png';
-        };
-        im.src = ev.rules_config.logo_url;
-        im.style.maxHeight = '34px';
-        im.style.height = 'auto';
-        im.style.width = 'auto';
-      }
-    } else if (ev.rules_config && ev.rules_config.display_name) {
-      if (im) im.style.display = 'none';
-      if (host) {
-        var txtEl = document.createElement('div');
-        txtEl.id = 'app-logo-text';
-        txtEl.textContent = ev.rules_config.display_name;
-        txtEl.style.cssText = "font-family:'Poppins', sans-serif; font-size:22px; font-weight:400; color:#ffffff; text-align:center; margin-bottom:14px; margin-top:2px; letter-spacing:0.5px; opacity:0.95;";
-        host.parentNode.insertBefore(txtEl, host);
-      }
-    } else {
-      if (im) {
-        im.style.display = 'block';
-        im.src = 'logo-white.png';
-        im.style.height = '26px';
-        im.style.width = 'auto';
-      }
-    }
-    // Cache active event config for other modules
-    try { localStorage.setItem('ag_active_event_cache', JSON.stringify(ev)); } catch(e){}
-
-    // Apply sections show/hide toggles
-    if (ev.rules_config && ev.rules_config.dashboard) {
-      var dash = ev.rules_config.dashboard;
-      var sec = dash.sections || {};
-      
-      // 1. My Points card
-      var ptsSec = document.getElementById('my-points-section');
-      if (ptsSec) {
-        ptsSec.style.display = (sec.my_points === false) ? 'none' : 'block';
-      }
-      
-      // 2. My Stats card
-      var statsSec = document.getElementById('my-stats-section');
-      if (statsSec) {
-        statsSec.style.display = (sec.my_stats === false) ? 'none' : 'block';
-      }
-      
-      // 3. My Stats subcomponents
-      var compActs = document.getElementById('stat-item-activities');
-      var compDist = document.getElementById('stat-item-distance');
-      var compTime = document.getElementById('stat-item-movingtime');
-      var gridContainer = document.getElementById('mystats-grid-container');
-      
-      var showActs = sec.stat_activities !== false;
-      var showDist = sec.stat_distance !== false;
-      var showTime = sec.stat_movingtime !== false;
-      
-      if (compActs) compActs.style.display = showActs ? 'flex' : 'none';
-      if (compDist) compDist.style.display = showDist ? 'flex' : 'none';
-      if (compTime) compTime.style.display = showTime ? 'flex' : 'none';
-      
-      // Adjust grid columns template based on how many subcomponents are visible
-      if (gridContainer) {
-        var visibleCount = [showActs, showDist, showTime].filter(Boolean).length;
-        if (visibleCount === 0) {
-          if (statsSec) statsSec.style.display = 'none'; // hide entire card if all sub-metrics hidden
-        } else {
-          gridContainer.style.gridTemplateColumns = 'repeat(' + visibleCount + ', 1fr)';
-        }
-      }
-      
-      // 4. Pace Goals section
-      var paceSec = document.getElementById('pace-goals-section');
-      if (paceSec) {
-        paceSec.style.display = (sec.pace_goals === false) ? 'none' : 'block';
-      }
-      
-      // 5. Classic streak toggle
-      if (sec.streak === false) {
-        var st = document.getElementById('streak-section') || document.querySelector('[data-section="streak"]');
-        if (st) st.style.display = 'none';
-      }
-      
-      // 6. Classic challenges toggle
-      if (sec.challenges === false) {
-        var ch = document.getElementById('you-panel-challenges');
-        var chBtn = document.getElementById('you-tab-challenges');
-        if (chBtn) chBtn.style.display = 'none';
-        if (ch) ch.style.display = 'none';
-      }
-    }
-
-    // 2. Render custom rings if configured. If not, keep the classic layout
-    var hasDash = ev.rules_config && ev.rules_config.dashboard &&
-                  Array.isArray(ev.rules_config.dashboard.rings) && ev.rules_config.dashboard.rings.length;
-    if (!hasDash) return;
-    
-    var dash = ev.rules_config.dashboard;
+    var ctx = await getActiveEventWithDash();
+    if (!ctx) return; // classic layout stays
+    var ev = ctx.ev, dash = ev.rules_config.dashboard;
     var rows = null;
     try {
       rows = await fetchJSON(SUPABASE_URL + '/rest/v1/activities?strava_athlete_id=eq.' + ctx.athleteId +
-        '&event_id=eq.' + ev.id + '&is_deleted=eq.false&is_flagged=eq.false' +
+        '&event_id=eq.' + ev.id + '&is_deleted=is.false&is_flagged=is.false' +
         '&select=distance_meters,elevation_gain,moving_time_seconds,steps,activity_date,activity_date_time_ist');
     } catch(e){ return; }
     var acts = Array.isArray(rows) ? rows : [];
     var today = todayIST();
     var evDays = Math.max(1, Math.round((new Date(ev.end_date) - new Date(ev.start_date))/86400000) + 1);
 
+    var host = document.getElementById('medal-rings');
     if (!host) return;
     try { localStorage.setItem('ag_dyn_dash', '1'); } catch(e){}
     host.textContent = '';
     host.style.opacity = '1';
-    
+    if (ev.rules_config.logo_url) {
+      var blk = host.closest('.hero-rings-block') || host.parentNode;
+      var im = blk ? blk.querySelector('img') : null;
+      if (im) { im.src = ev.rules_config.logo_url; im.style.maxHeight = '34px'; }
+      else {
+        var li = document.createElement('img');
+        li.src = ev.rules_config.logo_url;
+        li.style.cssText = 'display:block;margin:0 auto 12px;max-height:34px;';
+        host.parentNode.insertBefore(li, host);
+      }
+    }
     dash.rings.slice(0,5).forEach(function(ring){
       var total = 0, todaySum = 0;
       acts.forEach(function(a){
@@ -228,12 +122,11 @@
       if (ring.goal_type === 'total') { value = total; goal = ring.goal; }
       else if (ring.goal_type === 'auto') { value = todaySum; goal = ring.goal / evDays; }
       else { value = todaySum; goal = ring.goal; }
-      if (ring.metric === 'points') { value = 0; goal = ring.goal;
+      if (ring.metric === 'points') { value = 0; goal = ring.goal; /* points ring: shown as total when engine data present */
         try { if (typeof calcFullPtsAdaptive === 'function') { var p = calcFullPtsAdaptive(acts, null, null); value = (ring.goal_type === 'daily') ? 0 : p.total; } } catch(e){}
       }
       host.appendChild(ringBox(ring, value, goal));
     });
-    
     // retitle the block to the event
     var blockTitle = document.querySelector('.hero-rings-block .rings-title, .hero-rings-block h3');
     if (blockTitle) blockTitle.textContent = ev.name + ' — Goals';
