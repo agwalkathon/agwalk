@@ -177,7 +177,7 @@ async function load(isBackgroundRefresh) {
     }
   }
 
-  if (window._currentTab === 'leaderboard' && window._lbCurrentEventId && window._lbCurrentEventId !== 1) {
+  if (window._currentTab === 'leaderboard' && window._lbCurrentEventId && window._lbCurrentEventId !== window._lbRegisteredEventId) {
     if (typeof window.fetchEventLbState === 'function') {
       try {
         if (window._lbEventCache) delete window._lbEventCache[window._lbCurrentEventId];
@@ -234,36 +234,43 @@ async function load(isBackgroundRefresh) {
     }
 
     if (_allFromCache && !isBackgroundRefresh) {
-      setTimeout(function(){
-        Promise.all([
-          fetch(getRegistrationFetchUrl(s),{headers:HDR}).then(function(r){return r.json();}).then(function(d){
-            cacheSet('reg_'+athleteId,d);
-            var reg = Array.isArray(d) && d.length ? d[0] : {};
-            var evId = reg.event_id || 1;
-            fetch(SUPABASE_URL + '/rest/v1/events?id=eq.' + evId, { headers: HDR }).then(function(r){return r.json();}).then(function(evData){
-              if (Array.isArray(evData) && evData.length > 0) {
-                cacheSet('event_row_' + athleteId, evData[0]);
+      var cacheAgeMs = 0;
+      var rawActs = safeGetItem('agwalk_acts_v4_' + athleteId);
+      if (rawActs) {
+        try { cacheAgeMs = Date.now() - JSON.parse(rawActs).ts; } catch(e){}
+      }
+      if (cacheAgeMs > 60000) {
+        setTimeout(function(){
+          Promise.all([
+            fetch(getRegistrationFetchUrl(s),{headers:HDR}).then(function(r){return r.json();}).then(function(d){
+              cacheSet('reg_'+athleteId,d);
+              var reg = Array.isArray(d) && d.length ? d[0] : {};
+              var evId = reg.event_id || 1;
+              fetch(SUPABASE_URL + '/rest/v1/events?id=eq.' + evId, { headers: HDR }).then(function(r){return r.json();}).then(function(evData){
+                if (Array.isArray(evData) && evData.length > 0) {
+                  cacheSet('event_row_' + athleteId, evData[0]);
+                }
+              });
+            }),
+            fetchAll(SUPABASE_URL+'/rest/v1/activities?event_id=eq.'+EVENT_ROW.id+'&strava_athlete_id=eq.'+athleteId+'&is_deleted=eq.false&activity_date=gte.'+getEventUTCStart()+'&activity_date=lte.'+getEventUTCEnd()+'&order=activity_date.desc').then(function(d){cacheSet('acts_v4_'+athleteId,d);}),
+            fetch(SUPABASE_URL+'/rest/v1/leaderboard_config?event_id=eq.'+EVENT_ROW.id+'&select=config_key,config_value',{headers:HDR}).then(function(r){return r.json();}).then(function(d){cacheSet('config',d);}),
+            fetch(SUPABASE_URL+'/rest/v1/challenges?event_id=eq.'+EVENT_ROW.id+'&is_active=eq.true&select=*',{headers:HDR}).then(function(r){return r.json();}).then(function(d){cacheSet('challenges',d);}),
+            fetch(SUPABASE_URL+'/rest/v1/special_scoring_days?event_id=eq.'+EVENT_ROW.id+'&select=special_date',{headers:HDR}).then(function(r){return r.json();}).then(function(d){cacheSet('special_days',d);}),
+            fetch(SUPABASE_URL+'/rest/v1/leaderboard_config?event_id=eq.'+EVENT_ROW.id+'&config_key=eq.medals&select=config_value',{headers:HDR}).then(function(r){return r.json();}).then(function(d){cacheSet('medals',d);})
+          ]).then(function(){
+            function doReload() {
+              if (_touchInteracting) {
+                console.log('[Cache] User is interacting, deferring dashboard background reload...');
+                setTimeout(doReload, 300);
+              } else {
+                console.log('[Cache] Phase 1 background refresh complete. Re-rendering dashboard UI...');
+                load(true);
               }
-            });
-          }),
-          fetchAll(SUPABASE_URL+'/rest/v1/activities?event_id=eq.'+EVENT_ROW.id+'&strava_athlete_id=eq.'+athleteId+'&is_deleted=eq.false&activity_date=gte.'+getEventUTCStart()+'&activity_date=lte.'+getEventUTCEnd()+'&order=activity_date.desc').then(function(d){cacheSet('acts_v4_'+athleteId,d);}),
-          fetch(SUPABASE_URL+'/rest/v1/leaderboard_config?event_id=eq.'+EVENT_ROW.id+'&select=config_key,config_value',{headers:HDR}).then(function(r){return r.json();}).then(function(d){cacheSet('config',d);}),
-          fetch(SUPABASE_URL+'/rest/v1/challenges?event_id=eq.'+EVENT_ROW.id+'&is_active=eq.true&select=*',{headers:HDR}).then(function(r){return r.json();}).then(function(d){cacheSet('challenges',d);}),
-          fetch(SUPABASE_URL+'/rest/v1/special_scoring_days?event_id=eq.'+EVENT_ROW.id+'&select=special_date',{headers:HDR}).then(function(r){return r.json();}).then(function(d){cacheSet('special_days',d);}),
-          fetch(SUPABASE_URL+'/rest/v1/leaderboard_config?event_id=eq.'+EVENT_ROW.id+'&config_key=eq.medals&select=config_value',{headers:HDR}).then(function(r){return r.json();}).then(function(d){cacheSet('medals',d);})
-        ]).then(function(){
-          function doReload() {
-            if (_touchInteracting) {
-              console.log('[Cache] User is interacting, deferring dashboard background reload...');
-              setTimeout(doReload, 300);
-            } else {
-              console.log('[Cache] Phase 1 background refresh complete. Re-rendering dashboard UI...');
-              load(true);
             }
-          }
-          doReload();
-        }).catch(function(e){console.warn('[Cache] Background refresh failed:', e);});
-      }, 200);
+            doReload();
+          }).catch(function(e){console.warn('[Cache] Background refresh failed:', e);});
+        }, 200);
+      }
     }
     var regJsonData, myActs, cfgRows, chRows, sdRows, medalData;
     if (_allFromCache) {
@@ -1073,25 +1080,32 @@ async function load(isBackgroundRefresh) {
           allActsRaw = _cachedRankActs;
           allRegRaw  = _cachedRankReg;
           if (!isBackgroundRefresh) {
-            setTimeout(function(){
-              Promise.all([
-                fetchAllParallel(SUPABASE_URL+'/rest/v1/activities?event_id=eq.'+EVENT_ROW.id+'&is_deleted=eq.false&created_at=lt.'+getEventCutoffUTC()+'&activity_date=gte.'+getEventUTCStart()+'&activity_date=lte.'+getEventUTCEnd()+'&order=id.asc&select=id,strava_activity_id,strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,activity_date_time_ist'),
-                fetchAllParallel(SUPABASE_URL+'/rest/v1/registration?event_id=eq.'+EVENT_ROW.id+'&order=strava_athlete_id.asc&select=strava_athlete_id,full_name,gender,shift,leaderboard_team')
-              ]).then(function(results){
-                function doReload() {
-                  if (_touchInteracting) {
-                    console.log('[Cache] User is interacting, deferring background reload...');
-                    setTimeout(doReload, 300);
-                  } else {
-                    console.log('[Cache] Phase 2 background refresh complete. Re-rendering...');
-                    cacheSet('ranking_acts_v4', results[0]);
-                    cacheSet('ranking_reg', results[1]);
-                    load(true);
+            var rankCacheAgeMs = 0;
+            var rawRankActs = safeGetItem('agwalk_ranking_acts_v4');
+            if (rawRankActs) {
+              try { rankCacheAgeMs = Date.now() - JSON.parse(rawRankActs).ts; } catch(e){}
+            }
+            if (rankCacheAgeMs > 120000) {
+              setTimeout(function(){
+                Promise.all([
+                  fetchAllParallel(SUPABASE_URL+'/rest/v1/activities?event_id=eq.'+EVENT_ROW.id+'&is_deleted=eq.false&created_at=lt.'+getEventCutoffUTC()+'&activity_date=gte.'+getEventUTCStart()+'&activity_date=lte.'+getEventUTCEnd()+'&order=id.asc&select=id,strava_activity_id,strava_athlete_id,distance_meters,activity_date,is_flagged,sport_type,manual_bonus,activity_date_time_ist'),
+                  fetchAllParallel(SUPABASE_URL+'/rest/v1/registration?event_id=eq.'+EVENT_ROW.id+'&order=strava_athlete_id.asc&select=strava_athlete_id,full_name,gender,shift,leaderboard_team')
+                ]).then(function(results){
+                  function doReload() {
+                    if (_touchInteracting) {
+                      console.log('[Cache] User is interacting, deferring background reload...');
+                      setTimeout(doReload, 300);
+                    } else {
+                      console.log('[Cache] Phase 2 background refresh complete. Re-rendering...');
+                      cacheSet('ranking_acts_v4', results[0]);
+                      cacheSet('ranking_reg', results[1]);
+                      load(true);
+                    }
                   }
-                }
-                doReload();
-              }).catch(function(e){console.warn('[Cache] Ranking background refresh failed:', e);});
-            }, 500);
+                  doReload();
+                }).catch(function(e){console.warn('[Cache] Ranking background refresh failed:', e);});
+              }, 500);
+            }
           }
         } else {
           console.log('[Cache] Cache miss — fetching Phase 2 from Supabase...');
@@ -1103,7 +1117,7 @@ async function load(isBackgroundRefresh) {
           allRegRaw  = fetched[1]; cacheSet('ranking_reg',  allRegRaw);
         }
         allActs=allActsRaw; allRegRes=allRegRaw;
-        var isViewingCustomLb = window._lbCurrentEventId && window._lbCurrentEventId !== 1;
+        var isViewingCustomLb = window._lbCurrentEventId && window._lbCurrentEventId !== window._lbRegisteredEventId;
         if (!isViewingCustomLb) {
           LB_REG=allRegRaw;
           LB_ACTS=allActsRaw;
