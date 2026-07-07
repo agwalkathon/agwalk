@@ -367,6 +367,7 @@ async function load(isBackgroundRefresh) {
     var regs=regJsonData; var reg=Array.isArray(regs)&&regs.length?regs[0]:{};
     LB_ME=reg;
     window._lbCurrentEventId = reg.event_id || 1;
+    window._lbRegisteredEventId = reg.event_id || 1;
     var name=reg.full_name||s.name||'Participant';
 
     var initials = typeof get2Initials === 'function' ? get2Initials(name) : name.substring(0,2).toUpperCase();

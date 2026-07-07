@@ -281,6 +281,7 @@ async function load(isBackgroundRefresh) {
     var regs=regJsonData; var reg=Array.isArray(regs)&&regs.length?regs[0]:{};
     LB_ME=reg;
     window._lbCurrentEventId = reg.event_id || 1;
+    window._lbRegisteredEventId = reg.event_id || 1;
     var name=reg.full_name||s.name||'Participant';
 
     var initials=(function(){var parts=(name||'').trim().split(/\s+/);if(parts.length>=2)return(parts[0][0]+(parts[parts.length-1][0])).toUpperCase();return(parts[0]||'?')[0].toUpperCase();})();

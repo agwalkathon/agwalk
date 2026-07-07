@@ -230,15 +230,16 @@ function buildEventCard(ev, group) {
 }
 
 // ===== Event-scoped leaderboard switching =====
-var _lbCurrentEventId = 1;          // event 1 = Walkathon 2026, the data Phase 1/2 loads by default
-var _lbDefaultState = null;         // saved event-1 globals
+var _lbCurrentEventId = 2;          // dynamic, initialized from registration
+var _lbDefaultState = null;         // saved default (registered event) globals
 var _lbEventCache = {};             // fetched data per event id
 
 function setLbTitle(txt) {
   var el = document.getElementById('lb-event-title');
   if (el) { el.textContent = txt || ''; el.style.display = txt ? 'block' : 'none'; }
   var btn = document.getElementById('lb-back-to-events-row');
-  if (btn) { btn.style.display = (window._lbCurrentEventId && window._lbCurrentEventId !== 1) ? 'block' : 'none'; }
+  var defaultId = window._lbRegisteredEventId || 2;
+  if (btn) { btn.style.display = (window._lbCurrentEventId && window._lbCurrentEventId !== defaultId) ? 'block' : 'none'; }
 }
 
 function saveDefaultLbState() {
@@ -287,15 +288,17 @@ async function fetchEventLbState(evId) {
 async function openEventLeaderboard(ev) {
   try {
     var suffix = (ev.status === 'ended' || ev.status === 'archived') ? ' — Final Results' : '';
+    var defaultId = window._lbRegisteredEventId || 2;
+    
     if (ev.id === _lbCurrentEventId) {
-      setLbTitle(_lbCurrentEventId === 1 ? '' : '🏆 ' + ev.name + suffix);
+      setLbTitle(_lbCurrentEventId === defaultId ? '' : '🏆 ' + ev.name + suffix);
       showTab('leaderboard');
       return;
     }
-    if (ev.id === 1 && _lbDefaultState) {
+    if (ev.id === defaultId && _lbDefaultState) {
       applyLbState(_lbDefaultState);
       _LB_EV_RULES = null;
-      _lbCurrentEventId = 1;
+      _lbCurrentEventId = defaultId;
       setLbTitle('');
       showTab('leaderboard');
       lbBoot();
@@ -306,7 +309,7 @@ async function openEventLeaderboard(ev) {
     applyLbState(st);
     _LB_EV_RULES = ev.rules_config || null;
     _lbCurrentEventId = ev.id;
-    setLbTitle('🏆 ' + ev.name + suffix);
+    setLbTitle(ev.id === defaultId ? '' : '🏆 ' + ev.name + suffix);
     showTab('leaderboard');
     lbBoot();
   } catch (e) {
@@ -315,15 +318,16 @@ async function openEventLeaderboard(ev) {
   }
 }
 
-// When the nav Leaderboard icon is tapped directly, always show the default (event 1) board
+// When the nav Leaderboard icon is tapped directly, always show the default (registered event) board
 (function hookNavLeaderboardReset(){
   var nav = document.getElementById('bnav-leaderboard');
   if (!nav) return;
   nav.addEventListener('click', function(){
-    if (_lbCurrentEventId !== 1 && _lbDefaultState) {
+    var defaultId = window._lbRegisteredEventId || 2;
+    if (_lbCurrentEventId !== defaultId && _lbDefaultState) {
       applyLbState(_lbDefaultState);
       _LB_EV_RULES = null;
-      _lbCurrentEventId = 1;
+      _lbCurrentEventId = defaultId;
       setLbTitle('');
       lbBoot();
     }
