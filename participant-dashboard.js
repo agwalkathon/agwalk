@@ -65,18 +65,25 @@
     var unit = unitOf(ring.metric);
     var fmt = function(v){ return (unit==='km') ? v.toFixed(1) : Math.round(v).toString(); };
     var rot = (ring.shape === 'circle' || !ring.shape) ? ' transform="rotate(-90 50 50)"' : '';
+    
+    var brightColor = ring.color || '#fff';
+    var c = brightColor.toLowerCase();
+    if (c === '#70f0db') brightColor = '#00ffd5';
+    else if (c === '#e8622a') brightColor = '#ff5a00';
+    else if (c === '#d3e92b') brightColor = '#c6ff00';
+
     box.innerHTML =
       '<div class="ring-svg-wrap">' +
         '<svg viewBox="0 0 100 100">' +
-          '<g fill="none" stroke="' + ring.color + '" stroke-opacity="0.18" stroke-width="8">' + shape + '</g>' +
-          '<g fill="none" stroke="' + ring.color + '" stroke-width="8" stroke-linecap="round" ' +
-             'style="filter:drop-shadow(0 0 6px ' + ring.color + '66)">' +
+          '<g fill="none" stroke="' + brightColor + '" stroke-opacity="0.28" stroke-width="6">' + shape + '</g>' +
+          '<g fill="none" stroke="' + brightColor + '" stroke-width="6" stroke-linecap="round" ' +
+             'style="filter:drop-shadow(0 0 8px ' + brightColor + 'cc)">' +
             shape.replace('/>', ' stroke-dasharray="100" stroke-dashoffset="' + (100 - pct).toFixed(1) + '"' + rot + '/>') +
           '</g>' +
         '</svg>' +
         '<div class="ring-inner"><span class="ring-pct">' + Math.round(pct) + '%</span></div>' +
       '</div>' +
-      '<div class="ring-name" style="color:' + ring.color + '">' + (ring.label || ring.metric) + '</div>' +
+      '<div class="ring-name" style="color:' + brightColor + '">' + (ring.label || ring.metric) + '</div>' +
       '<div class="ring-need">' + fmt(value) + ' / ' + fmt(goal) + ' ' + unit + '</div>';
     return box;
   }
