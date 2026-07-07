@@ -3276,9 +3276,11 @@ function setupAppLayout(isParticipant) {
   
   var allTabs = ['dashboard', 'leaderboard', 'events', 'celebrate', 'feed', 'you'];
   
+  var isEventLive = window.EVENT_ROW && window.EVENT_ROW.status === 'live';
+
   if (isEmbedded) {
     TAB_ORDER = ['celebrate'];
-  } else if (isParticipant) {
+  } else if (isParticipant && isEventLive) {
     var rawOrder = ['dashboard', 'leaderboard', 'events', 'celebrate', 'you'];
     var cfg = CONFIG_LB.tabs_config || {};
     TAB_ORDER = [];
