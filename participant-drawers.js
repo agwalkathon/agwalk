@@ -143,18 +143,25 @@ function openActivityDetail(id, event, isStravaId) {
 
       // Pace — show if calculable
       var paceValStr = null;
+      var isRide = sportType === 'Ride' || sportType === 'MountainBikeRide' || sportType === 'VirtualRide';
       if (distanceKmVal > 0 && movingSec > 0) {
-        paceValStr = fmtPS((distanceKmVal * 1000) / movingSec, sportType);
+        if (isRide) {
+          paceValStr = (act.avg_speed ? (act.avg_speed * 3.6).toFixed(1) : ((distanceKmVal * 1000 / movingSec) * 3.6).toFixed(1)) + ' km/h';
+        } else {
+          paceValStr = fmtPS((distanceKmVal * 1000) / movingSec, sportType);
+        }
       }
+      var paceLabel = document.querySelector('#det-pace-wrap .detail-field-label');
+      if (paceLabel) paceLabel.innerText = isRide ? 'Speed' : 'Pace';
       setField('det-pace-wrap', 'det-pace', paceValStr);
 
-      // Calculated steps — always show if distance > 0
+      // Calculated steps — always show if distance > 0 (unless it's a ride)
       var calculatedSteps = Math.round(distanceKmVal * 1350);
-      setField('det-calcsteps-wrap', 'det-calcsteps', distanceKmVal > 0 ? calculatedSteps.toLocaleString('en-IN') + ' steps' : null);
+      setField('det-calcsteps-wrap', 'det-calcsteps', (!isRide && distanceKmVal > 0) ? calculatedSteps.toLocaleString('en-IN') + ' steps' : null);
 
-      // Strava steps — only if > 0
+      // Strava steps — only if > 0 (unless it's a ride)
       var stravaStepsVal = act.steps || null;
-      setField('det-stravasteps-wrap', 'det-stravasteps', (stravaStepsVal && stravaStepsVal > 0) ? stravaStepsVal.toLocaleString('en-IN') + ' steps' : null);
+      setField('det-stravasteps-wrap', 'det-stravasteps', (!isRide && stravaStepsVal && stravaStepsVal > 0) ? stravaStepsVal.toLocaleString('en-IN') + ' steps' : null);
 
       // Elevation — show as 0 m if not set or 0
       var elevVal = act.elevation_gain || 0;
@@ -336,6 +343,120 @@ function openActivityDetail(id, event, isStravaId) {
           document.getElementById('report-comments').value = '';
         }
       }
+
+      var splitsSection = document.getElementById('detail-splits-section');
+      var splitsTableContainer = document.getElementById('detail-splits-table-container');
+      if (splitsSection) splitsSection.style.display = 'none';
+
+      var sActId = act.strava_activity_id || act.activity_id || act.id;
+      if (sActId) {
+        fetch(SUPABASE_URL + '/rest/v1/activity_splits?activity_id=eq.' + sActId + '&order=split_number.asc', { headers: HDR })
+          .then(function(res) { return res.json(); })
+          .then(function(splits) {
+            if (splits && splits.length > 0) {
+              if (splitsSection) splitsSection.style.display = 'block';
+              
+              var isRide = sportType === 'Ride' || sportType === 'MountainBikeRide' || sportType === 'VirtualRide';
+              var displaySplits = splits;
+              
+              if (isRide) {
+                // Aggregate into 5km splits
+                displaySplits = [];
+                var currentGroup = [];
+                for (var i = 0; i < splits.length; i++) {
+                  currentGroup.push(splits[i]);
+                  if (currentGroup.length === 5 || i === splits.length - 1) {
+                    var splitNum = displaySplits.length + 1;
+                    var totalDist = currentGroup.reduce(function(s, x) { return s + (x.distance_meters || 0); }, 0);
+                    var totalMoving = currentGroup.reduce(function(s, x) { return s + (x.moving_time_seconds || 0); }, 0);
+                    
+                    var totalHrTime = 0;
+                    var hrSum = currentGroup.reduce(function(s, x) {
+                      if (x.average_heartrate && x.moving_time_seconds) {
+                        totalHrTime += x.moving_time_seconds;
+                        return s + (x.average_heartrate * x.moving_time_seconds);
+                      }
+                      return s;
+                    }, 0);
+                    var avgHr = totalHrTime > 0 ? Math.round(hrSum / totalHrTime) : null;
+                    
+                    var avgSpeed = totalMoving > 0 ? ((totalDist / totalMoving) * 3.6) : 0;
+                    
+                    var maxSpeed = 0;
+                    currentGroup.forEach(function(x) {
+                      var sp = (x.avg_speed || 0) * 3.6;
+                      if (sp > maxSpeed) maxSpeed = sp;
+                    });
+                    
+                    displaySplits.push({
+                      split_number: splitNum,
+                      distance_meters: totalDist,
+                      moving_time_seconds: totalMoving,
+                      average_heartrate: avgHr,
+                      avg_speed_kmh: avgSpeed,
+                      max_speed_kmh: maxSpeed
+                    });
+                    currentGroup = [];
+                  }
+                }
+              }
+
+              var hasHR = displaySplits.some(function(s) { return s.average_heartrate !== null && s.average_heartrate !== undefined && s.average_heartrate > 0; });
+              
+              var html = '<table class="splits-table"><thead><tr>' +
+                '<th style="text-align:left;">Split #</th>' +
+                '<th style="text-align:left;">Distance</th>';
+              
+              if (isRide) {
+                html += '<th style="text-align:left;">Avg Speed</th>' +
+                        '<th style="text-align:left;">Max Speed</th>';
+              } else {
+                html += '<th style="text-align:left;">Pace</th>';
+              }
+              
+              if (hasHR) {
+                html += '<th style="text-align:left;">Avg HR</th>';
+              }
+              html += '</tr></thead><tbody>';
+              
+              displaySplits.forEach(function(s) {
+                var sDist = ((s.distance_meters || 0) / 1000).toFixed(2) + ' km';
+                var sHR = s.average_heartrate ? Math.round(s.average_heartrate) + ' bpm' : '—';
+                
+                html += '<tr>' +
+                  '<td style="color:var(--muted); font-weight:600;">#' + s.split_number + '</td>' +
+                  '<td style="color:#fff; font-weight:600;">' + sDist + '</td>';
+                
+                if (isRide) {
+                  var avgSpeedStr = (s.avg_speed_kmh || 0).toFixed(1) + ' km/h';
+                  var maxSpeedStr = (s.max_speed_kmh || 0).toFixed(1) + ' km/h';
+                  html += '<td style="color:#E8622A; font-weight:700;">' + avgSpeedStr + '</td>' +
+                          '<td style="color:#FFD000; font-weight:700;">' + maxSpeedStr + '</td>';
+                } else {
+                  var sPace = '--';
+                  var sDistKm = (s.distance_meters || 0) / 1000;
+                  var sMoving = s.moving_time_seconds || 0;
+                  if (sDistKm > 0 && sMoving > 0) {
+                    var sPaceSec = sMoving / sDistKm;
+                    var sPaceMin = Math.floor(sPaceSec / 60);
+                    var sPaceRemainder = Math.round(sPaceSec % 60);
+                    if (sPaceRemainder < 10) sPaceRemainder = '0' + sPaceRemainder;
+                    sPace = sPaceMin + ':' + sPaceRemainder + ' /km';
+                  }
+                  html += '<td style="color:#E8622A; font-weight:700;">' + sPace + '</td>';
+                }
+                
+                if (hasHR) {
+                  html += '<td style="color:rgba(255,255,255,0.7);">' + sHR + '</td>';
+                }
+                html += '</tr>';
+              });
+              html += '</tbody></table>';
+              if (splitsTableContainer) splitsTableContainer.innerHTML = html;
+            }
+          })
+          .catch(function(err) { console.warn('Failed to load splits:', err); });
+      }
     }
 
     var stravaActId = id;
@@ -357,37 +478,6 @@ function openActivityDetail(id, event, isStravaId) {
 
 
     if (stravaActId) {
-      var splitsSection = document.getElementById('detail-splits-section');
-      var splitsTableContainer = document.getElementById('detail-splits-table-container');
-      splitsSection.style.display = 'none';
-
-      fetch(SUPABASE_URL + '/rest/v1/activity_splits?activity_id=eq.' + stravaActId + '&order=split_number.asc', { headers: HDR })
-        .then(function(res) { return res.json(); })
-        .then(function(splits) {
-          if (splits && splits.length > 0) {
-            splitsSection.style.display = 'block';
-            var hasHR = splits.some(function(s) { return s.average_heartrate !== null && s.average_heartrate !== undefined && s.average_heartrate > 0; });
-            var html = '<table class="splits-table"><thead><tr><th style="text-align:left;">Split #</th><th style="text-align:left;">Distance</th><th style="text-align:left;">Pace</th>' + (hasHR ? '<th style="text-align:left;">Avg HR</th>' : '') + '</tr></thead><tbody>';
-            splits.forEach(function(s) {
-              var sDist = ((s.distance_meters || 0) / 1000).toFixed(2) + ' km';
-              var sPace = '--';
-              var sDistKm = (s.distance_meters || 0) / 1000;
-              var sMoving = s.moving_time_seconds || 0;
-              if (sDistKm > 0 && sMoving > 0) {
-                var sPaceSec = sMoving / sDistKm;
-                var sPaceMin = Math.floor(sPaceSec / 60);
-                var sPaceRemainder = Math.round(sPaceSec % 60);
-                if (sPaceRemainder < 10) sPaceRemainder = '0' + sPaceRemainder;
-                sPace = sPaceMin + ':' + sPaceRemainder + ' /km';
-              }
-              var sHR = s.average_heartrate ? Math.round(s.average_heartrate) + ' bpm' : '—';
-              html += '<tr><td style="color:var(--muted); font-weight:600;">#' + s.split_number + '</td><td style="color:#fff; font-weight:600;">' + sDist + '</td><td style="color:#E8622A; font-weight:700;">' + sPace + '</td>' + (hasHR ? '<td style="color:rgba(255,255,255,0.7);">' + sHR + '</td>' : '') + '</tr>';
-            });
-            html += '</tbody></table>';
-            splitsTableContainer.innerHTML = html;
-          }
-        })
-        .catch(function(err) { console.warn('Failed to load splits:', err); });
 
       function handleLoadedActivity(fullAct) {
         var athleteId = fullAct.strava_athlete_id || fullAct.athlete_id;
