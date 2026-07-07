@@ -1212,6 +1212,24 @@
       .bottom-nav.nav-five-tabs .bnav-item {
         border-radius: 20px;
       }
+      .stat-card-item {
+        padding: 10px 8px;
+      }
+      .stat-card-val {
+        font-size: 20px;
+      }
+      .stat-card-icon {
+        margin-bottom: 8px;
+        width: 32px;
+        height: 32px;
+      }
+      .stat-card-icon svg {
+        width: 14px;
+        height: 14px;
+      }
+      .stat-card-label {
+        font-size: 9px;
+      }
     }
 
 
