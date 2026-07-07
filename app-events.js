@@ -270,67 +270,41 @@ function buildEventCard(ev, group) {
   var today0 = new Date().toISOString().split('T')[0];
   var regOpenNow = ev.registration_open_date && ev.registration_close_date &&
                    today0 >= ev.registration_open_date && today0 <= ev.registration_close_date;
-  if (group === 'live' || group === 'past') {
-    var lb = document.createElement('button');
-    lb.className = 'ev-btn';
-    lb.textContent = group === 'past' ? '🏆 Final Results' : '🏆 Leaderboard';
-    lb.addEventListener('click', function(){ openEventLeaderboard(ev); });
-    actions.appendChild(lb);
-    
-    if (group === 'live' && !enrolled && regOpenNow) {
-      var jrb = document.createElement('button');
-      jrb.className = 'ev-btn ev-btn-primary';
-      jrb.style.background = ev.accent_color || '';
-      jrb.textContent = hasRegDraft(ev.id) ? '▶ Resume Registration' : 'Register Now';
-      jrb.addEventListener('click', function(){ openEventRegistration(ev); });
-      actions.appendChild(jrb);
-    } else if (group === 'live' && isPending) {
-      var jrb = document.createElement('button');
-      jrb.className = 'ev-btn ev-btn-primary';
-      jrb.style.background = 'rgba(255, 255, 255, 0.08)';
-      jrb.style.color = 'rgba(255, 255, 255, 0.4)';
-      jrb.style.cursor = 'not-allowed';
-      jrb.disabled = true;
-      jrb.textContent = 'Registered (Pending)';
-      actions.appendChild(jrb);
-    } else if (group === 'live' && !enrolled) {
-      var sp = document.createElement('div');
-      sp.className = 'ev-spectator-note';
-      sp.textContent = "You're watching — join the next event to compete!";
-      body.appendChild(sp);
-    }
-  }
 
-  if (group === 'upcoming') {
-    var regOpen = regOpenNow;
-    if (isApproved) {
-      var ok = document.createElement('div');
-      ok.className = 'ev-spectator-note';
-      ok.textContent = "You're enrolled. Get ready! 💪";
-      body.appendChild(ok);
-    } else if (isPending) {
-      var rb = document.createElement('button');
-      rb.className = 'ev-btn ev-btn-primary';
-      rb.style.background = 'rgba(255, 255, 255, 0.08)';
-      rb.style.color = 'rgba(255, 255, 255, 0.4)';
-      rb.style.cursor = 'not-allowed';
-      rb.disabled = true;
-      rb.textContent = 'Registered (Pending)';
-      actions.appendChild(rb);
-    } else if (regOpen) {
-      var rb = document.createElement('button');
-      rb.className = 'ev-btn ev-btn-primary';
-      rb.style.background = ev.accent_color || '';
-      rb.textContent = hasRegDraft(ev.id) ? '▶ Resume Registration' : 'Register Now';
-      rb.addEventListener('click', function(){ openEventRegistration(ev); });
-      actions.appendChild(rb);
-    } else if (ev.registration_open_date) {
-      var no = document.createElement('div');
-      no.className = 'ev-spectator-note';
-      no.textContent = 'Registration opens ' + evFmtDate(ev.registration_open_date);
-      body.appendChild(no);
-    }
+  // Leaderboard Button (always visible)
+  var lb = document.createElement('button');
+  lb.className = 'ev-btn';
+  lb.textContent = group === 'past' ? '🏆 Final Results' : '🏆 Leaderboard';
+  lb.addEventListener('click', function(){ openEventLeaderboard(ev); });
+  actions.appendChild(lb);
+
+  // Register Now (Green) / Registered (Orange) Button
+  var regBtn = document.createElement('button');
+  regBtn.className = 'ev-btn ev-btn-primary';
+  if (isApproved || enrolled) {
+    regBtn.style.background = '#e8622a'; // Orange
+    regBtn.style.color = '#fff';
+    regBtn.textContent = '✓ Registered';
+    regBtn.style.cursor = 'default';
+  } else if (isPending) {
+    regBtn.style.background = '#e8622a'; // Orange
+    regBtn.style.color = '#fff';
+    regBtn.textContent = '⌛ Registered (Pending)';
+    regBtn.style.cursor = 'default';
+  } else if (group !== 'past' && (regOpenNow || group === 'upcoming')) {
+    regBtn.style.background = '#10b981'; // Green
+    regBtn.style.color = '#fff';
+    regBtn.textContent = hasRegDraft(ev.id) ? '▶ Resume Registration' : 'Register Now';
+    regBtn.addEventListener('click', function(){ openEventRegistration(ev); });
+  } else {
+    // Registration not open or closed
+    regBtn.style.background = 'rgba(255, 255, 255, 0.08)';
+    regBtn.style.color = 'rgba(255, 255, 255, 0.4)';
+    regBtn.style.cursor = 'not-allowed';
+    regBtn.disabled = true;
+    regBtn.textContent = ev.registration_open_date ? 'Registration Opens ' + evFmtDate(ev.registration_open_date) : 'Registration Closed';
   }
+  actions.appendChild(regBtn);
 
   if (actions.children.length) body.appendChild(actions);
   card.appendChild(body);
@@ -676,27 +650,24 @@ function openEventDetailsModal(ev) {
   var start = evFmtDate(ev.start_date);
   var end = evFmtDate(ev.end_date);
   var sports = Array.isArray(ev.sport_types) ? ev.sport_types.join(', ') : (ev.sport_types || 'Walk/Run');
-  var tracking = ev.tracking_mode === 'strava' ? 'Strava Integration' : 'Manual Entry';
-  var rules = ev.rules_config || {};
-  var metric = (rules.metric === 'distance_km') ? 'Distance (km)' : 'Points';
   
   var bannerHtml = ev.banner_url ? '<img src="' + ev.banner_url + '" style="width:100%;max-height:160px;object-fit:cover;border-radius:12px;margin-bottom:14px;">' : '';
   
   modal.innerHTML = 
-    '<div class="glass-card" style="width:100%;max-width:480px;background:rgba(22,27,33,.85);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:20px;color:#fff;box-shadow:0 12px 40px rgba(0,0,0,.5);position:relative;">' +
+    '<div class="glass-card" style="width:100%;max-width:480px;background:rgba(22,27,33,.85);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:22px;color:#fff;box-shadow:0 12px 40px rgba(0,0,0,.5);position:relative;">' +
       '<button id="close-ev-details-btn" style="position:absolute;top:14px;right:14px;background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;padding:6px;">✕</button>' +
       bannerHtml +
-      '<div style="font-size:18px;font-weight:800;margin-bottom:6px;line-height:1.2;padding-right:24px;">' + ev.name + '</div>' +
+      '<div style="font-size:20px;font-weight:800;margin-bottom:6px;line-height:1.2;padding-right:24px;">' + ev.name + '</div>' +
       '<div style="font-size:12px;font-weight:600;color:var(--brand);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;">' + (ev.status === 'live' ? '● Live Event' : (ev.status === 'upcoming' ? 'Upcoming Event' : 'Past Event')) + '</div>' +
       
       '<div style="display:flex;flex-direction:column;gap:12px;font-size:13px;border-top:1px solid rgba(255,255,255,.06);padding-top:14px;margin-bottom:14px;">' +
         '<div><strong style="color:rgba(255,255,255,.5);">Duration:</strong> <span style="float:right;">' + start + ' — ' + end + '</span></div>' +
-        '<div><strong style="color:rgba(255,255,255,.5);">Sports Allowed:</strong> <span style="float:right;">' + sports + '</span></div>' +
-        '<div><strong style="color:rgba(255,255,255,.5);">Tracking Mode:</strong> <span style="float:right;">' + tracking + '</span></div>' +
-        '<div><strong style="color:rgba(255,255,255,.5);">Primary Goal Metric:</strong> <span style="float:right;">' + metric + '</span></div>' +
+        '<div><strong style="color:rgba(255,255,255,.5);">Sport Type Allowed:</strong> <span style="float:right;">' + sports + '</span></div>' +
+        '<div><strong style="color:rgba(255,255,255,.5);">Primary Goal Metric:</strong> <span style="float:right;">Distance</span></div>' +
       '</div>' +
       
-      (ev.description ? '<div style="font-size:13px;color:rgba(255,255,255,.75);line-height:1.5;background:rgba(255,255,255,.03);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,.04);max-height:120px;overflow-y:auto;">' + ev.description + '</div>' : '') +
+      '<div style="font-size:13px;font-weight:600;color:rgba(255,255,255,.5);margin-bottom:6px;">What is event?</div>' +
+      '<div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.5;background:rgba(255,255,255,.03);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,.04);max-height:120px;overflow-y:auto;white-space:pre-wrap;">' + (ev.description || 'No description provided.') + '</div>' +
     '</div>';
     
   modal.style.display = 'flex';
