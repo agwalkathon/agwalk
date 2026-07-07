@@ -3326,7 +3326,7 @@ function setupAppLayout(isParticipant) {
     }
 
     var backBtn = document.getElementById('lb-back-to-events-row');
-    if (backBtn) backBtn.style.display = (window._lbCurrentEventId && window._lbCurrentEventId !== 1) ? 'block' : 'none';
+    if (backBtn) backBtn.style.display = (window._lbCurrentEventId && window._lbCurrentEventId !== window._lbRegisteredEventId) ? 'block' : 'none';
 
     // Show participant-only layout controls
     document.querySelectorAll('.part-only').forEach(function(el) {
