@@ -834,6 +834,15 @@ function openProfileDetail(athleteId, event) {
           }
         });
 
+        var bestDayAct = null;
+        if (bestDayDate) {
+          var dayActs = validActs.filter(function(a) { return getActDate(a) === bestDayDate; });
+          if (dayActs.length > 0) {
+            dayActs.sort(function(x, y) { return (y.distance_meters || 0) - (x.distance_meters || 0); });
+            bestDayAct = dayActs[0];
+          }
+        }
+
         // --- Render Profile Personal Bests Dynamically ---
         (function() {
           var container = document.getElementById("prof-pb-container");
@@ -946,8 +955,8 @@ function openProfileDetail(athleteId, event) {
               } else if (key === 'max_speed' && maxSpeedAct) {
                 clickAttr = ' onclick="openActivityDetail(\'' + (maxSpeedAct.strava_activity_id || maxSpeedAct.id) + '\', event, ' + (maxSpeedAct.strava_activity_id ? 'true' : 'false') + ')"';
                 styleAttr = ' style="display: flex; flex-direction: column; cursor: pointer;"';
-              } else if (key === 'best_day' && bestDayDate) {
-                clickAttr = ' onclick="showDateDetails(\'' + bestDayDate + '\')"';
+              } else if (key === 'best_day' && bestDayAct) {
+                clickAttr = ' onclick="openActivityDetail(\'' + (bestDayAct.strava_activity_id || bestDayAct.id) + '\', event, ' + (bestDayAct.strava_activity_id ? 'true' : 'false') + ')"';
                 styleAttr = ' style="display: flex; flex-direction: column; cursor: pointer;"';
               }
               html += '<div class="prof-pb-card"' + clickAttr + styleAttr + '>' +
