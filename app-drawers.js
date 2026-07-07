@@ -692,20 +692,56 @@ function openProfileDetail(athleteId, event) {
         var bestPaceSport = 'Walk';
         var dayKm = {};
         
+        var longestAct = null;
+        var longestSessionAct = null;
+        var bestPaceAct = null;
+        var maxElevation = 0;
+        var maxElevationAct = null;
+        var maxAvgSpeed = 0;
+        var maxSpeedAct = null;
+
         validActs.forEach(function(a) {
           var km = (a.distance_meters || 0) / 1000;
-          if (a.distance_meters > maxDist) maxDist = a.distance_meters;
-          if (a.moving_time_seconds > maxTime) maxTime = a.moving_time_seconds;
+          if (a.distance_meters > maxDist) {
+            maxDist = a.distance_meters;
+            longestAct = a;
+          }
+          if (a.moving_time_seconds > maxTime) {
+            maxTime = a.moving_time_seconds;
+            longestSessionAct = a;
+          }
           
           var t = a.sport_type;
           var isWalkRun = t === 'Walk' || t === 'Run' || t === 'VirtualRun' || t === 'Hike';
           if (isWalkRun && a.avg_speed > maxSpeed && a.avg_speed < 12) {
             maxSpeed = a.avg_speed;
             bestPaceSport = t;
+            bestPaceAct = a;
+          }
+
+          var elev = parseFloat(a.elevation_gain) || 0;
+          if (elev > maxElevation) {
+            maxElevation = elev;
+            maxElevationAct = a;
+          }
+
+          var speed = parseFloat(a.avg_speed) || 0;
+          if (speed > maxAvgSpeed) {
+            maxAvgSpeed = speed;
+            maxSpeedAct = a;
           }
 
           var d = getActDate(a);
           if (d) dayKm[d] = (dayKm[d] || 0) + km;
+        });
+
+        var maxDayKm = 0;
+        var bestDayDate = '';
+        Object.keys(dayKm).forEach(function(d){
+          if (dayKm[d] > maxDayKm) {
+            maxDayKm = dayKm[d];
+            bestDayDate = d;
+          }
         });
 
         // --- Render Profile Personal Bests Dynamically ---
@@ -803,7 +839,28 @@ function openProfileDetail(athleteId, event) {
           keys.forEach(function(key) {
             if (pbConfig[key] !== false) {
               var d = statDefs[key];
-              html += "<div class=\\"prof-pb-card\\">" +
+              var clickAttr = '';
+              var styleAttr = ' style="display: flex; flex-direction: column;"';
+              if (key === 'longest_activity' && longestAct) {
+                clickAttr = ' onclick="openActivityDetail(\'' + (longestAct.strava_activity_id || longestAct.id) + '\', event, ' + (longestAct.strava_activity_id ? 'true' : 'false') + ')"';
+                styleAttr = ' style="display: flex; flex-direction: column; cursor: pointer;"';
+              } else if (key === 'best_pace' && bestPaceAct) {
+                clickAttr = ' onclick="openActivityDetail(\'' + (bestPaceAct.strava_activity_id || bestPaceAct.id) + '\', event, ' + (bestPaceAct.strava_activity_id ? 'true' : 'false') + ')"';
+                styleAttr = ' style="display: flex; flex-direction: column; cursor: pointer;"';
+              } else if (key === 'longest_session' && longestSessionAct) {
+                clickAttr = ' onclick="openActivityDetail(\'' + (longestSessionAct.strava_activity_id || longestSessionAct.id) + '\', event, ' + (longestSessionAct.strava_activity_id ? 'true' : 'false') + ')"';
+                styleAttr = ' style="display: flex; flex-direction: column; cursor: pointer;"';
+              } else if (key === 'max_elevation' && maxElevationAct) {
+                clickAttr = ' onclick="openActivityDetail(\'' + (maxElevationAct.strava_activity_id || maxElevationAct.id) + '\', event, ' + (maxElevationAct.strava_activity_id ? 'true' : 'false') + ')"';
+                styleAttr = ' style="display: flex; flex-direction: column; cursor: pointer;"';
+              } else if (key === 'max_speed' && maxSpeedAct) {
+                clickAttr = ' onclick="openActivityDetail(\'' + (maxSpeedAct.strava_activity_id || maxSpeedAct.id) + '\', event, ' + (maxSpeedAct.strava_activity_id ? 'true' : 'false') + ')"';
+                styleAttr = ' style="display: flex; flex-direction: column; cursor: pointer;"';
+              } else if (key === 'best_day' && bestDayDate) {
+                clickAttr = ' onclick="showDateDetails(\'' + bestDayDate + '\')"';
+                styleAttr = ' style="display: flex; flex-direction: column; cursor: pointer;"';
+              }
+              html += "<div class=\\"prof-pb-card\\"" + clickAttr + styleAttr + ">" +
                 "<span class=\\"lbl\\">" + d.lbl + "</span>" +
                 "<span class=\\"val\\">" + d.val + "</span>" +
                 "<span class=\\"sub\\">" + d.sub + "</span>" +

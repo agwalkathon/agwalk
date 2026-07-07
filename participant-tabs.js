@@ -508,7 +508,7 @@ function renderActivities(acts, dayBreakdown, actBreakdown, gender) {
       '<div class="date-chevron">❯</div>';
     
     if (dayActs.length === 1) {
-      var _sid = dayActs[0].strava_activity_id;
+      var _sid = dayActs[0].strava_activity_id || dayActs[0].id;
       dateRow.addEventListener('click', (function(id){return function(e){openActivityDetail(id, e, true);}})(_sid));
     } else {
       dateRow.addEventListener('click', (function(d){return function(){showDateDetails(d);}})(date));
@@ -593,8 +593,8 @@ function showDateDetails(dateStr) {
     });
 
     html +=
-      '<div class="detail-act-card' + (isFlag ? ' flagged' : '') + '" id="' + cardId + '">' +
-        '<div class="detail-act-hdr" onclick="openActivityDetail(\'' + a.strava_activity_id + '\', event, true)">' +
+      '<div class="detail-act-card' + (isFlag ? ' flagged' : '') + '" id="' + cardId + '" onclick="openActivityDetail(\'' + (a.strava_activity_id || a.id) + '\', event, true)" style="cursor:pointer;">' +
+        '<div class="detail-act-hdr">' +
           '<div class="detail-act-hdr-left">' +
             '<div class="detail-act-icon ' + tc + '">' + renderIcon(a.sport_type) + '</div>' +
             '<div class="detail-act-title-wrap">' +

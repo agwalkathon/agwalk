@@ -905,7 +905,8 @@ async function load(isBackgroundRefresh) {
               clickAttr = ' onclick="showDateDetails(\'' + bestDayDate + '\')"';
             }
 
-            html += '<div class="pb-card"' + clickAttr + '>' +
+            var styleAttr = clickAttr ? ' style="cursor: pointer;"' : '';
+            html += '<div class="pb-card"' + clickAttr + styleAttr + '>' +
               '<div class="pb-card-left">' +
                 '<div class="pb-card-header">' +
                   '<div class="pb-card-icon" style="background: ' + d.bg + '; color: ' + d.color + ';">' +
