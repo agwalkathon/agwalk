@@ -244,12 +244,7 @@ function buildEventCard(ev, group) {
   }
   body.appendChild(dates);
 
-  if (ev.description) {
-    var desc = document.createElement('div');
-    desc.className = 'ev-card-desc';
-    desc.textContent = ev.description;
-    body.appendChild(desc);
-  }
+
 
 
 
