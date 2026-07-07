@@ -860,20 +860,20 @@ function openProfileDetail(athleteId, event) {
                 clickAttr = ' onclick="showDateDetails(\'' + bestDayDate + '\')"';
                 styleAttr = ' style="display: flex; flex-direction: column; cursor: pointer;"';
               }
-              html += "<div class=\\"prof-pb-card\\"" + clickAttr + styleAttr + ">" +
-                "<span class=\\"lbl\\">" + d.lbl + "</span>" +
-                "<span class=\\"val\\">" + d.val + "</span>" +
-                "<span class=\\"sub\\">" + d.sub + "</span>" +
-              "</div>";
+              html += '<div class="prof-pb-card"' + clickAttr + styleAttr + '>' +
+                '<span class="lbl">' + d.lbl + '</span>' +
+                '<span class="val">' + d.val + '</span>' +
+                '<span class="sub">' + d.sub + '</span>' +
+              '</div>';
             }
           });
           
           // Always append streak
-          html += "<div class=\\"prof-pb-card\\">" +
-            "<span class=\\"lbl\\">Active Streak</span>" +
-            "<span class=\\"val\\">" + streakBest + " days</span>" +
-            "<span class=\\"sub\\">consecutive days</span>" +
-          "</div>";
+          html += '<div class="prof-pb-card">' +
+            '<span class="lbl">Active Streak</span>' +
+            '<span class="val">' + streakBest + ' days</span>' +
+            '<span class="sub">consecutive days</span>' +
+          '</div>';
 
           container.innerHTML = html;
         })();
