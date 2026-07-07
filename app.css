@@ -678,6 +678,11 @@
       gap: 10px;
     }
     .stat-card-item {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
       padding: 16px 14px;
       background: rgba(40, 46, 54, 0.65);
       backdrop-filter: blur(16px);
@@ -1216,13 +1221,13 @@
         border-radius: 20px;
       }
       .stat-card-item {
-        padding: 10px 8px;
+        padding: 10px 4px;
       }
       .stat-card-val {
-        font-size: 20px;
+        font-size: 17px;
       }
       .stat-card-icon {
-        margin-bottom: 8px;
+        margin-bottom: 6px;
         width: 32px;
         height: 32px;
       }
@@ -1231,13 +1236,14 @@
         height: 14px;
       }
       .stat-card-label {
-        font-size: 9px;
+        font-size: 8.5px;
       }
       #mystats-grid-container {
-        grid-template-columns: 1fr 1fr !important;
+        grid-template-columns: 1fr 1fr 1fr !important;
+        gap: 6px !important;
       }
       #mystats-grid-container > .stat-card-item:nth-child(3) {
-        grid-column: span 2;
+        grid-column: auto !important;
       }
     }
 
