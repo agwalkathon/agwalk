@@ -2696,19 +2696,27 @@ function renderNotifications() {
 }
 
 function switchYouTab(tab) {
-  var acts = document.getElementById('you-panel-activities');
   var info = document.getElementById('you-panel-info');
   var chal = document.getElementById('you-panel-challenges');
-  var btnActs = document.getElementById('you-tab-activities');
   var btnInfo = document.getElementById('you-tab-info');
   var btnChal = document.getElementById('you-tab-challenges');
-  if (acts) acts.style.display = (tab === 'activities') ? 'block' : 'none';
   if (info) info.style.display = (tab === 'info') ? 'block' : 'none';
   if (chal) chal.style.display = (tab === 'challenges') ? 'block' : 'none';
-  if (btnActs) btnActs.classList.toggle('active', tab === 'activities');
   if (btnInfo) btnInfo.classList.toggle('active', tab === 'info');
   if (btnChal) btnChal.classList.toggle('active', tab === 'challenges');
 }
+
+function openActivitiesDrawer() {
+  var el = document.getElementById('you-panel-activities');
+  if (el) el.classList.add('open');
+}
+window.openActivitiesDrawer = openActivitiesDrawer;
+
+function closeActivitiesDrawer() {
+  var el = document.getElementById('you-panel-activities');
+  if (el) el.classList.remove('open');
+}
+window.closeActivitiesDrawer = closeActivitiesDrawer;
 
 function clearPWACache(btn) {
   if (btn) {
@@ -3286,7 +3294,14 @@ function setupAppLayout(isParticipant) {
   
   var allTabs = ['dashboard', 'leaderboard', 'events', 'celebrate', 'feed', 'you'];
   
-  var isEventLive = window.EVENT_ROW && window.EVENT_ROW.status === 'live';
+  var cachedEv = null;
+  try {
+    var s = JSON.parse(localStorage.getItem('wk_user') || '{}');
+    var athId = s.athleteId || (window.currentSession ? window.currentSession.athleteId : '');
+    var raw = localStorage.getItem('agwalk_event_row_' + athId);
+    if (raw) cachedEv = JSON.parse(raw).data;
+  } catch(e){}
+  var isEventLive = (window.EVENT_ROW && window.EVENT_ROW.status === 'live') || (cachedEv && cachedEv.status === 'live') || isParticipant;
 
   if (isEmbedded) {
     TAB_ORDER = ['celebrate'];
