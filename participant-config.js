@@ -163,21 +163,21 @@ function logout() {
 // ── Maintenance Mode Gate ────────────────────────────────────────────────
 var _maintPollTimer = null;
 
-async function checkMaintenanceGate(athleteId) {
+async function checkMaintenanceGate(athleteId, empCode) {
   try {
-    var r = await fetch(BACKEND + '/maintenance-status?athlete_id=' + encodeURIComponent(athleteId));
+    var r = await fetch(BACKEND + '/maintenance-status?athlete_id=' + encodeURIComponent(athleteId) + '&emp_code=' + encodeURIComponent(empCode || ''));
     var d = await r.json();
     if (d.blocked) {
       showMaintenanceOverlay(d.message);
-      startMaintenancePolling(athleteId);
+      startMaintenancePolling(athleteId, empCode);
       return true;
     }
     hideMaintenanceOverlay();
-    startMaintenancePolling(athleteId);
+    startMaintenancePolling(athleteId, empCode);
     return false;
   } catch (e) {
     console.warn('[Maintenance] status check failed, failing open:', e);
-    startMaintenancePolling(athleteId);
+    startMaintenancePolling(athleteId, empCode);
     return false;
   }
 }
@@ -200,20 +200,20 @@ function hideMaintenanceOverlay() {
   document.body.style.overflow = '';
 }
 
-function startMaintenancePolling(athleteId) {
+function startMaintenancePolling(athleteId, empCode) {
   if (_maintPollTimer) return; // already polling, don't stack timers
   _maintPollTimer = setInterval(function () {
     if (document.hidden) return;
-    pollMaintenance(athleteId);
+    pollMaintenance(athleteId, empCode);
   }, 25000);
   document.addEventListener('visibilitychange', function () {
-    if (!document.hidden) pollMaintenance(athleteId);
+    if (!document.hidden) pollMaintenance(athleteId, empCode);
   });
 }
 
-async function pollMaintenance(athleteId) {
+async function pollMaintenance(athleteId, empCode) {
   try {
-    var r = await fetch(BACKEND + '/maintenance-status?athlete_id=' + encodeURIComponent(athleteId));
+    var r = await fetch(BACKEND + '/maintenance-status?athlete_id=' + encodeURIComponent(athleteId) + '&emp_code=' + encodeURIComponent(empCode || ''));
     var d = await r.json();
     if (d.blocked) {
       showMaintenanceOverlay(d.message);

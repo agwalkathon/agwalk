@@ -214,7 +214,7 @@ async function load(isBackgroundRefresh) {
   var athleteId = s.athleteId;
 
   // ── Maintenance mode gate — block immediately if enabled ────────────────
-  var _maintBlocked = await checkMaintenanceGate(athleteId);
+  var _maintBlocked = await checkMaintenanceGate(athleteId, s.empCode);
   if (_maintBlocked) return;
 
   loadNotifications();
@@ -1583,7 +1583,7 @@ async function bootAppUnified() {
   if (isParticipant) {
     currentSession = s;
     loadNotifications();
-    var _maintBlocked = await checkMaintenanceGate(s.athleteId);
+    var _maintBlocked = await checkMaintenanceGate(s.athleteId, s.empCode);
     if (_maintBlocked) return;
     await load(false);
 
