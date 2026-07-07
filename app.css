@@ -672,6 +672,11 @@
     .milestone-lbl{font-size:12px;font-weight:700;color:#fff;}
     /* Stat cards grid */
     .stat-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:0;}
+    #mystats-grid-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
     .stat-card-item {
       padding: 16px 14px;
       background: rgba(40, 46, 54, 0.65);
@@ -1227,6 +1232,12 @@
       }
       .stat-card-label {
         font-size: 9px;
+      }
+      #mystats-grid-container {
+        grid-template-columns: 1fr 1fr !important;
+      }
+      #mystats-grid-container > .stat-card-item:nth-child(3) {
+        grid-column: span 2;
       }
     }
 
@@ -3090,5 +3101,19 @@ body.employee-mode::after {
 .tab-you-profile > * {
   position: relative !important;
   z-index: 1 !important;
+}
+
+/* ── Embedded PWA Iframe Styles ── */
+.is-embedded .header,
+.is-embedded .bottom-nav {
+  display: none !important;
+}
+.is-embedded #app-screen {
+  padding-top: 0 !important;
+  height: 100dvh !important;
+}
+.is-embedded .content {
+  height: 100dvh !important;
+  padding-bottom: 20px !important;
 }
 

@@ -177,6 +177,23 @@ async function load(isBackgroundRefresh) {
     }
   }
 
+  if (window._currentTab === 'leaderboard' && window._lbCurrentEventId && window._lbCurrentEventId !== 1) {
+    if (typeof window.fetchEventLbState === 'function') {
+      try {
+        if (window._lbEventCache) delete window._lbEventCache[window._lbCurrentEventId];
+        var st = await window.fetchEventLbState(window._lbCurrentEventId);
+        if (typeof window.applyLbState === 'function') {
+          window.applyLbState(st);
+          window._lbReady = false;
+          if (typeof window.lbBoot === 'function') window.lbBoot();
+        }
+      } catch(e) {
+        console.warn('PTR custom leaderboard reload failed:', e);
+      }
+    }
+    return;
+  }
+
   var s;
   var urlParams = new URLSearchParams(window.location.search);
   var urlActivityId = urlParams.get('activityId');
@@ -715,16 +732,43 @@ async function load(isBackgroundRefresh) {
       var bestPaceSport = 'Walk';
       var dayKm = {};
 
+      var longestAct = null;
+      var bestPaceAct = null;
+      var longestSessionAct = null;
+      var maxElevationAct = null;
+      var maxSpeedAct = null;
+      var maxElevation = 0;
+      var maxAvgSpeed = 0;
+
       validActs.forEach(function(a){
         var km = (a.distance_meters || 0) / 1000;
-        if (a.distance_meters > maxDistM) maxDistM = a.distance_meters;
-        if (a.moving_time_seconds > maxTimeSec) maxTimeSec = a.moving_time_seconds;
+        if (a.distance_meters > maxDistM) {
+          maxDistM = a.distance_meters;
+          longestAct = a;
+        }
+        if (a.moving_time_seconds > maxTimeSec) {
+          maxTimeSec = a.moving_time_seconds;
+          longestSessionAct = a;
+        }
         
         var t = a.sport_type;
         var isWalkRun = t === 'Walk' || t === 'Run' || t === 'VirtualRun' || t === 'Hike';
         if (isWalkRun && a.avg_speed > maxSpeed && a.avg_speed < 12) {
           maxSpeed = a.avg_speed;
           bestPaceSport = t;
+          bestPaceAct = a;
+        }
+
+        var elev = parseFloat(a.elevation_gain) || 0;
+        if (elev > maxElevation) {
+          maxElevation = elev;
+          maxElevationAct = a;
+        }
+
+        var speed = parseFloat(a.avg_speed) || 0;
+        if (speed > maxAvgSpeed) {
+          maxAvgSpeed = speed;
+          maxSpeedAct = a;
         }
 
         var d = getActDate(a);
@@ -751,12 +795,6 @@ async function load(isBackgroundRefresh) {
           longest_session: true,
           best_day: true
         };
-        
-        // Find max elevation
-        var maxElevation = validActs.reduce(function(mx, a) { return Math.max(mx, parseFloat(a.elevation_gain) || 0); }, 0);
-        
-        // Find max avg speed
-        var maxAvgSpeed = validActs.reduce(function(mx, a) { return Math.max(mx, parseFloat(a.avg_speed) || 0); }, 0);
         
         // Find total elevation
         var totalElevation = validActs.reduce(function(sum, a) { return sum + (parseFloat(a.elevation_gain) || 0); }, 0);
@@ -847,7 +885,22 @@ async function load(isBackgroundRefresh) {
         keys.forEach(function(key) {
           if (pbConfig[key] !== false) {
             var d = statDefs[key];
-            html += '<div class="pb-card">' +
+            var clickAttr = '';
+            if (key === 'longest_activity' && longestAct) {
+              clickAttr = ' onclick="openActivityDetail(\'' + (longestAct.strava_activity_id || longestAct.id) + '\', event, true)"';
+            } else if (key === 'best_pace' && bestPaceAct) {
+              clickAttr = ' onclick="openActivityDetail(\'' + (bestPaceAct.strava_activity_id || bestPaceAct.id) + '\', event, true)"';
+            } else if (key === 'longest_session' && longestSessionAct) {
+              clickAttr = ' onclick="openActivityDetail(\'' + (longestSessionAct.strava_activity_id || longestSessionAct.id) + '\', event, true)"';
+            } else if (key === 'max_elevation' && maxElevationAct) {
+              clickAttr = ' onclick="openActivityDetail(\'' + (maxElevationAct.strava_activity_id || maxElevationAct.id) + '\', event, true)"';
+            } else if (key === 'max_speed' && maxSpeedAct) {
+              clickAttr = ' onclick="openActivityDetail(\'' + (maxSpeedAct.strava_activity_id || maxSpeedAct.id) + '\', event, true)"';
+            } else if (key === 'best_day' && bestDayDate) {
+              clickAttr = ' onclick="showDateDetails(\'' + bestDayDate + '\')"';
+            }
+
+            html += '<div class="pb-card"' + clickAttr + '>' +
               '<div class="pb-card-left">' +
                 '<div class="pb-card-header">' +
                   '<div class="pb-card-icon" style="background: ' + d.bg + '; color: ' + d.color + ';">' +
@@ -1044,10 +1097,13 @@ async function load(isBackgroundRefresh) {
           allRegRaw  = fetched[1]; cacheSet('ranking_reg',  allRegRaw);
         }
         allActs=allActsRaw; allRegRes=allRegRaw;
-        LB_REG=allRegRaw;
-        LB_ACTS=allActsRaw;
-        precomputeLBScores();
-        if(LB_ME){_lbReady=true; if(typeof lbRender === 'function') lbRender();}
+        var isViewingCustomLb = window._lbCurrentEventId && window._lbCurrentEventId !== 1;
+        if (!isViewingCustomLb) {
+          LB_REG=allRegRaw;
+          LB_ACTS=allActsRaw;
+          precomputeLBScores();
+          if(LB_ME){_lbReady=true; if(typeof lbRender === 'function') lbRender();}
+        }
         if (typeof renderFeedHighlights === 'function') renderFeedHighlights();
         if (typeof renderCommunityPulse === 'function') renderCommunityPulse();
       }catch(e2){console.warn('Ranking load failed:',e2);return;}

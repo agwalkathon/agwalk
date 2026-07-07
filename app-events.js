@@ -332,6 +332,8 @@ var _lbEventCache = {};             // fetched data per event id
 function setLbTitle(txt) {
   var el = document.getElementById('lb-event-title');
   if (el) { el.textContent = txt || ''; el.style.display = txt ? 'block' : 'none'; }
+  var btn = document.getElementById('lb-back-to-events-row');
+  if (btn) { btn.style.display = (window._lbCurrentEventId && window._lbCurrentEventId !== 1) ? 'block' : 'none'; }
 }
 
 function saveDefaultLbState() {

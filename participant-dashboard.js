@@ -101,12 +101,16 @@
     host.textContent = '';
     host.style.opacity = '1';
     if (ev.rules_config.logo_url) {
+      var logoSrc = ev.rules_config.logo_url;
+      var separator = logoSrc.indexOf('?') !== -1 ? '&' : '?';
+      logoSrc = logoSrc + separator + 'cb=' + Date.now();
+      
       var blk = host.closest('.hero-rings-block') || host.parentNode;
       var im = blk ? blk.querySelector('img') : null;
-      if (im) { im.src = ev.rules_config.logo_url; im.style.maxHeight = '34px'; }
+      if (im) { im.src = logoSrc; im.style.maxHeight = '34px'; }
       else {
         var li = document.createElement('img');
-        li.src = ev.rules_config.logo_url;
+        li.src = logoSrc;
         li.style.cssText = 'display:block;margin:0 auto 12px;max-height:34px;';
         host.parentNode.insertBefore(li, host);
       }

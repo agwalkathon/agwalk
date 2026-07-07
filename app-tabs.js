@@ -3267,11 +3267,18 @@ function setupAppLayout(isParticipant) {
   var bnav = document.querySelector('.bottom-nav');
   var track = document.getElementById('tab-track');
   
+  var isEmbedded = window.location.search.indexOf('embed=1') > -1 || window.self !== window.top;
+  if (isEmbedded) {
+    document.documentElement.classList.add('is-embedded');
+  }
+
   document.body.classList.toggle('employee-mode', !isParticipant);
   
   var allTabs = ['dashboard', 'leaderboard', 'events', 'celebrate', 'feed', 'you'];
   
-  if (isParticipant) {
+  if (isEmbedded) {
+    TAB_ORDER = ['celebrate'];
+  } else if (isParticipant) {
     var rawOrder = ['dashboard', 'leaderboard', 'events', 'celebrate', 'you'];
     var cfg = CONFIG_LB.tabs_config || {};
     TAB_ORDER = [];
@@ -3307,7 +3314,7 @@ function setupAppLayout(isParticipant) {
     }
 
     var backBtn = document.getElementById('lb-back-to-events-row');
-    if (backBtn) backBtn.style.display = 'none';
+    if (backBtn) backBtn.style.display = (window._lbCurrentEventId && window._lbCurrentEventId !== 1) ? 'block' : 'none';
 
     // Show participant-only layout controls
     document.querySelectorAll('.part-only').forEach(function(el) {

@@ -669,6 +669,11 @@
     .milestone-lbl{font-size:12px;font-weight:700;color:#fff;}
     /* Stat cards grid */
     .stat-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:0;}
+    #mystats-grid-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
     .stat-card-item {
       padding: 10px 8px;
       transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -1229,6 +1234,12 @@
       }
       .stat-card-label {
         font-size: 9px;
+      }
+      #mystats-grid-container {
+        grid-template-columns: 1fr 1fr !important;
+      }
+      #mystats-grid-container > .stat-card-item:nth-child(3) {
+        grid-column: span 2;
       }
     }
 

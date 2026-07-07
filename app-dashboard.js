@@ -109,7 +109,8 @@
         im.onerror = function() {
           this.src = 'logo-white.png';
         };
-        im.src = ev.rules_config.logo_url;
+        var separator = ev.rules_config.logo_url.indexOf('?') !== -1 ? '&' : '?';
+        im.src = ev.rules_config.logo_url + separator + 'cb=' + Date.now();
         im.style.maxHeight = '34px';
         im.style.height = 'auto';
         im.style.width = 'auto';
