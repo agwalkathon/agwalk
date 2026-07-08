@@ -338,7 +338,7 @@ function buildEventCard(ev, group) {
 }
 
 // ===== Event-scoped leaderboard switching =====
-var _lbCurrentEventId = 2;          // dynamic, initialized from registration
+var _lbCurrentEventId = 1;          // dynamic, initialized from registration
 var _lbDefaultState = null;         // saved default (registered event) globals
 var _lbEventCache = {};             // fetched data per event id
 
@@ -346,7 +346,7 @@ function setLbTitle(txt) {
   var el = document.getElementById('lb-event-title');
   if (el) { el.textContent = txt || ''; el.style.display = txt ? 'block' : 'none'; }
   var btn = document.getElementById('lb-back-to-events-row');
-  var defaultId = window._lbRegisteredEventId || 2;
+  var defaultId = window._lbRegisteredEventId || 1;
   var bnavLb = document.getElementById('bnav-leaderboard');
   var bnavLbHidden = bnavLb && bnavLb.style.display === 'none';
   var alwaysShowBack = window._lbCameFromEvents || bnavLbHidden;
@@ -432,7 +432,7 @@ async function openEventLeaderboard(ev) {
   window._lbCameFromEvents = true;
   try {
     var suffix = (ev.status === 'ended' || ev.status === 'archived') ? ' — Final Results' : '';
-    var defaultId = window._lbRegisteredEventId || 2;
+    var defaultId = window._lbRegisteredEventId || 1;
     
     // Check if default leaderboard data is actually loaded in memory
     var dataLoaded = (typeof LB_REG !== 'undefined' && LB_REG && LB_REG.length > 0);
@@ -485,7 +485,7 @@ async function openEventLeaderboard(ev) {
   var nav = document.getElementById('bnav-leaderboard');
   if (!nav) return;
   nav.addEventListener('click', function(){
-    var defaultId = window._lbRegisteredEventId || 2;
+    var defaultId = window._lbRegisteredEventId || 1;
     if (_lbCurrentEventId !== defaultId && _lbDefaultState) {
       applyLbState(_lbDefaultState);
       _LB_EV_RULES = null;
