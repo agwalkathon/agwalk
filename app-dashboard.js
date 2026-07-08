@@ -60,7 +60,12 @@
         });
       }
       
-      return pick ? { ev: pick, athleteId: s.athleteId } : null;
+      var gender = 'Male';
+      if (pick) {
+        var regRes = await fetchJSON(SUPABASE_URL + '/rest/v1/registration?strava_athlete_id=eq.' + s.athleteId + '&event_id=eq.' + pick.id + '&select=gender');
+        if (Array.isArray(regRes) && regRes.length && regRes[0].gender) gender = regRes[0].gender;
+      }
+      return pick ? { ev: pick, athleteId: s.athleteId, gender: gender } : null;
     } catch(e){ return null; }
   }
 
@@ -225,6 +230,16 @@
     host.textContent = '';
     host.style.opacity = '1';
     
+    var medalData = [];
+    try {
+      medalData = await fetchJSON(SUPABASE_URL + '/rest/v1/leaderboard_config?event_id=eq.' + ev.id + '&config_key=eq.medals&select=config_value');
+    } catch(e){}
+    var medals = {gold:{male:300,female:250},silver:{male:200,female:150},bronze:{male:125,female:100}};
+    if (Array.isArray(medalData) && medalData.length && medalData[0].config_value) {
+      medals = medalData[0].config_value;
+    }
+    var gKey = (ctx.gender || '').toLowerCase() === 'female' ? 'female' : 'male';
+
     dash.rings.slice(0,5).forEach(function(ring){
       var total = 0, todaySum = 0;
       acts.forEach(function(a){
@@ -232,11 +247,21 @@
         total += v;
         if (actDay(a) === today) todaySum += v;
       });
-      var value, goal;
-      if (ring.goal_type === 'total') { value = total; goal = ring.goal; }
-      else if (ring.goal_type === 'auto') { value = todaySum; goal = ring.goal / evDays; }
-      else { value = todaySum; goal = ring.goal; }
-      if (ring.metric === 'points') { value = 0; goal = ring.goal;
+      
+      var goalRaw = String(ring.goal).toLowerCase().trim();
+      var goal;
+      if (goalRaw === 'gold' || goalRaw === 'silver' || goalRaw === 'bronze') {
+        goal = Number(medals[goalRaw][gKey]) || 100;
+      } else {
+        goal = parseFloat(goalRaw) || 0;
+      }
+
+      var value;
+      if (ring.goal_type === 'total') { value = total; }
+      else if (ring.goal_type === 'auto') { value = todaySum; goal = goal / evDays; }
+      else { value = todaySum; }
+      
+      if (ring.metric === 'points') { value = 0;
         try { if (typeof calcFullPtsAdaptive === 'function') { var p = calcFullPtsAdaptive(acts, null, null); value = (ring.goal_type === 'daily') ? 0 : p.total; } } catch(e){}
       }
       host.appendChild(ringBox(ring, value, goal));
