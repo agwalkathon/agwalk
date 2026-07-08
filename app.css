@@ -1284,7 +1284,7 @@
       display: flex;
       background: rgba(0, 0, 0, 0.35);
       border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 22px;
+      border-radius: var(--radius-sm);
       padding: 3px;
       margin: 10px 0 14px;
       gap: 2px;
@@ -1297,7 +1297,7 @@
       color: rgba(255, 255, 255, 0.4);
       background: none;
       border: none;
-      border-radius: 19px;
+      border-radius: var(--radius-xs);
       cursor: pointer;
       font-family: var(--font);
       text-transform: uppercase;
@@ -2600,7 +2600,7 @@
     width: 100vw;
     height: 100dvh;
     background: var(--bg);
-    z-index: 500;
+    z-index: 10100;
     transform: translate3d(100%, 0, 0);
     transition: transform 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     overflow-y: auto;
