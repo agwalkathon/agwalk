@@ -206,7 +206,8 @@ function buildEventCard(ev, group) {
    * Impact: Creates a high-fidelity visual identity for each event on the Events tab.
    */
   var sportType = detectEventSportType(ev);
-  if (!ev.banner_url)     card.classList.add('has-badge');
+  if (!ev.banner_url) {
+    card.classList.add('has-badge');
     var badge = document.createElement('div');
     badge.className = 'ev-card-sport-badge';
     badge.innerHTML = renderIcon(sportType === 'ride' ? 'Ride' : sportType === 'run' ? 'Run' : sportType === 'hike' ? 'Hike' : sportType === 'walk' ? 'Walk' : 'Mixed');
