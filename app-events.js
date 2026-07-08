@@ -343,14 +343,16 @@ var _lbDefaultState = null;         // saved default (registered event) globals
 var _lbEventCache = {};             // fetched data per event id
 
 function setLbTitle(txt) {
-  var el = document.getElementById('lb-event-title');
-  if (el) { el.textContent = txt || ''; el.style.display = txt ? 'block' : 'none'; }
-  var btn = document.getElementById('lb-back-to-events-row');
+  var el = document.getElementById('lb-event-title-text');
+  var wrapper = document.getElementById('lb-event-title');
+  if (el) { el.textContent = txt || ''; }
+  if (wrapper) { wrapper.style.display = txt ? 'flex' : 'none'; }
+  var btn = document.getElementById('lb-back-btn');
   var defaultId = window._lbRegisteredEventId || 1;
   var bnavLb = document.getElementById('bnav-leaderboard');
   var bnavLbHidden = bnavLb && bnavLb.style.display === 'none';
   var alwaysShowBack = window._lbCameFromEvents || bnavLbHidden;
-  if (btn) { btn.style.display = (alwaysShowBack || (window._lbCurrentEventId && window._lbCurrentEventId !== defaultId)) ? 'block' : 'none'; }
+  if (btn) { btn.style.display = (alwaysShowBack || (window._lbCurrentEventId && window._lbCurrentEventId !== defaultId)) ? 'flex' : 'none'; }
 }
 
 function saveDefaultLbState() {
