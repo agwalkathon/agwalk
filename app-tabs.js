@@ -847,7 +847,7 @@ function precomputeLBScores() {
 (function() {
   try {
     var cachedReg = JSON.parse(safeGetItem('agwalk_ranking_reg') || 'null');
-    var cachedActs = JSON.parse(safeGetItem('agwalk_ranking_acts_v3') || 'null');
+    var cachedActs = JSON.parse(safeGetItem('agwalk_ranking_acts_v4') || 'null');
     if (cachedReg && cachedReg.data && cachedActs && cachedActs.data) {
       LB_REG = cachedReg.data;
       LB_ACTS = cachedActs.data;
@@ -3341,8 +3341,8 @@ function setupAppLayout(isParticipant) {
       teamBtn.style.display = teamLbEnabled ? 'block' : 'none';
     }
 
-    var backBtn = document.getElementById('lb-back-to-events-row');
-    if (backBtn) backBtn.style.display = (window._lbCurrentEventId && window._lbCurrentEventId !== window._lbRegisteredEventId) ? 'block' : 'none';
+    var backBtn = document.getElementById('lb-back-btn');
+    if (backBtn) backBtn.style.display = (window._lbCurrentEventId && window._lbCurrentEventId !== window._lbRegisteredEventId) ? 'flex' : 'none';
 
     // Show participant-only layout controls
     document.querySelectorAll('.part-only').forEach(function(el) {
@@ -3368,8 +3368,8 @@ function setupAppLayout(isParticipant) {
       }
     });
 
-    var backBtn = document.getElementById('lb-back-to-events-row');
-    if (backBtn) backBtn.style.display = 'block';
+    var backBtn = document.getElementById('lb-back-btn');
+    if (backBtn) backBtn.style.display = 'flex';
 
     // Hide all participant-only activities/challenges sub-tabs and event progress
     document.querySelectorAll('.part-only').forEach(function(el) {
