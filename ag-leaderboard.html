@@ -548,7 +548,7 @@ var EV_ALL = [];
 function evq(){ return EV_ID ? "&event_id=eq."+EV_ID : ""; }
 function scoringMode(){ return (EV_ID && EV_RULES && EV_RULES.scoring_mode) || 'single_metric'; }
 function scoringMetric(){ return (EV_ID && EV_RULES && EV_RULES.metric) || 'distance_km'; }
-function isLegacyScoring(){ return !EV_ID || (scoringMode()==='single_metric' && scoringMetric()==='distance_km'); }
+function isLegacyScoring(){ return !EV_ID || EV_ID === 1; }
 var METRIC_META = {
   distance_km:     { label:'DISTANCE (KM)', short:'KM',    dec:2 },
   elevation_m:     { label:'ELEVATION (M)', short:'M',     dec:0 },
