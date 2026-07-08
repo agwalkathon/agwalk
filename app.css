@@ -41,7 +41,7 @@
     /* ── Header ── */
     .header{
       position:sticky;top:0;z-index:200;
-      background:rgba(14, 17, 21, 0.96);
+      background:rgba(31, 38, 45, 0.96);
       backdrop-filter:blur(20px);
       -webkit-backdrop-filter:blur(20px);
       padding:max(14px,env(safe-area-inset-top)) 16px 14px;
