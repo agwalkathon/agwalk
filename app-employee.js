@@ -761,7 +761,7 @@ function applyBrandingDOM(b, lEl, aEl, appNameEl) {
     return 'rgba(' + rVal + ',' + gVal + ',' + bVal + ',' + alpha + ')';
   };
   
-  var accentColor = b.accent_color || '#E8622A';
+  var accentColor = b.accent_color || (typeof DEFAULT_BRAND_COLOR !== 'undefined' ? DEFAULT_BRAND_COLOR : '#E8622A');
   styleEl.textContent = `
     body, input, button, select {
       font-family: "${b.font_family || 'Inter'}", sans-serif !important;

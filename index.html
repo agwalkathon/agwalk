@@ -24,7 +24,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#E8622A">
@@ -36,7 +36,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css?v=20260704_v102">
+  <link rel="stylesheet" href="app.css?v=20260709_v106">
   <style>
     /* Prevent Flash of Unstyled Content (FOUC) and visual jumps */
     #login-screen {
@@ -161,22 +161,26 @@
 <!-- ── Splash Screen ──────────────────────────────────────────────────── -->
 <div id="splash-screen" style="
   position:fixed;inset:0;z-index:10000;
-  background:#0E1012;
+  background:var(--bg);
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
   transition:opacity 0.4s ease;
 ">
   <div style="display:flex;flex-direction:column;align-items:center;gap:32px;">
-    <img
-      src="logo-chevron.png"
-      alt="Walkathon"
-      style="width:min(140px,40vw);
-             animation:splashPulse 1.8s ease-in-out infinite;"
-    >
-    <div style="display:flex;gap:9px;align-items:center;">
-      <div class="splash-dot" style="animation-delay:0s"></div>
-      <div class="splash-dot" style="animation-delay:0.2s"></div>
-      <div class="splash-dot" style="animation-delay:0.4s"></div>
+    <div class="splash-logo-wrap">
+      <img
+        src="logo-chevron.png"
+        alt="Walkathon"
+        style="width:min(140px,40vw); filter:grayscale(1);
+               animation:splashPulse 1.8s ease-in-out infinite;"
+      >
+    </div>
+    <div class="splash-step-bars">
+      <div class="splash-step-bar" style="animation-delay:0s"></div>
+      <div class="splash-step-bar" style="animation-delay:0.15s"></div>
+      <div class="splash-step-bar" style="animation-delay:0.3s"></div>
+      <div class="splash-step-bar" style="animation-delay:0.45s"></div>
+      <div class="splash-step-bar" style="animation-delay:0.6s"></div>
     </div>
     <div id="splash-text" style="color:rgba(255,255,255,0.7);font-size:14px;font-weight:500;font-family:var(--font);margin-top:-8px;text-align:center;display:none;"></div>
   </div>
@@ -217,14 +221,20 @@
 }
 </style>
 
-<script src="app-config.js?v=20260706_v107" defer></script>
-<script src="app-employee.js?v=20260706_v107" defer></script>
+<script src="app-config.js?v=20260709_v109" defer></script>
+<script src="app-employee.js?v=20260709_v108" defer></script>
 <script>
-  window.addEventListener('load', function() {
+  function _bootBranding() {
     if (typeof loadBranding === 'function') {
       loadBranding();
     }
-  });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _bootBranding);
+  } else {
+    // Deferred scripts execute after DOM parsing, so if we're here readyState is already past 'loading'
+    _bootBranding();
+  }
 </script>
 
 </body>
