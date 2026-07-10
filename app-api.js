@@ -987,7 +987,7 @@ async function load(isBackgroundRefresh) {
             var count = typeCounts[type];
             var bg = bgColors[type] || 'rgba(255,255,255,0.08)';
             var fg = textColors[type] || 'var(--muted)';
-            return '<span style="font-size:11px;font-weight:700;color:' + fg + ';background:' + bg + ';padding:5px 10px;border-radius:12px;text-transform:uppercase;letter-spacing:0.5px;margin-right:8px;margin-bottom:8px;">' + type + ' · ' + count + '</span>';
+            return '<span style="font-size:11px;font-weight:600;color:' + fg + ';background:' + bg + ';padding:5px 10px;border-radius:12px;text-transform:uppercase;letter-spacing:0.5px;margin-right:8px;margin-bottom:8px;">' + type + ' · ' + count + '</span>';
           }).join('');
         }
       }
@@ -1727,6 +1727,16 @@ async function bootAppUnified() {
   if (typeof loadBranding === 'function') {
     loadBranding();
   }
+
+  window._stravaSyncHeaderEnabled = false;
+  try {
+    var flagRes = await fetch(BACKEND + '/app-feature-flags');
+    var flagData = await flagRes.json();
+    window._stravaSyncHeaderEnabled = !!(flagData && flagData.strava_sync_header_enabled);
+  } catch (e) {}
+  var syncBtnEl = document.getElementById('strava-sync-btn');
+  if (syncBtnEl && !window._stravaSyncHeaderEnabled) syncBtnEl.style.display = 'none';
+
   var isParticipant = false;
   var s = null;
   try {
