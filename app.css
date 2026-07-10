@@ -360,7 +360,7 @@
       position:absolute;inset:0;display:flex;flex-direction:column;
       align-items:center;justify-content:center;
     }
-    .ring-pct{font-size:18px;font-weight:800;color:#fff;line-height:1;letter-spacing:-0.5px;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;}
+    .ring-pct{font-size:18px;font-weight:600;color:#fff;line-height:1;letter-spacing:-0.5px;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;}
     .ring-check{font-size:22px;line-height:1;}
     .ring-emoji{font-size:20px;margin-bottom:3px;}
     .ring-name{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;margin-top:10px;color:#fff;}
@@ -858,7 +858,7 @@
     .act-tile-right{text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;}
     .act-tile-dist{font-size:20px;font-weight:600;color:#fff;line-height:1;letter-spacing:-0.3px;}
     .act-tile-dist-lbl{font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);margin-top:1px;text-transform:uppercase;}
-    .act-tile-flag{font-size:8.5px;font-weight:700;padding:2px 6px;border-radius:5px;margin-top:3px;display:inline-block;}
+    .act-tile-flag{font-size:8.5px;font-weight:600;padding:2px 6px;border-radius:5px;margin-top:3px;display:inline-block;}
     .flag-valid{background:rgba(34,197,94,0.15);color:#22C55E;}
     .flag-bad{background:rgba(239,68,68,0.15);color:#EF4444;}
     .act-tile-bar{position:absolute;right:8px;top:15%;width:3px;height:70%;border-radius:2px;}
@@ -891,7 +891,7 @@
     .mc-fill{height:100%;border-radius:20px;transition:width 0.6s ease;}
     .mc-fill.br{background:var(--bronze);} .mc-fill.si{background:var(--silver);} .mc-fill.go{background:var(--gold);}
     .mc-need{font-size:10px;color:var(--muted);margin-top:5px;line-height:1.4;}
-    .mc-done{position:absolute;top:4px;right:4px;font-size:7px;font-weight:700;background:var(--brand);color:#fff;padding:1px 5px;border-radius:5px;}
+    .mc-done{position:absolute;top:4px;right:4px;font-size:7px;font-weight:600;background:var(--brand);color:#fff;padding:1px 5px;border-radius:5px;}
 
     /* ── Standing ── */
     .standing-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
@@ -978,7 +978,7 @@
     .rival-row{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border);}
     .rival-row:last-child{border-bottom:none;}
     .rival-row.rival-me{background:rgba(232,98,42,0.06);}
-    .rival-badge{font-size:14px;font-weight:700;padding:5px 10px;border-radius:8px;flex-shrink:0;min-width:42px;text-align:center;}
+    .rival-badge{font-size:14px;font-weight:600;padding:5px 10px;border-radius:8px;flex-shrink:0;min-width:42px;text-align:center;}
     .rb-ahead{background:rgba(239,68,68,0.15);color:#EF4444;}
     .rb-you{background:var(--brand);color:#fff;}
     .rb-behind{background:rgba(34,197,94,0.15);color:#22C55E;}
@@ -1379,7 +1379,7 @@
     .row-medal{font-size:19px;margin-left:2px;}
     .row-pts-num{font-size:24px;font-weight:700;color:var(--brand);}
     .row-pts-unit{font-size:var(--fs-sm);color:var(--label);font-weight:500;}
-    .you-chip{display:inline-block;background:var(--brand);color:#fff;font-size:7.5px;font-weight:800;padding:1px 5px;border-radius:4px;margin-left:5px;vertical-align:middle;}
+    .you-chip{display:inline-block;background:var(--brand);color:#fff;font-size:7.5px;font-weight:600;padding:1px 5px;border-radius:4px;margin-left:5px;vertical-align:middle;}
     .row-chevron{font-size:10px;color:var(--label);margin-left:6px;transition:transform 0.2s;display:inline-block;flex-shrink:0;}
     .lb-row.expanded .row-chevron{transform:rotate(180deg);}
 
@@ -1446,7 +1446,7 @@
     /* detail bottom row: sparkline + last active */
     .detail-meta{display:flex;align-items:center;justify-content:space-between;margin-top:6px;}
 
-    .rpill{font-size:9px;font-weight:700;padding:2.5px 7px;border-radius:6px;white-space:nowrap;}
+    .rpill{font-size:9px;font-weight:600;padding:2.5px 7px;border-radius:6px;white-space:nowrap;}
     .rpill.km{background:rgba(96,165,250,0.12);color:var(--blue);}
     .rpill.dist{background:rgba(96,165,250,0.07);color:rgba(96,165,250,0.7);}
     .rpill.bon{background:rgba(245,158,11,0.12);color:var(--gold);}
@@ -2356,7 +2356,7 @@
   }
   .detail-field-val {
     font-size: 16px;
-    font-weight: 800;
+    font-weight: 600;
     color: #fff;
     margin-top: 4px;
   }
@@ -2424,7 +2424,7 @@
   }
   .detail-hero-val {
     font-size: 32px;
-    font-weight: 800;
+    font-weight: 600;
     color: #fff;
     line-height: 1;
   }
@@ -3061,7 +3061,7 @@
 .ev-card-body{padding:16px;position:relative;z-index:1;}
 .ev-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .ev-card-name{font-size:17px;font-weight:600;color:#fff}
-.ev-pill{font-size:10px;font-weight:700;letter-spacing:.5px;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.ev-pill{font-size:10px;font-weight:600;letter-spacing:.5px;padding:3px 10px;border-radius:20px;white-space:nowrap}
 .ev-pill-live{background:rgba(34,197,94,.15);color:#4ADE80}
 .ev-pill-enrolled{background:rgba(34,197,94,.15);color:#4ADE80}
 .ev-pill-registered{background:rgba(232,98,42,.15);color:#F97D4E}
@@ -3116,7 +3116,7 @@
 .login-field-label{display:block;font-size:var(--fs-xs);font-weight:600;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px}
 .login-field{width:100%;padding:13px 15px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:11px;color:#fff;font-size:var(--fs-md);font-weight:500;font-family:inherit;margin-bottom:0;outline:none;transition:border-color .15s}
 .login-field:focus{border-color:rgba(232,98,42,0.6)}
-.login-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:15px;margin-top:16px;background:var(--brand);border:none;border-radius:12px;color:#fff;font-size:var(--fs-md);font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 4px 20px rgba(232,98,42,0.28);transition:transform .12s}
+.login-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:15px;margin-top:16px;background:var(--brand);border:none;border-radius:12px;color:#fff;font-size:var(--fs-md);font-weight:600;font-family:inherit;cursor:pointer;box-shadow:0 4px 20px rgba(232,98,42,0.28);transition:transform .12s}
 .login-btn:active{transform:scale(0.97)}
 .login-btn:disabled{opacity:.5;cursor:not-allowed}
 .login-err{color:#fca5a5;background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.18);border-radius:11px;font-size:var(--fs-sm);line-height:1.6;text-align:center;padding:0;min-height:0;margin:0;overflow:hidden;max-height:0;transition:all .2s}
