@@ -403,7 +403,8 @@ async function verifyOTP(){
       role: 'user',
       athleteId: d.athlete_id,
       name: d.name || 'Participant',
-      email: email,
+      email: d.email || email,
+      empCode: d.emp_code || '',
       expires: Date.now() + (8 * 60 * 60 * 1000)
     }));
     window.location.replace('app.html');
@@ -471,6 +472,7 @@ async function doLogin(){
       athleteId:d.athlete_id,
       name:d.name||'Participant',
       empCode:code,
+      email:d.email||'',
       expires:Date.now()+(8*60*60*1000)
     }));
     window.location.replace('app.html');
