@@ -663,7 +663,7 @@ td button.btn:last-child { margin-right: 0; }
         <button class="stab active" id="tab-all" onclick="switchTab('all')">🏃 All Workouts</button>
         <button class="stab" id="tab-scanner" onclick="switchTab('scanner')">🔍 Bulk Flag Scanner</button>
         <button class="stab" id="tab-deleted" onclick="switchTab('deleted')">🗑️ Deleted</button>
-        <button class="stab" id="tab-rules" onclick="switchTab('rules')">⚙️ Auto-Flag Rules</button>
+        <button class="stab" id="tab-rules" onclick="switchTab('rules')">🚩 Flag Reasons</button>
       </div>
       <button class="btn-recheck" id="btn-recheck-outer" style="display:none; margin-bottom: 2px;" onclick="recheckAll()">🔍 Re-run Auto-flag</button>
     </div>
@@ -835,6 +835,36 @@ td button.btn:last-child { margin-right: 0; }
 
     <!-- Tab 3: Auto-Flag Rules Config -->
     <div id="rules-container" style="display:none">
+      <div class="section" style="max-width:800px; margin: 0 auto 16px;">
+        <div class="section-body" style="display:flex; flex-direction:column; gap:10px; padding:16px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+            <h2 style="font-size:16px; font-weight:600; color:var(--text-primary); display:flex; align-items:center; gap:8px; margin:0;">
+              <i class="ti ti-flag" style="color:var(--brand); font-size:20px;"></i> Flag Reasons
+            </h2>
+            <button class="btn btn-primary" onclick="openAddReasonModal()" style="padding:6px 14px; font-size:12.5px;">+ Add Reason</button>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <button class="btn btn-ghost" onclick="openCopyReasonsModal()" style="padding:6px 12px; font-size:12px;">📋 Copy to event…</button>
+            <select id="fr-type-filter" onchange="renderFlagReasons()" style="padding:6px 10px; border:1px solid var(--border); border-radius:8px; font-size:12.5px; background:var(--page-bg);">
+              <option value="">All Types</option>
+              <option value="auto">Auto</option>
+              <option value="manual">Manual</option>
+            </select>
+            <select id="fr-status-filter" onchange="renderFlagReasons()" style="padding:6px 10px; border:1px solid var(--border); border-radius:8px; font-size:12.5px; background:var(--page-bg);">
+              <option value="active" selected>Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="">All Status</option>
+            </select>
+            <input id="fr-search" oninput="renderFlagReasons()" placeholder="Search reasons..." style="flex:1; min-width:140px; padding:6px 10px; border:1px solid var(--border); border-radius:8px; font-size:12.5px; background:var(--page-bg);">
+          </div>
+          <div id="fr-orphan-note" style="display:none; font-size:11.5px; color:#B45309; background:#FFFBEB; border:1px solid #FDE68A; border-radius:8px; padding:8px 10px;"></div>
+          <div style="font-size:11px; color:var(--text-muted); line-height:1.5;">💡 Header toggle = show/hide in flag dropdowns. For <span style="color:#2563EB;font-weight:600;">AUTO</span> reasons, the rule inside the card separately controls auto-flagging of new activities. Toggles never change already-flagged activities.</div>
+          <div id="flag-reason-cards" style="display:flex; flex-direction:column; gap:6px;">
+            <div style="text-align:center; color:var(--text-muted); font-size:13px; padding:20px;">Loading flag reasons...</div>
+          </div>
+        </div>
+      </div>
+      <div id="legacy-rules-pool" style="display:none;">
       <div class="section" style="max-width:800px; margin: 0 auto 24px;">
         <div class="section-body" style="display:flex; flex-direction:column; gap:16px;">
           <div class="section-header" style="border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:4px;">
@@ -1129,6 +1159,7 @@ td button.btn:last-child { margin-right: 0; }
           </div>
         </div>
       </div>
+      </div><!-- /legacy-rules-pool -->
     </div>
 
     <!-- Tab 5: Bulk Flag Scanner -->
@@ -1459,7 +1490,7 @@ td button.btn:last-child { margin-right: 0; }
 
 var SUPABASE_URL='https://jhdgkncpkrttvemvwukc.supabase.co';
 var SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoZGdrbmNwa3J0dHZlbXZ3dWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NzgyNjMsImV4cCI6MjA5NzI1NDI2M30.d7mvXOYDq5G4aqs1Mbc6HFNgTBlQk4B6ah0eahE_yZE';
-var BACKEND_URL=window.BACKEND_URL;var HDR={apikey:SUPABASE_ANON,Authorization:'Bearer '+SUPABASE_ANON};
+var BACKEND_URL= window.BACKEND_URL;var HDR={apikey:SUPABASE_ANON,Authorization:'Bearer '+SUPABASE_ANON};
 
 var EV_ID = 1;
 var EV_ALL = [];
@@ -1508,6 +1539,12 @@ async function loadEventSelector() {
       if (flaggedBody) {
         flaggedBody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:20px; color:var(--text-muted);">Event changed. Please configure filters and search to load data.</td></tr>';
       }
+
+      // Refresh Flag Reasons tab + dropdowns for the newly selected event
+      if (typeof loadFlagReasons === 'function' && document.getElementById('rules-container') && document.getElementById('rules-container').style.display !== 'none') {
+        loadFlagReasons();
+      }
+      if (typeof populateFlagReasonDropdowns === 'function') populateFlagReasonDropdowns();
     });
   } catch (err) {
     console.error('Failed to load event selector:', err);
@@ -1515,7 +1552,7 @@ async function loadEventSelector() {
 }
 
 async function fetchAllRows(baseUrl,hdrs){var all=[],pageSize=1000,from=0;while(true){var to=from+pageSize-1;var r=await fetch(baseUrl+(baseUrl.includes('?')?'&':'?')+'limit='+pageSize+'&offset='+from,{headers:Object.assign({},hdrs,{'Range-Unit':'items','Range':from+'-'+to})});if(!r.ok){console.error('fetchAllRows error',r.status,baseUrl);break}var page=await r.json();if(!Array.isArray(page)||page.length===0)break;all=all.concat(page);if(page.length<pageSize)break;from+=pageSize}return all}
-var _BU=window.BACKEND_URL;function authGuard(){var t=sessionStorage.getItem('wk_admin_token');if(!t){window.location.href='admin-login.html';return;}try{var p=JSON.parse(atob(t.split('.')[1]));if(p.exp&&p.exp*1000<Date.now()){sessionStorage.removeItem('wk_admin_token');window.location.href='admin-login.html';}}catch(e){sessionStorage.removeItem('wk_admin_token');window.location.href='admin-login.html';}}function logout(){sessionStorage.removeItem('wk_admin_token');sessionStorage.removeItem('wk_admin');window.location.href='admin-login.html';}function getISTDate(d) {
+var _BU= window.BACKEND_URL;function authGuard(){var t=sessionStorage.getItem('wk_admin_token');if(!t){window.location.href='admin-login.html';return;}try{var p=JSON.parse(atob(t.split('.')[1]));if(p.exp&&p.exp*1000<Date.now()){sessionStorage.removeItem('wk_admin_token');window.location.href='admin-login.html';}}catch(e){sessionStorage.removeItem('wk_admin_token');window.location.href='admin-login.html';}}function logout(){sessionStorage.removeItem('wk_admin_token');sessionStorage.removeItem('wk_admin');window.location.href='admin-login.html';}function getISTDate(d) {
   if (!d) return '';
   try {
     var dt = new Date(d);
@@ -2218,13 +2255,14 @@ function switchTab(t){
   }
 
   if (t === 'rules') {
-    document.getElementById('page-title').textContent = 'Flagged Activities Rules';
-    document.getElementById('page-subtitle').textContent = 'Set dynamic rules to auto-flag activities';
+    document.getElementById('page-title').textContent = 'Flag Reasons';
+    document.getElementById('page-subtitle').textContent = 'Manage all flag reasons — auto rules and manual flags in one place';
     document.getElementById('all-workouts-container').style.display = 'none';
     document.getElementById('flagged-data-container').style.display = 'none';
     document.getElementById('rules-container').style.display = 'block';
     document.getElementById('scanner-container').style.display = 'none';
     document.getElementById('btn-recheck-outer').style.display = 'none';
+    loadFlagReasons();
   } else if (t === 'scanner') {
     document.getElementById('page-title').textContent = 'Bulk Flag Scanner';
     document.getElementById('page-subtitle').textContent = 'Scan existing database manually using configured thresholds';
@@ -4337,6 +4375,344 @@ function updateRowStatusLocally(id, action, reason) {
     }
   }
 }
+
+// ══════════════ FLAG REASONS MANAGEMENT (unified tab) ══════════════
+var FR_DATA = [];
+var FR_ORPHANS = [];
+var FR_LOADED = false;
+var FR_RULE_CARD_MAP = {
+  exclude_rides:       'card-exclude-rides',
+  exclude_workouts:    'card-exclude-workouts',
+  min_distance:        'card-min-distance',
+  elapsed_time:        'card-max-gap',
+  speed_limits:        'card-max-speed',
+  pace_limits:         'card-pace',
+  pace_deviation_rule: 'card-pace',
+  steps_rule:          'card-steps',
+  shared_detect:       null
+};
+var FR_ICONS = { exclude_rides:'🚴', exclude_workouts:'🏋️', min_distance:'📏', elapsed_time:'⏱️', speed_limits:'⚡', pace_limits:'🏃', pace_deviation_rule:'📈', steps_rule:'👣', shared_detect:'👥' };
+
+// Flag Reasons tab follows the page-level Active Event selector (EV_ID / EV_ALL).
+function frEventId(){ return (typeof EV_ID !== 'undefined' && EV_ID) ? EV_ID : 1; }
+function frEvents(){ return (typeof EV_ALL !== 'undefined' && EV_ALL.length) ? EV_ALL : []; }
+
+async function loadFlagReasons(){
+  var host = document.getElementById('flag-reason-cards');
+  try {
+    var r = await fetch(BACKEND_URL + '/admin/flag-reasons?event_id=' + frEventId(), { headers: { Authorization: 'Bearer ' + sessionStorage.getItem('wk_admin_token') } });
+    var d = await r.json();
+    if (!d.success) throw new Error(d.error || 'Load failed');
+    FR_DATA = d.reasons || [];
+    FR_ORPHANS = d.orphans || [];
+    FR_LOADED = true;
+    var orphanEl = document.getElementById('fr-orphan-note');
+    if (FR_ORPHANS.length) {
+      orphanEl.style.display = 'block';
+      orphanEl.innerHTML = '⚠️ <strong>' + FR_ORPHANS.length + ' unmatched reason' + (FR_ORPHANS.length>1?'s':'') + '</strong> found in activity data but not in this list: ' +
+        FR_ORPHANS.map(function(o){ return '<span style="white-space:nowrap">"' + escFR(o.reason) + '" (' + o.applied_count + ')' + ' <a href="#" onclick="addOrphanReason(this.getAttribute(\'data-r\'));return false;" data-r="' + escFR(o.reason) + '" style="color:#B45309;font-weight:700;">+ add</a></span>'; }).join(' · ');
+    } else { orphanEl.style.display = 'none'; }
+    renderFlagReasons();
+  } catch(e) {
+    host.innerHTML = '<div style="color:#c62828;font-size:13px;padding:16px;text-align:center;">Could not load flag reasons: ' + escFR(e.message) + '</div>';
+  }
+}
+
+function escFR(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+
+function renderFlagReasons(){
+  if (!FR_LOADED) return;
+  var typeF = document.getElementById('fr-type-filter').value;
+  var statusF = document.getElementById('fr-status-filter').value;
+  var q = (document.getElementById('fr-search').value || '').toLowerCase().trim();
+  var host = document.getElementById('flag-reason-cards');
+
+  returnRuleCardsToPool();
+
+  var rows = FR_DATA.filter(function(r){
+    if (typeF && r.flag_type !== typeF) return false;
+    if (statusF === 'active' && !r.is_active) return false;
+    if (statusF === 'inactive' && r.is_active) return false;
+    if (q && r.reason.toLowerCase().indexOf(q) === -1) return false;
+    return true;
+  });
+
+  if (!rows.length) { host.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:20px;">No reasons match the filters.</div>'; return; }
+
+  host.innerHTML = '';
+  rows.forEach(function(r){
+    var card = document.createElement('div');
+    card.style.cssText = 'border:1px solid var(--border);border-radius:10px;background:var(--card-bg);overflow:hidden;' + (r.is_active ? '' : 'opacity:0.55;');
+
+    var head = document.createElement('div');
+    head.style.cssText = 'display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;user-select:none;';
+    var icon = FR_ICONS[r.rule_key] || (r.flag_type === 'auto' ? '🔄' : '✋');
+    var typeChip = r.flag_type === 'auto'
+      ? '<span style="font-size:10px;font-weight:600;background:#EFF6FF;color:#2563EB;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.04em;">Auto</span>'
+      : '<span style="font-size:10px;font-weight:600;background:#F5F3FF;color:#7C3AED;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.04em;">Manual</span>';
+    head.innerHTML =
+      '<span style="font-size:15px;flex-shrink:0;">' + icon + '</span>' +
+      '<span style="font-size:13px;font-weight:600;color:var(--text-primary);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escFR(r.reason) + '</span>' +
+      typeChip +
+      '<span style="font-size:11px;color:var(--text-muted);white-space:nowrap;">' + r.applied_count + ' applied</span>' +
+      '<label class="toggle-switch" style="position:relative;display:inline-block;width:34px;height:18px;flex-shrink:0;" onclick="event.stopPropagation();">' +
+        '<input type="checkbox" ' + (r.is_active ? 'checked' : '') + ' onchange="toggleFlagReason(' + r.id + ', this.checked)" style="opacity:0;width:0;height:0;">' +
+        '<span class="toggle-slider" style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:' + (r.is_active ? 'var(--brand)' : '#ccc') + ';transition:.2s;border-radius:18px;"></span>' +
+      '</label>' +
+      '<i class="ti ti-chevron-down" style="font-size:14px;color:var(--text-secondary);transition:transform .2s;flex-shrink:0;"></i>';
+
+    var body = document.createElement('div');
+    body.style.cssText = 'display:none;border-top:1px solid var(--border);padding:12px;background:var(--page-bg);';
+    body.setAttribute('data-fr-body', r.id);
+
+    head.addEventListener('click', function(){
+      var open = body.style.display !== 'none';
+      returnRuleCardsToPool();
+      host.querySelectorAll('[data-fr-body]').forEach(function(b){ b.style.display = 'none'; });
+      host.querySelectorAll('.ti-chevron-down').forEach(function(ic){ ic.style.transform = ''; });
+      if (!open) {
+        body.style.display = 'block';
+        head.querySelector('.ti-chevron-down').style.transform = 'rotate(180deg)';
+        expandFlagReason(r, body);
+      }
+    });
+
+    card.appendChild(head);
+    card.appendChild(body);
+    host.appendChild(card);
+  });
+}
+
+function expandFlagReason(r, body){
+  body.innerHTML = '';
+  var meta = document.createElement('div');
+  meta.style.cssText = 'display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--text-secondary);margin-bottom:8px;';
+  meta.innerHTML = 'Type: <strong>' + (r.flag_type === 'auto' ? 'Auto (fraud engine)' : 'Manual') + '</strong>' +
+    (r.is_engine_rule ? ' · <span style="color:var(--text-muted)">engine rule — name locked</span>' : '');
+  body.appendChild(meta);
+
+  if (!r.is_engine_rule) {
+    var renameWrap = document.createElement('div');
+    renameWrap.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:8px;';
+    renameWrap.innerHTML = '<input type="text" value="' + escFR(r.reason) + '" id="fr-rename-' + r.id + '" style="flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:12.5px;">' +
+      '<button class="btn btn-primary" style="padding:6px 12px;font-size:12px;" onclick="renameFlagReason(' + r.id + ')">Rename</button>';
+    body.appendChild(renameWrap);
+  }
+
+  if (r.flag_type === 'auto') {
+    var cardId = FR_RULE_CARD_MAP[r.rule_key];
+    if (cardId) {
+      var ruleCardBody = document.getElementById(cardId);
+      var ruleCard = ruleCardBody ? ruleCardBody.closest('.collapsible-card') : null;
+      if (ruleCard) {
+        var help = document.createElement('div');
+        help.style.cssText = 'font-size:11.5px;color:#374151;background:#F0F9FF;border:1px solid #BAE6FD;border-radius:8px;padding:8px 10px;margin-bottom:8px;line-height:1.55;';
+        help.innerHTML = '<strong>ℹ️ Two toggles, two jobs:</strong> The toggle on <em>this card\'s header</em> controls whether the reason appears in flag dropdowns. The toggle on the <em>rule card below</em> controls whether the fraud engine auto-flags new activities. Rule OFF + reason ON = no auto-flagging, but admins can still apply it manually. Existing flagged activities are never changed by either toggle.';
+        body.appendChild(help);
+        var note = document.createElement('div');
+        note.style.cssText = 'font-size:11px;color:var(--text-muted);margin-bottom:6px;';
+        note.textContent = 'Rule configuration (changes apply on Save Rules):';
+        body.appendChild(note);
+        body.appendChild(ruleCard);
+        ruleCard.style.marginBottom = '8px';
+        if (ruleCardBody.style.display === 'none') toggleCollapse(cardId);
+        var saveBar = document.createElement('div');
+        saveBar.style.cssText = 'display:flex;justify-content:flex-end;';
+        saveBar.innerHTML = '<button class="btn btn-primary" style="padding:7px 18px;font-size:12.5px;" onclick="saveAutoFlagConfig()">Save Rules Configuration</button>';
+        body.appendChild(saveBar);
+      }
+    } else if (r.rule_key === 'shared_detect') {
+      var link = document.createElement('div');
+      link.style.cssText = 'font-size:12px;color:var(--text-secondary);';
+      link.innerHTML = 'This rule is configured in the <a href="#" onclick="switchTab(\'scanner\');return false;" style="color:var(--brand);font-weight:600;">Bulk Flag Scanner</a> tab (Shared Activity Detection).';
+      body.appendChild(link);
+    }
+  } else {
+    var hint = document.createElement('div');
+    hint.style.cssText = 'font-size:11.5px;color:var(--text-muted);line-height:1.5;';
+    hint.innerHTML = 'Manual flag — applied by admins from the flag dropdowns. No automatic rule. The header toggle controls whether it appears in dropdowns; turning it off never changes already-flagged activities.';
+    body.appendChild(hint);
+  }
+
+  // Delete — only offered when nothing is attached (server re-verifies too)
+  if (r.applied_count === 0 && !(r.is_engine_rule && frEventId() === 1)) {
+    var delBar = document.createElement('div');
+    delBar.style.cssText = 'display:flex;justify-content:flex-end;margin-top:10px;';
+    delBar.innerHTML = '<button class="btn btn-danger" style="padding:6px 14px;font-size:12px;" onclick="deleteFlagReason(' + r.id + ')">🗑️ Delete (no activities attached)</button>';
+    body.appendChild(delBar);
+  }
+}
+
+async function deleteFlagReason(id){
+  var row = FR_DATA.find(function(x){ return x.id === id; });
+  if (!row) return;
+  if (!confirm('Delete flag reason "' + row.reason + '"? This cannot be undone.')) return;
+  try {
+    var r = await fetch(BACKEND_URL + '/admin/flag-reasons/' + id, { method:'DELETE',
+      headers:{ Authorization:'Bearer ' + sessionStorage.getItem('wk_admin_token') } });
+    var d = await r.json();
+    if (!d.success) throw new Error(d.error || 'Delete failed');
+    loadFlagReasons();
+    populateFlagReasonDropdowns();
+  } catch(e){ alert('Failed: ' + e.message); }
+}
+
+function openCopyReasonsModal(){
+  if (!FR_LOADED || !FR_DATA.length) return alert('Load reasons first.');
+  var targets = frEvents().filter(function(e){ return parseInt(e.id) !== frEventId(); });
+  if (!targets.length) return alert('No other events to copy to. Create the target event first in events.html.');
+
+  var overlay = document.createElement('div');
+  overlay.id = 'fr-copy-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;';
+  var srcName = (frEvents().find(function(e){ return parseInt(e.id) === frEventId(); }) || {}).name || 'current event';
+  var modal = document.createElement('div');
+  modal.style.cssText = 'background:#fff;border-radius:16px;padding:24px;width:100%;max-width:460px;max-height:80vh;overflow-y:auto;';
+  modal.innerHTML =
+    '<h3 style="font-size:16px;font-weight:600;margin:0 0 4px;">Copy flag reasons</h3>' +
+    '<p style="font-size:12px;color:var(--text-muted);margin:0 0 14px;">From <strong>' + escFR(srcName) + '</strong> — auto rule thresholds are copied too if the target has none yet.</p>' +
+    '<label style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;">Target event</label>' +
+    '<select id="fr-copy-target" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;margin:4px 0 14px;">' +
+      targets.map(function(e){ return '<option value="' + e.id + '">' + escFR(e.name) + ' (' + e.status.toUpperCase() + ')</option>'; }).join('') +
+    '</select>' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
+      '<label style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;">Reasons to copy</label>' +
+      '<a href="#" onclick="document.querySelectorAll(\'.fr-copy-chk\').forEach(function(c){c.checked=true});return false;" style="font-size:11px;color:var(--brand);">Select all</a>' +
+    '</div>' +
+    '<div style="display:flex;flex-direction:column;gap:4px;margin-bottom:16px;">' +
+      FR_DATA.map(function(r){
+        return '<label style="display:flex;align-items:center;gap:8px;font-size:12.5px;cursor:pointer;">' +
+          '<input type="checkbox" class="fr-copy-chk" value="' + r.id + '"' + (r.is_active ? ' checked' : '') + ' style="cursor:pointer;">' +
+          escFR(r.reason) + ' <span style="font-size:10px;color:var(--text-muted);">(' + r.flag_type + (r.is_active ? '' : ', inactive') + ')</span></label>';
+      }).join('') +
+    '</div>' +
+    '<div style="display:flex;gap:10px;justify-content:flex-end;">' +
+      '<button class="btn btn-ghost" onclick="document.getElementById(\'fr-copy-overlay\').remove()" style="padding:8px 16px;font-size:13px;">Cancel</button>' +
+      '<button class="btn btn-primary" onclick="executeCopyReasons()" style="padding:8px 16px;font-size:13px;">Copy</button>' +
+    '</div>';
+  overlay.appendChild(modal);
+  overlay.addEventListener('click', function(e){ if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+async function executeCopyReasons(){
+  var target = parseInt(document.getElementById('fr-copy-target').value);
+  var ids = Array.from(document.querySelectorAll('.fr-copy-chk:checked')).map(function(c){ return parseInt(c.value); });
+  if (!ids.length) return alert('Select at least one reason.');
+  try {
+    var r = await fetch(BACKEND_URL + '/admin/flag-reasons/copy', { method:'POST',
+      headers:{ 'Content-Type':'application/json', Authorization:'Bearer ' + sessionStorage.getItem('wk_admin_token') },
+      body: JSON.stringify({ from_event_id: frEventId(), to_event_id: target, reason_ids: ids }) });
+    var d = await r.json();
+    if (!d.success) throw new Error(d.error || 'Copy failed');
+    document.getElementById('fr-copy-overlay').remove();
+    alert('✅ Copied ' + d.copied + ' reason' + (d.copied === 1 ? '' : 's') +
+      (d.skipped ? ' · ' + d.skipped + ' already existed on target' : '') +
+      (d.rules_copied ? ' · rule thresholds copied' : ''));
+  } catch(e){ alert('Failed: ' + e.message); }
+}
+
+function returnRuleCardsToPool(){
+  var pool = document.getElementById('legacy-rules-pool');
+  if (!pool) return;
+  var anchor = pool.querySelector('.section-body');
+  Object.keys(FR_RULE_CARD_MAP).forEach(function(k){
+    var id = FR_RULE_CARD_MAP[k];
+    if (!id) return;
+    var bodyEl = document.getElementById(id);
+    var cardEl = bodyEl ? bodyEl.closest('.collapsible-card') : null;
+    if (cardEl && !pool.contains(cardEl) && anchor) anchor.appendChild(cardEl);
+  });
+}
+
+async function toggleFlagReason(id, checked){
+  try {
+    var r = await fetch(BACKEND_URL + '/admin/flag-reasons', { method:'POST',
+      headers:{ 'Content-Type':'application/json', Authorization:'Bearer ' + sessionStorage.getItem('wk_admin_token') },
+      body: JSON.stringify({ action:'toggle', id:id, is_active:checked }) });
+    var d = await r.json();
+    if (!d.success) throw new Error(d.error || 'Toggle failed');
+    var row = FR_DATA.find(function(x){ return x.id === id; });
+    if (row) row.is_active = checked;
+    if (row && !checked && row.applied_count > 0) {
+      alert('"' + row.reason + '" is applied on ' + row.applied_count + ' activities. They stay flagged — this reason just won\'t appear in dropdowns for new use.');
+    }
+    populateFlagReasonDropdowns();
+    renderFlagReasons();
+  } catch(e){ alert('Failed: ' + e.message); loadFlagReasons(); }
+}
+
+async function renameFlagReason(id){
+  var input = document.getElementById('fr-rename-' + id);
+  var name = input ? input.value.trim() : '';
+  if (!name) return alert('Name required');
+  try {
+    var r = await fetch(BACKEND_URL + '/admin/flag-reasons', { method:'POST',
+      headers:{ 'Content-Type':'application/json', Authorization:'Bearer ' + sessionStorage.getItem('wk_admin_token') },
+      body: JSON.stringify({ action:'rename', id:id, reason:name }) });
+    var d = await r.json();
+    if (!d.success) throw new Error(d.error || 'Rename failed');
+    loadFlagReasons();
+    populateFlagReasonDropdowns();
+  } catch(e){ alert('Failed: ' + e.message); }
+}
+
+function openAddReasonModal(){
+  var name = prompt('New flag reason name:');
+  if (!name || !name.trim()) return;
+  addFlagReason(name.trim(), 'manual');
+}
+function addOrphanReason(reason){ addFlagReason(reason, 'manual'); }
+
+async function addFlagReason(name, ftype){
+  try {
+    var r = await fetch(BACKEND_URL + '/admin/flag-reasons', { method:'POST',
+      headers:{ 'Content-Type':'application/json', Authorization:'Bearer ' + sessionStorage.getItem('wk_admin_token') },
+      body: JSON.stringify({ action:'add', reason:name, flag_type:ftype, event_id: frEventId() }) });
+    var d = await r.json();
+    if (!d.success) throw new Error(d.error || 'Add failed');
+    loadFlagReasons();
+    populateFlagReasonDropdowns();
+  } catch(e){ alert('Failed: ' + e.message); }
+}
+
+async function populateFlagReasonDropdowns(){
+  try {
+    var r = await fetch(BACKEND_URL + '/flag-reasons?event_id=' + (typeof frEventId === 'function' ? frEventId() : 1));
+    var d = await r.json();
+    if (!d.success) return;
+    var reasons = d.reasons || [];
+    var autoOpts = reasons.filter(function(x){ return x.flag_type === 'auto'; });
+    var manualOpts = reasons.filter(function(x){ return x.flag_type === 'manual'; });
+
+    function fill(selId){
+      var sel = document.getElementById(selId);
+      if (!sel) return;
+      var current = sel.value;
+      var first = sel.querySelector('option') ? sel.querySelector('option').outerHTML : '<option value="">All reasons</option>';
+      var html = first;
+      if (autoOpts.length)   html += '<optgroup label="── Auto Flags ──">'   + autoOpts.map(function(o){ return '<option>' + escFR(o.reason) + '</option>'; }).join('') + '</optgroup>';
+      if (manualOpts.length) html += '<optgroup label="── Manual Flags ──">' + manualOpts.map(function(o){ return '<option>' + escFR(o.reason) + '</option>'; }).join('') + '</optgroup>';
+      sel.innerHTML = html;
+      sel.value = current;
+    }
+    fill('flag-reason-filter');
+    fill('modal-flag-reason');
+    fill('flagged-reason-filter');
+    var editSel = document.getElementById('edit-flag-reason-select');
+    if (editSel) {
+      var cur = editSel.value;
+      var firstOpt = editSel.querySelector('option') ? editSel.querySelector('option').outerHTML : '<option value="">- None (Valid) -</option>';
+      var opts = firstOpt;
+      if (autoOpts.length)   opts += '<optgroup label="── Auto Flags ──">'   + autoOpts.map(function(o){ return '<option>' + escFR(o.reason) + '</option>'; }).join('') + '</optgroup>';
+      if (manualOpts.length) opts += '<optgroup label="── Manual Flags ──">' + manualOpts.map(function(o){ return '<option>' + escFR(o.reason) + '</option>'; }).join('') + '</optgroup>';
+      opts += '<option value="custom">Custom...</option>';
+      editSel.innerHTML = opts;
+      editSel.value = cur;
+    }
+  } catch(e) { /* hardcoded options remain as fallback */ }
+}
+document.addEventListener('DOMContentLoaded', function(){ populateFlagReasonDropdowns(); });
 </script>
 </body>
 </html>
