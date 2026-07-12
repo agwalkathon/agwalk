@@ -229,7 +229,7 @@ function getGlassmorphicAvatarStyle(name) {
   var shadow = 'inset 0 1px 1px rgba(255,255,255,0.25), 0 4px 15px rgba(0,0,0,0.25)';
   return 'background:' + bg + '; border:' + border + '; color:#ffffff; box-shadow:' + shadow + '; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); text-shadow:0 1px 2px rgba(0,0,0,0.3); font-weight:800; text-transform:uppercase;';
 }
-var TYPE_META = { birthday: ['🎂','#F59E0B'], anniversary: ['🎉','#8B5CF6'], custom: ['📣','#E8622A'], welcome: ['👋','#22C55E'], announcement: ['📢','#3B82F6'] };
+var TYPE_META = { birthday: ['🎂','#F59E0B'], anniversary: ['🎉','#8B5CF6'], custom: ['📣','#E8622A'], welcome: ['👋','#22C55E'], announcement: ['📢','#3B82F6'], medal: ['🏅','#F4A84A'] };
 var EMOJIS = ['🎉','❤️','👏'];
 
 // Occasion card cover + message treatment (welcome/birthday/anniversary only)
@@ -321,41 +321,66 @@ async function loadCelebrate(){
     // Today strip
     var todayStr = new Date(Date.now() + 5.5*3600*1000).toISOString().split('T')[0];
     var todays = d.items.filter(function(c){
-      return c.celebrate_date === todayStr && ['birthday','anniversary','welcome'].indexOf(c.type) > -1;
+      return c.celebrate_date === todayStr && ['birthday','anniversary','welcome','medal'].indexOf(c.type) > -1;
     });
     if (todays.length) {
       var stripWrap = document.createElement('div');
-      stripWrap.style.cssText = 'margin-bottom:16px;';
+      stripWrap.className = 'tcs-wrap';
       var sh = document.createElement('div');
-      sh.style.cssText = 'font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--label);margin-bottom:10px;';
+      sh.className = 'tcs-head';
       sh.textContent = "🎉 Today's Celebrations";
       stripWrap.appendChild(sh);
       var strip = document.createElement('div');
-      strip.style.cssText = 'display:flex;gap:14px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:none;';
+      strip.className = 'tcs-scroll';
+      var CTA_LABEL = { birthday: 'Send wishes', anniversary: 'Congratulate', welcome: 'Say hello', custom: 'Cheer', announcement: 'View', medal: 'Cheer' };
+      var SUB_LABEL = function(c){
+        if (c.type === 'birthday') return 'Birthday today';
+        if (c.type === 'anniversary') return (c.title || 'Work anniversary');
+        if (c.type === 'welcome') return 'New at Arcgate';
+        return c.title || 'Celebration';
+      };
       todays.forEach(function(c){
-        var it = document.createElement('div');
-        it.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0;cursor:pointer;width:64px;';
+        var empName = (c.employee && c.employee.full_name) || '';
+        var card = document.createElement('div');
+        card.className = 'tcc-card';
+
         var av = document.createElement('div');
-        av.className = 'grad-avatar';
-        av.style.cssText += 'width:54px;height:54px;font-size:17px;position:relative;';
-        if (c.employee && c.employee.photo_url) { var im = document.createElement('img'); im.src = c.employee.photo_url; av.appendChild(im); }
-        else {
-          av.textContent = initials(c.employee && c.employee.full_name);
-          av.setAttribute('style', getGlassmorphicAvatarStyle(c.employee && c.employee.full_name) + '; width:54px; height:54px; border-radius:50%; font-size:17px; font-weight:800; display:flex; align-items:center; justify-content:center; position:relative;');
+        av.className = 'tcc-av';
+        if (c.employee && c.employee.photo_url) {
+          var im = document.createElement('img'); im.src = c.employee.photo_url; av.appendChild(im);
+        } else {
+          av.textContent = initials(empName);
+          av.style.cssText = getGlassmorphicAvatarStyle(empName) + ';width:44px;height:44px;border-radius:50%;font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:center;position:relative;';
         }
         var badge = document.createElement('div');
-        badge.style.cssText = 'position:absolute;bottom:-3px;right:-3px;font-size:15px;';
+        badge.className = 'tcc-badge';
         badge.textContent = (TYPE_META[c.type]||['🎉'])[0];
         av.appendChild(badge);
+
         var nm = document.createElement('div');
-        nm.style.cssText = 'font-size:10.5px;font-weight:600;color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;';
-        nm.textContent = ((c.employee && c.employee.full_name) || '').split(' ')[0];
-        it.appendChild(av); it.appendChild(nm);
-        it.addEventListener('click', function(){
+        nm.className = 'tcc-name';
+        nm.textContent = empName.split(' ')[0] + (empName.split(' ')[1] ? ' ' + empName.split(' ')[1][0] + '.' : '');
+
+        var sub = document.createElement('div');
+        sub.className = 'tcc-sub';
+        sub.textContent = SUB_LABEL(c);
+
+        var btn = document.createElement('button');
+        btn.className = 'tcc-btn';
+        btn.textContent = CTA_LABEL[c.type] || 'View';
+        btn.addEventListener('click', function(){
           var target = document.querySelector('[data-celeb-id="' + c.id + '"]');
-          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(function(){
+              var input = target.querySelector('input[placeholder]');
+              if (input) input.focus();
+            }, 350);
+          }
         });
-        strip.appendChild(it);
+
+        card.appendChild(av); card.appendChild(nm); card.appendChild(sub); card.appendChild(btn);
+        strip.appendChild(card);
       });
       stripWrap.appendChild(strip);
       box.appendChild(stripWrap);
@@ -380,60 +405,63 @@ function buildCelebCard(c){
   if (isOccasion) {
     var empNameOcc = (c.employee && c.employee.full_name) || '';
     var nameColor = OCCASION_NAME_COLOR[c.type];
-    var icons = OCCASION_COVER_ICONS[c.type];
-    var iconPositions = [
-      {top:'8px',left:'6%'}, {top:'34px',left:'20%',size:'14px'},
-      {top:'8px',left:'58%'}, {top:'34px',left:'75%',size:'16px'},
-      {top:'12px',left:'90%',size:'15px'}
-    ];
-
-    // Cover banner
-    var cover = document.createElement('div');
-    cover.style.cssText = 'height:64px;position:relative;overflow:hidden;background:' + OCCASION_COVER_GRADIENT[c.type] + ';';
-    icons.forEach(function(ic, idx){
-      var pos = iconPositions[idx] || iconPositions[0];
-      var s = document.createElement('span');
-      s.textContent = ic;
-      s.style.cssText = 'position:absolute;top:' + pos.top + ';left:' + pos.left + ';font-size:' + (pos.size || '20px') + ';opacity:0.35;';
-      cover.appendChild(s);
-    });
-    card.appendChild(cover);
+    var typeLabel = { birthday: 'BIRTHDAY', anniversary: 'ANNIVERSARY', welcome: 'WELCOME' }[c.type] || c.type.toUpperCase();
+    var subLabel = { birthday: 'Birthday · today', welcome: 'New joiner · today' }[c.type] ||
+      (c.type === 'anniversary' ? ((c.title && c.title.match(/\d+\s*(yr|year)/i) ? c.title.match(/\d+\s*(yr|year)s?/i)[0] : 'Work anniversary') + ' · today') : 'today');
 
     var bodyWrap = document.createElement('div');
-    bodyWrap.style.cssText = 'padding:14px 16px 16px;';
+    bodyWrap.style.cssText = 'padding:16px;';
 
     var head = document.createElement('div');
-    head.style.cssText = 'display:flex;gap:12px;margin-top:-30px;position:relative;z-index:1;';
+    head.style.cssText = 'display:flex;align-items:center;gap:11px;position:relative;';
     var av = document.createElement('div');
     av.className = 'grad-avatar';
-    av.style.cssText = 'width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden;flex-shrink:0;border:3px solid var(--surface);';
+    av.style.cssText = 'width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;overflow:hidden;flex-shrink:0;';
     if (c.employee && c.employee.photo_url) { var im = document.createElement('img'); im.src = c.employee.photo_url; im.style.cssText='width:100%;height:100%;object-fit:cover'; av.appendChild(im); }
     else {
       av.textContent = initials(empNameOcc);
-      av.setAttribute('style', getGlassmorphicAvatarStyle(empNameOcc) + '; width:60px; height:60px; border-radius:50%; font-size:20px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; border:3px solid var(--surface);');
+      av.style.cssText += getGlassmorphicAvatarStyle(empNameOcc) + ';font-weight:800;';
     }
-    head.appendChild(av);
+    var ht = document.createElement('div');
+    ht.style.cssText = 'flex:1;min-width:0;';
+    var nmEl = document.createElement('div');
+    nmEl.style.cssText = 'font-size:14.5px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+    nmEl.textContent = empNameOcc;
+    var subEl = document.createElement('div');
+    subEl.style.cssText = 'font-size:11.5px;color:' + nameColor + ';margin-top:1px;';
+    subEl.textContent = subLabel;
+    ht.appendChild(nmEl); ht.appendChild(subEl);
+    var pill = document.createElement('div');
+    pill.style.cssText = 'flex-shrink:0;background:rgba(255,255,255,0.06);color:' + nameColor + ';border:1px solid ' + nameColor + '33;font-size:9.5px;font-weight:800;letter-spacing:0.8px;padding:4px 10px;border-radius:99px;';
+    pill.textContent = typeLabel;
+    head.appendChild(av); head.appendChild(ht); head.appendChild(pill);
     bodyWrap.appendChild(head);
 
-    var t1 = document.createElement('div');
-    t1.style.cssText = 'font-size:15.5px;font-weight:700;color:rgba(255,255,255,0.85);line-height:1.3;margin-top:8px;';
-    var titleHtml = escapeHtml(c.title || '');
-    if (empNameOcc) {
-      titleHtml = titleHtml.split(escapeHtml(empNameOcc)).join('<span style="font-weight:800;color:' + nameColor + ';">' + escapeHtml(empNameOcc) + '</span>');
-    }
-    t1.innerHTML = titleHtml;
-    bodyWrap.appendChild(t1);
-
-    var quoteMsg = pickDeterministic(OCCASION_MESSAGE_POOL[c.type], c.id || empNameOcc);
+    var hasRealMsg = !!(c.message && c.message.trim());
     var msgEl = document.createElement('div');
-    msgEl.style.cssText = 'font-size:14px;color:rgba(255,255,255,0.85);margin-top:8px;line-height:1.6;font-style:italic;';
-    msgEl.innerHTML = '<span style="font-size:22px;font-weight:800;font-style:normal;line-height:0;vertical-align:-6px;margin-right:2px;opacity:0.8;color:' + nameColor + ';">&ldquo;</span>' +
-      escapeHtml(quoteMsg) +
-      '<span style="font-size:22px;font-weight:800;font-style:normal;line-height:0;vertical-align:-6px;margin-left:2px;opacity:0.8;color:' + nameColor + ';">&rdquo;</span>';
+    if (hasRealMsg) {
+      msgEl.style.cssText = 'font-size:14px;color:' + nameColor + ';margin-top:12px;line-height:1.6;';
+      msgEl.innerHTML = formatRichText(c.message);
+    } else {
+      var quoteMsg = pickDeterministic(OCCASION_MESSAGE_POOL[c.type], c.id || empNameOcc);
+      msgEl.style.cssText = 'font-size:14px;color:rgba(255,255,255,0.85);margin-top:12px;line-height:1.6;font-style:italic;';
+      msgEl.innerHTML = '<span style="font-size:22px;font-weight:800;font-style:normal;line-height:0;vertical-align:-6px;margin-right:2px;opacity:0.8;color:' + nameColor + ';">&ldquo;</span>' +
+        escapeHtml(quoteMsg) +
+        '<span style="font-size:22px;font-weight:800;font-style:normal;line-height:0;vertical-align:-6px;margin-left:2px;opacity:0.8;color:' + nameColor + ';">&rdquo;</span>';
+    }
     bodyWrap.appendChild(msgEl);
 
+    var mediaArrOcc = Array.isArray(c.media) ? c.media : [];
+    if (!mediaArrOcc.length) {
+      var illo = document.createElement('div');
+      var illoIcons = OCCASION_COVER_ICONS[c.type] || ['🎉'];
+      illo.style.cssText = 'margin-top:12px;height:120px;border-radius:12px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;gap:14px;font-size:38px;';
+      illo.innerHTML = '<span>' + (illoIcons[2] || illoIcons[0]) + '</span><span>' + (illoIcons[0] || '🎉') + '</span>';
+      bodyWrap.appendChild(illo);
+    }
+
     var t2 = document.createElement('div');
-    t2.style.cssText = 'font-size:11px;color:var(--label);margin-top:9px;';
+    t2.style.cssText = 'font-size:11px;color:var(--label);margin-top:10px;';
     var dept = c.employee && c.employee.department ? c.employee.department : '';
     var timeString = formatCelebDateTime(c.created_at || c.celebrate_date);
     t2.textContent = (dept ? dept + ' · ' : '') + timeString;

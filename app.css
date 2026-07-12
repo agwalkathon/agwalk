@@ -1,8 +1,8 @@
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
     :root{
       --brand:#E8622A; --brand-dim:rgba(232,98,42,0.15);
-      --bg:#181E23; --surface:#2E3337; --surface2:#363D43;
-      --border:rgba(255,255,255,0.03);
+      --bg:#14181B; --surface:#1E2428; --surface2:#262D32;
+      --border:rgba(255,255,255,0.05);
       --text:#FFFFFF; --muted:rgba(255,255,255,0.65); --label:rgba(255,255,255,0.55); --dim:rgba(255,255,255,0.20);
       --green:#22C55E; --green-dim:rgba(34,197,94,0.12);
       --blue:#60A5FA; --blue-dim:rgba(96,165,250,0.12);
@@ -1120,7 +1120,7 @@
       transform: translateX(-50%);
       width: 92%;
       max-width: 480px;
-      background: rgba(18, 22, 26, 0.88);
+      background: rgba(20, 24, 27, 0.92);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.04);
@@ -1165,6 +1165,7 @@
     }
     .bnav-item.active svg {
       transform: scale(1.12);
+      filter: drop-shadow(0 0 8px rgba(232, 98, 42, 0.55));
     }
     .bnav-indicator {
       display: none !important;
@@ -3513,3 +3514,79 @@ body.employee-mode::after {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+    /* ═══ Unified Medal Arc (WHOOP hybrid redesign, Phase 2) ═══ */
+    .hero-arc-svgbox{position:relative;width:280px;max-width:88vw;margin:0 auto;}
+    .hero-arc-svgbox svg{width:100%;height:auto;overflow:visible;display:block;}
+    .hero-arc-bg{fill:none;stroke:rgba(255,255,255,0.07);stroke-width:12;stroke-linecap:round;}
+    .hero-arc-fg{fill:none;stroke:var(--brand);stroke-width:12;stroke-linecap:round;
+      filter:drop-shadow(0 0 12px rgba(232,98,42,0.4));
+      transition:stroke-dashoffset 1.2s cubic-bezier(0.25,0.8,0.25,1);}
+    .hero-arc-tick{stroke-width:3;stroke-linecap:round;}
+    .hero-arc-center{position:absolute;left:0;right:0;bottom:4px;text-align:center;pointer-events:none;}
+    .hero-arc-big{font-size:52px;font-weight:800;line-height:.95;letter-spacing:-1px;color:var(--text);}
+    .hero-arc-big small{font-size:19px;font-weight:600;color:var(--muted);letter-spacing:0;}
+    .hero-arc-lbl{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);font-weight:600;margin-top:5px;}
+    .hero-arc-legend{display:flex;justify-content:center;gap:18px;margin-top:12px;flex-wrap:wrap;}
+    .hero-arc-ml{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);font-weight:600;}
+    .hero-arc-ml i{width:8px;height:8px;border-radius:50%;display:inline-block;}
+    .hero-next{margin:16px 0 4px;background:var(--surface);border:1px solid var(--border);border-radius:16px;
+      padding:14px 16px;display:flex;align-items:center;gap:13px;}
+    .hero-next-ic{width:40px;height:40px;flex:0 0 40px;border-radius:12px;background:rgba(200,216,232,0.1);
+      display:flex;align-items:center;justify-content:center;font-size:19px;}
+    .hero-next-txt{flex:1;min-width:0;}
+    .hero-next-t{font-size:13.5px;font-weight:700;color:var(--text);}
+    .hero-next-s{font-size:11.5px;color:var(--muted);margin-top:2px;}
+    .hero-next-pct{font-size:20px;font-weight:800;color:var(--silver);}
+
+    /* ═══ Phase 2b: day strip, stat chips, week-goal bars ═══ */
+    .day-strip{display:flex;gap:6px;margin:0 auto 14px;max-width:360px;justify-content:center;}
+    .day-cell{flex:1;max-width:48px;text-align:center;padding:7px 0 9px;border-radius:12px;}
+    .day-cell.today{background:var(--surface);}
+    .day-cell .dw{font-size:8.5px;letter-spacing:1.4px;color:rgba(255,255,255,0.3);text-transform:uppercase;font-weight:700;}
+    .day-cell .dn{font-size:15px;font-weight:700;margin:2px 0 5px;color:var(--text);}
+    .day-cell svg{width:20px;height:20px;display:block;margin:0 auto;}
+    .day-ring-bg{fill:none;stroke:rgba(255,255,255,0.10);stroke-width:2.5;}
+    .day-ring-fg{fill:none;stroke:var(--brand);stroke-width:2.5;stroke-linecap:round;}
+    .stat-chips{display:flex;gap:10px;margin:0 0 12px;}
+    .stat-chip{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px 4px;text-align:center;}
+    .stat-chip .scv{font-size:21px;font-weight:800;line-height:1;color:var(--text);}
+    .stat-chip .scv.brand{color:var(--brand);}
+    .stat-chip .scv.green{color:var(--green);}
+    .stat-chip .sck{font-size:8.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-top:6px;}
+    .streak-bars-wrap.km-bars{align-items:flex-end;height:64px;}
+    .sbarw{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;height:100%;}
+    .sbarw em{font-style:normal;font-size:8.5px;color:var(--green);font-weight:800;line-height:1;height:9px;}
+    .sbarw .sbar{width:100%;flex:none;min-height:4px;}
+
+    /* ═══ Phase 3: rival/rank-movement card (activates existing computed data) ═══ */
+    .lb-rival-card{margin:0 20px 14px;background:var(--surface);border:1px solid var(--border);border-radius:16px;
+      padding:14px 16px;display:flex;align-items:center;gap:13px;}
+    .lb-rival-ic{width:38px;height:38px;flex:0 0 38px;border-radius:12px;background:rgba(232,98,42,0.12);
+      display:flex;align-items:center;justify-content:center;font-size:17px;}
+    .lb-rival-txt{flex:1;min-width:0;}
+    .lb-rival-t{font-size:13.5px;font-weight:700;color:var(--text);}
+    .lb-rival-s{font-size:11.5px;color:var(--muted);margin-top:2px;}
+
+    /* ═══ Phase 4: You-tab medal shelf ═══ */
+    .you-medal-shelf{display:flex;justify-content:center;gap:20px;margin-top:16px;}
+    .yms-item{text-align:center;}
+    .yms-ic{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+      font-size:21px;margin:0 auto 6px;border:2px solid;}
+    .yms-item.earned .yms-ic{background:rgba(244,168,74,0.12);}
+    .yms-item.locked .yms-ic{background:var(--surface);border-color:var(--border);filter:grayscale(1);opacity:0.4;}
+    .yms-lbl{font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+
+    /* ═══ Phase 4b: Celebrate — redesigned Today strip (card style) ═══ */
+    .tcs-wrap{margin-bottom:16px;}
+    .tcs-head{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+    .tcs-scroll{display:flex;gap:12px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:none;}
+    .tcs-scroll::-webkit-scrollbar{display:none;}
+    .tcc-card{flex:0 0 138px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 12px;text-align:center;}
+    .tcc-av{width:44px;height:44px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:19px;position:relative;overflow:hidden;}
+    .tcc-av img{width:100%;height:100%;object-fit:cover;}
+    .tcc-badge{position:absolute;bottom:-2px;right:-2px;font-size:13px;line-height:1;}
+    .tcc-name{font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .tcc-sub{font-size:10.5px;color:var(--muted);margin:2px 0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .tcc-btn{width:100%;background:rgba(232,98,42,0.12);color:var(--brand);border:1px solid rgba(232,98,42,0.3);border-radius:99px;font-size:11px;font-weight:700;padding:6px 8px;font-family:inherit;cursor:pointer;}
+    .tcc-btn:active{transform:scale(0.96);}

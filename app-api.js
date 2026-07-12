@@ -1092,6 +1092,22 @@ async function load(isBackgroundRefresh) {
       }
     });
     triggerRingAnimation();
+    try {
+      if (typeof window.renderHeroArc === 'function') {
+        window.renderHeroArc(myPts, [
+          { lbl: bronzeLabel, thresh: bronzeThresh, color: '#F4A84A' },
+          { lbl: silverLabel, thresh: silverThresh, color: '#C8D8E8' },
+          { lbl: goldLabel, thresh: goldThresh, color: '#FFD000' }
+        ], EVENT_ROW);
+      }
+      if (typeof window.renderMedalShelf === 'function') {
+        window.renderMedalShelf(myPts, [
+          { lbl: bronzeLabel, thresh: bronzeThresh, ic: '🥉', color: '#F4A84A' },
+          { lbl: silverLabel, thresh: silverThresh, ic: '🥈', color: '#C8D8E8' },
+          { lbl: goldLabel, thresh: goldThresh, ic: '🥇', color: '#FFD000' }
+        ]);
+      }
+    } catch(e) { try{console.error('[hero-arc]',e);}catch(e5){} }
 
     (function() {
       var todayStr = new Date().toISOString().split('T')[0];
@@ -1524,15 +1540,69 @@ async function load(isBackgroundRefresh) {
     safeSetText('streak-msg', streakIsLive?(streak>=7?'Amazing streak!':streak>=3?'Keep it going!':'Good start!'):(lastActiveDay?'Last active '+lastActiveDay:'Start today!'));
 
     var days7=[],labels7=[];
+    // per-day km for the last 7 days (Phase 2b)
+    var dayKm={};
+    myActs.filter(function(a){return !a.is_flagged;}).forEach(function(a){
+      var d=getActDate(a);
+      if(d)dayKm[d]=(dayKm[d]||0)+(a.distance_meters||0)/1000;
+    });
     for(var di=6;di>=0;di--){
       var dd=new Date(now);dd.setDate(dd.getDate()-di);dd.setHours(12,0,0,0);
       var dstr=localDateStr(dd);
       var dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-      days7.push({str:dstr,active:!!activeDays[dstr],isToday:di===0});
+      days7.push({str:dstr,active:!!activeDays[dstr],isToday:di===0,km:dayKm[dstr]||0,label:dayNames[dd.getDay()].charAt(0),dayNum:dd.getDate()});
       labels7.push(di===0?'Today':dayNames[dd.getDay()]);
     }
-    safeSetHtml('streak-bars', days7.map(function(d){return'<div class="sbar '+(d.isToday?'dim':d.active?'on':'off')+'"></div>';}).join(''));
+    // daily km target: pace for next unearned medal, else keep current average
+    var _daysLeftH=Math.max(1,daysLeft||1);
+    var _nextThreshH=myPts<bronzeThresh?bronzeThresh:myPts<silverThresh?silverThresh:myPts<goldThresh?goldThresh:0;
+    var _daysElapsedH=Math.max(1,(now-new Date((EVENT_ROW&&EVENT_ROW.start_date||'2026-06-01')+'T00:00:00+05:30'))/86400000);
+    var _targetKmH=_nextThreshH>0?(_nextThreshH-myPts)/_daysLeftH:(fullPts.km/_daysElapsedH);
+    _targetKmH=Math.max(1,Math.min(25,_targetKmH));
+    // km-proportional week bars with goal checkmarks
+    (function(){
+      var maxKm=Math.max(_targetKmH,days7.reduce(function(m,d){return Math.max(m,d.km);},0),1);
+      safeSetHtml('streak-bars', days7.map(function(d){
+        var h=Math.max(6,Math.round((d.km/maxKm)*100));
+        var met=d.km>=_targetKmH;
+        var cls=d.isToday?'dim':d.active?'on':'off';
+        return '<div class="sbarw"><em>'+(met?'\u2713':'')+'</em><div class="sbar '+cls+'" style="height:'+h+'%" title="'+d.km.toFixed(1)+' km"></div></div>';
+      }).join(''));
+      var bw=document.getElementById('streak-bars');
+      if(bw)bw.classList.add('km-bars');
+    })();
     safeSetHtml('streak-labels', labels7.map(function(l){return'<span class="sdlbl">'+l+'</span>';}).join(''));
+    // day strip + stat chips (rank from ranking summaries cache when available)
+    try{
+      var _rankH=null;
+      var _sum=typeof cacheGet==='function'?(cacheGet('ranking_summaries',CACHE_TTL.ranking)||cacheGet('ranking_summaries',86400*365*1000)):null;
+      if(_sum&&_sum.length){
+        var _gN=(reg.gender||'').toLowerCase();var _isF=_gN==='female'||_gN==='f';
+        var _sN=(reg.shift||'').toLowerCase();var _isN=_sN.indexOf('night')>-1;
+        var _peers=_sum.filter(function(p){
+          var pg=(p.gender||'').toLowerCase(),ps=(p.shift||'').toLowerCase();
+          return (ps.indexOf('night')>-1)===_isN&&(pg==='female'||pg==='f')===_isF;
+        }).sort(function(a,b){return(b.total_points||0)-(a.total_points||0);});
+        var _ix=_peers.findIndex(function(p){return String(p.athlete_id)===String(athleteId);});
+        if(_ix>=0)_rankH=_ix+1;
+      }
+      if(typeof window.renderDashHybridExtras==='function'){
+        window.renderDashHybridExtras({
+          days:days7,targetKm:_targetKmH,todayKm:dayKm[todayLocal]||0,
+          points:myPts,streak:streak,streakLive:streakIsLive,rank:_rankH
+        });
+      }
+      // Defensive: re-assert arc visibility in case a classic-dashboard event
+      // re-showed the rings host after our earlier render (belt & braces).
+      try{
+        if(localStorage.getItem('ag_dyn_dash')!=='1'){
+          var _arcW2=document.getElementById('hero-arc-wrap');
+          var _ringsH2=document.getElementById('medal-rings');
+          if(_arcW2 && _arcW2.style.display==='none') _arcW2.style.display='block';
+          if(_ringsH2) _ringsH2.style.display='none';
+        }
+      }catch(e2){}
+    }catch(e){try{console.error('[hybrid-dash]',e);}catch(e4){}}
 
     // Challenges list tab
     (function renderChallenges(){
@@ -1968,3 +2038,227 @@ async function loadPastEventsPerformance(reg, athleteId) {
 }
 window.loadPastEventsPerformance = loadPastEventsPerformance;
 // Trigger rebuild: fix config fetches and call setupAppLayout after loading config
+
+/* ═══ Unified Medal Arc renderer (WHOOP hybrid redesign, Phase 2) ═══
+   Draws one 240° gauge arc with medal-threshold ticks from the same
+   points data that fills the classic rings. Classic rings stay in the
+   DOM (hidden) so app-drawers.js pct reads keep working. Skipped when
+   an event uses the dynamic dashboard (ag_dyn_dash). */
+window.renderHeroArc = function(myPts, medals, eventRow) {
+  try {
+    if (localStorage.getItem('ag_dyn_dash') === '1') return;
+  } catch(e) {}
+  var wrap = document.getElementById('hero-arc-wrap');
+  var svg = document.getElementById('hero-arc-svg');
+  var legend = document.getElementById('hero-arc-legend');
+  if (!wrap || !svg || !legend || !medals || !medals.length) return;
+
+  var NS = 'http://www.w3.org/2000/svg';
+  var CX = 140, CY = 112, R = 100;
+  var START = 150, SWEEP = 240;          // degrees
+  var ARCLEN = 2 * Math.PI * R * (SWEEP / 360); // ≈ 418.9
+
+  function pt(frac, radius) {
+    var a = (START + SWEEP * frac) * Math.PI / 180;
+    return { x: CX + radius * Math.cos(a), y: CY + radius * Math.sin(a) };
+  }
+  var p0 = pt(0, R), p1 = pt(1, R);
+  var d = 'M ' + p0.x.toFixed(1) + ' ' + p0.y.toFixed(1) +
+          ' A ' + R + ' ' + R + ' 0 1 1 ' + p1.x.toFixed(1) + ' ' + p1.y.toFixed(1);
+
+  var goldThresh = medals[medals.length - 1].thresh || 1;
+  var frac = Math.max(0, Math.min(1, myPts / goldThresh));
+
+  // rebuild svg
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  var bg = document.createElementNS(NS, 'path');
+  bg.setAttribute('class', 'hero-arc-bg');
+  bg.setAttribute('d', d);
+  svg.appendChild(bg);
+
+  var fg = document.createElementNS(NS, 'path');
+  fg.setAttribute('class', 'hero-arc-fg');
+  fg.setAttribute('d', d);
+  fg.setAttribute('stroke-dasharray', ARCLEN.toFixed(1));
+  fg.setAttribute('stroke-dashoffset', ARCLEN.toFixed(1));
+  svg.appendChild(fg);
+
+  medals.forEach(function(m) {
+    var f = Math.max(0, Math.min(1, m.thresh / goldThresh));
+    var a = pt(f, R + 10), b = pt(f, R + 22);
+    var tick = document.createElementNS(NS, 'line');
+    tick.setAttribute('class', 'hero-arc-tick');
+    tick.setAttribute('x1', a.x.toFixed(1)); tick.setAttribute('y1', a.y.toFixed(1));
+    tick.setAttribute('x2', b.x.toFixed(1)); tick.setAttribute('y2', b.y.toFixed(1));
+    tick.setAttribute('stroke', m.color);
+    tick.setAttribute('opacity', myPts >= m.thresh ? '1' : '0.55');
+    svg.appendChild(tick);
+  });
+
+  // center value
+  var valEl = document.getElementById('hero-arc-value');
+  if (valEl) valEl.textContent = Math.round(myPts).toLocaleString('en-IN');
+
+  // legend
+  while (legend.firstChild) legend.removeChild(legend.firstChild);
+  medals.forEach(function(m) {
+    var done = myPts >= m.thresh;
+    var item = document.createElement('div');
+    item.className = 'hero-arc-ml';
+    var dot = document.createElement('i');
+    dot.style.background = m.color;
+    item.appendChild(dot);
+    var txt = document.createElement('span');
+    txt.textContent = done ? (m.lbl + ' \u2713') : (m.lbl + ' ' + Math.round(m.thresh).toLocaleString('en-IN'));
+    if (done) item.style.color = m.color;
+    item.appendChild(txt);
+    legend.appendChild(item);
+  });
+
+  // next-milestone banner
+  var banner = document.getElementById('hero-next-banner');
+  if (banner) {
+    var icons = ['\uD83E\uDD49', '\uD83E\uDD48', '\uD83E\uDD47']; // 🥉🥈🥇
+    var next = null, nextIdx = -1;
+    for (var i = 0; i < medals.length; i++) {
+      if (myPts < medals[i].thresh) { next = medals[i]; nextIdx = i; break; }
+    }
+    var icEl = document.getElementById('hero-next-ic');
+    var tEl = document.getElementById('hero-next-title');
+    var sEl = document.getElementById('hero-next-sub');
+    var pEl = document.getElementById('hero-next-pct');
+    if (next) {
+      var needed = next.thresh - myPts;
+      var pct = Math.min(99, Math.floor((myPts / next.thresh) * 100));
+      var sub = pct + '% of the way there';
+      // pace estimate from event elapsed days
+      try {
+        if (eventRow && eventRow.start_date) {
+          var elapsed = Math.max(1, Math.round((Date.now() - new Date(eventRow.start_date).getTime()) / 86400000));
+          var rate = myPts / elapsed;
+          if (rate > 0.01) {
+            var days = Math.ceil(needed / rate);
+            sub = 'About ' + days + ' day' + (days === 1 ? '' : 's') + ' at your current pace';
+          }
+        }
+      } catch(e) {}
+      if (icEl) icEl.textContent = icons[nextIdx] || '\uD83C\uDFC5';
+      if (tEl) tEl.textContent = next.lbl + ' is ' + Math.round(needed).toLocaleString('en-IN') + ' pts away';
+      if (sEl) sEl.textContent = sub;
+      if (pEl) { pEl.textContent = pct + '%'; pEl.style.color = next.color; }
+      banner.style.display = 'flex';
+    } else {
+      if (icEl) icEl.textContent = '\uD83C\uDFC6';
+      if (tEl) tEl.textContent = 'All medals earned!';
+      if (sEl) sEl.textContent = 'Incredible effort \u2014 you\u2019ve conquered every milestone';
+      if (pEl) { pEl.textContent = '\u2713'; pEl.style.color = 'var(--green)'; }
+      banner.style.display = 'flex';
+    }
+  }
+
+  // show arc, hide classic rings (they stay updated & readable by drawers)
+  wrap.style.display = 'block';
+  var host = document.getElementById('medal-rings');
+  if (host) host.style.display = 'none';
+
+  // animate fill in
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      fg.setAttribute('stroke-dashoffset', (ARCLEN * (1 - frac)).toFixed(1));
+    });
+  });
+};
+
+/* ═══ Phase 2b renderer: day strip + stat chips (WHOOP hybrid) ═══
+   Called from the streak section with per-day km data already computed. */
+window.renderDashHybridExtras = function(opts) {
+  var NS = 'http://www.w3.org/2000/svg';
+  var days = opts.days || [];          // [{str,label,dayNum,km,isToday}]
+  var targetKm = Math.max(0.5, opts.targetKm || 0);
+
+  // ── 7-day mini-ring strip ──
+  var strip = document.getElementById('day-strip');
+  if (strip) {
+    while (strip.firstChild) strip.removeChild(strip.firstChild);
+    var CIRC = 2 * Math.PI * 8; // r=8 → ≈50.3
+    days.forEach(function(d) {
+      var cell = document.createElement('div');
+      cell.className = 'day-cell' + (d.isToday ? ' today' : '');
+      var dw = document.createElement('div');
+      dw.className = 'dw';
+      dw.textContent = d.label;
+      var dn = document.createElement('div');
+      dn.className = 'dn';
+      dn.textContent = d.dayNum;
+      var svg = document.createElementNS(NS, 'svg');
+      svg.setAttribute('viewBox', '0 0 20 20');
+      var bg = document.createElementNS(NS, 'circle');
+      bg.setAttribute('class', 'day-ring-bg');
+      bg.setAttribute('cx', '10'); bg.setAttribute('cy', '10'); bg.setAttribute('r', '8');
+      svg.appendChild(bg);
+      var frac = Math.max(0, Math.min(1, d.km / targetKm));
+      if (frac > 0.005) {
+        var fgc = document.createElementNS(NS, 'circle');
+        fgc.setAttribute('class', 'day-ring-fg');
+        fgc.setAttribute('cx', '10'); fgc.setAttribute('cy', '10'); fgc.setAttribute('r', '8');
+        fgc.setAttribute('stroke-dasharray', CIRC.toFixed(1));
+        fgc.setAttribute('stroke-dashoffset', (CIRC * (1 - frac)).toFixed(1));
+        fgc.setAttribute('transform', 'rotate(-90 10 10)');
+        if (frac >= 1) fgc.style.filter = 'drop-shadow(0 0 4px rgba(232,98,42,0.6))';
+        svg.appendChild(fgc);
+      }
+      cell.appendChild(dw); cell.appendChild(dn); cell.appendChild(svg);
+      cell.title = d.km.toFixed(1) + ' / ' + targetKm.toFixed(1) + ' km';
+      strip.appendChild(cell);
+    });
+    strip.style.display = 'flex';
+  }
+
+  // ── stat chips: km today · points · streak · rank ──
+  var chips = document.getElementById('stat-chips');
+  if (chips) {
+    while (chips.firstChild) chips.removeChild(chips.firstChild);
+    function chip(val, label, cls) {
+      var c = document.createElement('div');
+      c.className = 'stat-chip';
+      var v = document.createElement('div');
+      v.className = 'scv' + (cls ? ' ' + cls : '');
+      v.textContent = val;
+      var k = document.createElement('div');
+      k.className = 'sck';
+      k.textContent = label;
+      c.appendChild(v); c.appendChild(k);
+      chips.appendChild(c);
+    }
+    chip(opts.todayKm.toFixed(1), 'km today', 'brand');
+    chip(Math.round(opts.points).toLocaleString('en-IN'), 'points', '');
+    chip(opts.streak + (opts.streakLive && opts.streak > 0 ? '\uD83D\uDD25' : ''), 'day streak', 'green');
+    chip(opts.rank ? '#' + opts.rank : '\u2014', 'rank', '');
+    chips.style.display = 'flex';
+  }
+};
+
+/* ═══ Phase 4: You-tab medal shelf renderer (WHOOP hybrid) ═══ */
+window.renderMedalShelf = function(myPts, medals) {
+  try {
+    var shelf = document.getElementById('you-medal-shelf');
+    if (!shelf || !medals || !medals.length) return;
+    while (shelf.firstChild) shelf.removeChild(shelf.firstChild);
+    medals.forEach(function(m) {
+      var earned = myPts >= m.thresh;
+      var item = document.createElement('div');
+      item.className = 'yms-item ' + (earned ? 'earned' : 'locked');
+      var ic = document.createElement('div');
+      ic.className = 'yms-ic';
+      ic.style.borderColor = m.color;
+      ic.textContent = m.ic;
+      var lbl = document.createElement('div');
+      lbl.className = 'yms-lbl';
+      lbl.textContent = m.lbl;
+      item.appendChild(ic); item.appendChild(lbl);
+      item.title = earned ? (m.lbl + ' earned') : (m.lbl + ' at ' + Math.round(m.thresh).toLocaleString('en-IN') + ' pts');
+      shelf.appendChild(item);
+    });
+    shelf.style.display = 'flex';
+  } catch(e) { try{console.error('[medal-shelf]',e);}catch(e6){} }
+};

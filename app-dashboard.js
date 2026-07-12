@@ -266,7 +266,14 @@
     // 2. Render custom rings if configured. If not, keep the classic layout
     var hasDash = ev.rules_config && ev.rules_config.dashboard &&
                   Array.isArray(ev.rules_config.dashboard.rings) && ev.rules_config.dashboard.rings.length;
-    if (!hasDash) return;
+    if (!hasDash) {
+      // classic rings path: clear any stale dynamic flag so the hero arc can render
+      try { localStorage.removeItem('ag_dyn_dash'); } catch(e){}
+      var arcW = document.getElementById('hero-arc-wrap');
+      var ringsHost = document.getElementById('medal-rings');
+      if (arcW && ringsHost && ringsHost.style.display === 'none') arcW.style.display = 'block';
+      return;
+    }
     
     var dash = ev.rules_config.dashboard;
     var rows = null;
@@ -286,6 +293,9 @@
 
     if (!host) return;
     try { localStorage.setItem('ag_dyn_dash', '1'); } catch(e){}
+    host.style.display = '';
+    var arcWrap = document.getElementById('hero-arc-wrap');
+    if (arcWrap) arcWrap.style.display = 'none';
     host.textContent = '';
     host.style.opacity = '1';
     
@@ -360,6 +370,8 @@
         var h = document.getElementById('medal-rings');
         if (h) h.style.opacity = '1';
       });
-    } else if (tries > 100) clearInterval(t);
+    } else if (tries > 100) {
+      clearInterval(t);
+    }
   }, 100);
 })();
