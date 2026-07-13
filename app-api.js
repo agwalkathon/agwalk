@@ -2028,7 +2028,7 @@ async function loadPastEventsPerformance(reg, athleteId) {
 
   try {
     sec.style.display = 'block';
-    card.innerHTML = '<div style="text-align:center;padding:15px;color:var(--muted);font-size:13px;">Loading past events...</div>';
+    card.innerHTML = '<div style="text-align:center;padding:15px;color:rgba(255,255,255,0.4);font-size:13px;">Loading past events...</div>';
 
     var res = await fetch(SUPABASE_URL + '/rest/v1/registration?email=eq.' + encodeURIComponent(reg.email) + '&event_id=neq.' + reg.event_id + '&select=event_id,event_name,leaderboard_team,gender,shift,strava_athlete_id', { headers: HDR });
     var otherRegs = await res.json();
@@ -2037,22 +2037,39 @@ async function loadPastEventsPerformance(reg, athleteId) {
       return;
     }
 
-    var eventsRes = await fetch(SUPABASE_URL + '/rest/v1/events?select=id,name', { headers: HDR });
+    var eventsRes = await fetch(SUPABASE_URL + '/rest/v1/events?select=id,name,status,end_date', { headers: HDR });
     var eventsList = await eventsRes.json();
     var eventMap = {};
     if (Array.isArray(eventsList)) {
       eventsList.forEach(function(e) {
-        eventMap[e.id] = e.name;
+        eventMap[e.id] = e;
       });
+    }
+
+    var pastEventIds = otherRegs.map(function(r) { return r.event_id; });
+    var configMap = {};
+    try {
+      var cfgRes = await fetch(SUPABASE_URL + '/rest/v1/leaderboard_config?event_id=in.(' + pastEventIds.join(',') + ')&select=event_id,config_key,config_value', { headers: HDR });
+      var cfgRows = await cfgRes.json();
+      if (Array.isArray(cfgRows)) {
+        cfgRows.forEach(function(row) {
+          if (!configMap[row.event_id]) configMap[row.event_id] = {};
+          configMap[row.event_id][row.config_key] = row.config_value;
+        });
+      }
+    } catch(e) {
+      console.warn('Failed to load past event configs:', e);
     }
 
     var html = '';
     otherRegs.sort(function(a, b) { return a.event_id - b.event_id; });
+    window.pastCertDataMap = {};
 
     for (var i = 0; i < otherRegs.length; i++) {
       var pReg = otherRegs[i];
       var pastEventId = pReg.event_id;
-      var pastEventName = eventMap[pastEventId] || pReg.event_name || (pastEventId === 1 ? 'Walkathon 2026' : 'Event ' + pastEventId);
+      var eventObj = eventMap[pastEventId] || null;
+      var pastEventName = eventObj ? eventObj.name : (pReg.event_name || (pastEventId === 1 ? 'Walkathon 2026' : 'Event ' + pastEventId));
       var team = pReg.leaderboard_team || 'No Team';
       
       var scoreObj = null;
@@ -2090,10 +2107,27 @@ async function loadPastEventsPerformance(reg, athleteId) {
         }
       }
 
-      var isCycling = pastEventName.toLowerCase().indexOf('cycling') > -1 || pastEventName.toLowerCase().indexOf('cyclothon') > -1 || pastEventId === 2;
-      var goldThresh = isCycling ? 750 : 300;
-      var silverThresh = isCycling ? 500 : 200;
-      var bronzeThresh = isCycling ? 250 : 125;
+      var eventCfg = configMap[pastEventId] || {};
+      var certCfg = eventCfg['certificate_config'];
+      var medalsCfg = eventCfg['medals'];
+
+      var goldThresh = 300;
+      var silverThresh = 200;
+      var bronzeThresh = 125;
+      
+      if (medalsCfg) {
+        var gender = pReg.gender || 'male';
+        if (gender !== 'male' && gender !== 'female') gender = 'male';
+        
+        goldThresh = (medalsCfg.gold && medalsCfg.gold[gender]) || goldThresh;
+        silverThresh = (medalsCfg.silver && medalsCfg.silver[gender]) || silverThresh;
+        bronzeThresh = (medalsCfg.bronze && medalsCfg.bronze[gender]) || bronzeThresh;
+      } else {
+        var isCycling = pastEventName.toLowerCase().indexOf('cycling') > -1 || pastEventName.toLowerCase().indexOf('cyclothon') > -1 || pastEventId === 2;
+        if (isCycling) {
+          goldThresh = 750; silverThresh = 500; bronzeThresh = 250;
+        }
+      }
 
       var medalBadge = '🏅';
       var medalTitle = 'Participant';
@@ -2108,45 +2142,56 @@ async function loadPastEventsPerformance(reg, athleteId) {
         medalTitle = 'Bronze Medal';
       }
 
-      if (pastEventId === 1) {
-        var certSec = document.getElementById('you-certificates-section');
-        var certCard = document.getElementById('you-certificates-card');
-        if (certSec && certCard) {
-          window.walkathonCertData = {
-            name: reg.full_name || s.name || 'Participant',
-            medal: medalTitle
-          };
+      // Check if event has ended and certificate config template is set
+      var hasEnded = eventObj ? (eventObj.status === 'ended') : false;
+      // Pre-2027 Walkathon 2026 fallback check if no db config exists
+      if (pastEventId === 1 && !certCfg) {
+        certCfg = {
+          template_url: 'certificate_template_walkathon_2026.pdf',
+          download_options: ['image', 'pdf'],
+          placeholders: [
+            { key: '<Participant Name>', type: 'participant_name', x: 0.22, y: 0.31, font_size: 52, color: '#E8622A', font_style: 'bold', align: 'left' },
+            { key: '<MEDAL>', type: 'medal_title', x: 0.40, y: 0.75, font_size: 36, color: '#1A1D20', font_style: 'bold', align: 'left' }
+          ]
+        };
+        hasEnded = true; // Hardcoded true for 2026 historical event
+      }
 
-          certCard.innerHTML = '<div class="tab-you-detail-row" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:none;">' +
-            '<div style="display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;">' +
-              '<span style="font-size:14px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Walkathon 2026</span>' +
-              '<span style="font-size:11px;color:rgba(255,255,255,0.4);">Download your official certificate of achievement</span>' +
-            '</div>' +
-            '<div style="text-align:right;flex-shrink:0;position:relative;">' +
-              '<button class="btn btn-sm" onclick="toggleCertMenu(event)" style="font-size:11px;font-weight:700;padding:6px 12px;border:none;border-radius:6px;cursor:pointer;background:var(--brand);color:#fff;text-transform:uppercase;letter-spacing:0.5px;">Download</button>' +
-              '<div id="cert-menu" style="display:none;position:absolute;right:0;top:32px;background:#1e222b;border:1px solid rgba(255,255,255,0.1);border-radius:8px;box-shadow:0 10px 25px rgba(0,0,0,0.3);z-index:100;min-width:130px;overflow:hidden;">' +
-                '<a href="javascript:void(0)" onclick="downloadCertAction(\'image\', \'Walkathon 2026\')" style="display:block;padding:10px 14px;color:#fff;font-size:12px;text-align:left;text-decoration:none;font-weight:600;border-bottom:1px solid rgba(255,255,255,0.05);" onmouseenter="this.style.background=\'rgba(255,255,255,0.05)\'" onmouseleave="this.style.background=\'none\'">Photo (JPEG)</a>' +
-                '<a href="javascript:void(0)" onclick="downloadCertAction(\'pdf\', \'Walkathon 2026\')" style="display:block;padding:10px 14px;color:#fff;font-size:12px;text-align:left;text-decoration:none;font-weight:600;" onmouseenter="this.style.background=\'rgba(255,255,255,0.05)\'" onmouseleave="this.style.background=\'none\'">PDF Document</a>' +
-              '</div>' +
-            '</div>' +
-          '</div>';
-          certSec.style.display = 'block';
-        }
+      var showDownloadBtn = hasEnded && certCfg && certCfg.template_url;
+
+      if (showDownloadBtn) {
+        window.pastCertDataMap[pastEventId] = {
+          name: reg.full_name || 'Participant',
+          medal: medalTitle,
+          distance: totalKm,
+          points: totalPts,
+          eventName: pastEventName,
+          config: certCfg
+        };
       }
 
       var borderStyle = i === otherRegs.length - 1 ? 'border-bottom:none;' : '';
 
-      html += '<div class="tab-you-detail-row" style="' + borderStyle + 'display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.06);">' +
+      html += '<div class="tab-you-detail-row" style="' + borderStyle + 'display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.06);overflow:visible;">' +
         '<div style="display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;">' +
           '<span style="font-size:14px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + pastEventName + '</span>' +
           '<span style="font-size:11px;color:rgba(255,255,255,0.4);">' + team + ' &middot; ' + actsCount + ' workouts</span>' +
         '</div>' +
-        '<div style="text-align:right;display:flex;align-items:center;gap:10px;flex-shrink:0;">' +
+        '<div style="text-align:right;display:flex;align-items:center;gap:12px;flex-shrink:0;position:relative;overflow:visible;">' +
           '<div style="display:flex;flex-direction:column;">' +
             '<span style="font-size:14px;font-weight:800;color:var(--brand);">' + totalKm.toFixed(1) + ' km</span>' +
             '<span style="font-size:10px;color:rgba(255,255,255,0.4);">' + totalPts.toFixed(0) + ' pts</span>' +
           '</div>' +
           '<span style="font-size:22px;line-height:1;" title="' + medalTitle + '">' + medalBadge + '</span>' +
+          (showDownloadBtn ? (
+            '<div style="position:relative;overflow:visible;">' +
+              '<button id="btn-download-' + pastEventId + '" class="btn btn-sm" onclick="togglePastCertMenu(event, ' + pastEventId + ')" style="font-size:10px;font-weight:700;padding:5px 10px;border:none;border-radius:6px;cursor:pointer;background:var(--brand);color:#fff;text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:4px;"><i class="ti ti-certificate"></i> Cert</button>' +
+              '<div id="cert-menu-' + pastEventId + '" class="past-cert-menu" style="display:none;position:absolute;right:0;top:28px;background:#1e222b;border:1px solid rgba(255,255,255,0.1);border-radius:8px;box-shadow:0 10px 25px rgba(0,0,0,0.3);z-index:100;min-width:120px;overflow:hidden;">' +
+                ((certCfg.download_options || []).indexOf('image') > -1 ? '<a href="javascript:void(0)" onclick="downloadPastCertAction(\'image\', ' + pastEventId + ')" style="display:block;padding:8px 12px;color:#fff;font-size:11px;text-align:left;text-decoration:none;font-weight:600;border-bottom:1px solid rgba(255,255,255,0.05);" onmouseenter="this.style.background=\'rgba(255,255,255,0.05)\'" onmouseleave="this.style.background=\'none\'">Photo (JPEG)</a>' : '') +
+                ((certCfg.download_options || []).indexOf('pdf') > -1 ? '<a href="javascript:void(0)" onclick="downloadPastCertAction(\'pdf\', ' + pastEventId + ')" style="display:block;padding:8px 12px;color:#fff;font-size:11px;text-align:left;text-decoration:none;font-weight:600;" onmouseenter="this.style.background=\'rgba(255,255,255,0.05)\'" onmouseleave="this.style.background=\'none\'">PDF Document</a>' : '') +
+              '</div>' +
+            '</div>'
+          ) : '') +
         '</div>' +
       '</div>';
     }
@@ -2499,36 +2544,49 @@ window.initParticipantSession = function(user) {
   }
 };
 
-window.toggleCertMenu = function(e) {
+window.togglePastCertMenu = function(e, pastEventId) {
   e.stopPropagation();
-  var menu = document.getElementById('cert-menu');
+  document.querySelectorAll('.past-cert-menu').forEach(function(m) {
+    if (m.id !== 'cert-menu-' + pastEventId) {
+      m.style.display = 'none';
+    }
+  });
+  var menu = document.getElementById('cert-menu-' + pastEventId);
   if (menu) {
     menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
   }
 };
 
 document.addEventListener('click', function() {
+  document.querySelectorAll('.past-cert-menu').forEach(function(m) {
+    m.style.display = 'none';
+  });
   var menu = document.getElementById('cert-menu');
   if (menu) menu.style.display = 'none';
 });
 
-window.downloadCertAction = function(type, eventName) {
-  var data = window.walkathonCertData || { name: 'Participant', medal: 'Participant' };
-  var btn = document.querySelector('button[onclick="toggleCertMenu(event)"]');
-  var origText = btn ? btn.textContent : 'Download';
+window.downloadPastCertAction = function(type, pastEventId) {
+  var certData = window.pastCertDataMap && window.pastCertDataMap[pastEventId];
+  if (!certData) {
+    alert('Certificate data not found for this event.');
+    return;
+  }
+
+  var btn = document.getElementById('btn-download-' + pastEventId);
+  var origText = btn ? btn.innerHTML : 'Cert';
   if (btn) {
-    btn.textContent = 'Generating...';
+    btn.textContent = 'Wait...';
     btn.disabled = true;
   }
 
-  var name = data.name;
+  var name = certData.name;
   if (name && name === name.toUpperCase()) {
     name = name.toLowerCase().split(' ').map(function(word) {
       return word.charAt(0).toUpperCase() + word.slice(1);
     }).join(' ');
   }
 
-  var url = 'certificate_template_walkathon_2026.pdf';
+  var url = certData.config.template_url;
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
   pdfjsLib.getDocument(url).promise.then(function(pdf) {
@@ -2552,32 +2610,58 @@ window.downloadCertAction = function(type, eventName) {
     var w = canvas.width;
     var h = canvas.height;
 
-    // 1. Cover placeholders
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(w * 0.15, h * 0.25, w * 0.7, h * 0.12);
-    ctx.fillRect(w * 0.32, h * 0.70, w * 0.25, h * 0.1);
+    var placeholders = certData.config.placeholders || [];
 
-    // 2. Draw Participant Name
-    ctx.fillStyle = '#E8622A';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.font = 'bold ' + Math.round(52 * (w / 2000)) + 'px "Poppins", "Georgia", sans-serif';
-    ctx.fillText(name, w * 0.22, h * 0.31);
+    // 1. Cover the placeholder region
+    placeholders.forEach(function(p) {
+      var textVal = p.key;
+      if (p.type === 'participant_name') textVal = name;
+      else if (p.type === 'medal_title') textVal = certData.medal;
+      else if (p.type === 'distance') textVal = certData.distance.toFixed(1) + ' km';
+      else if (p.type === 'points') textVal = certData.points.toFixed(0) + ' pts';
+      else if (p.type === 'custom') textVal = p.custom_val || '';
 
-    // 3. Draw Medal
-    ctx.fillStyle = '#1A1D20';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.font = 'bold ' + Math.round(36 * (w / 2000)) + 'px "Poppins", "Georgia", sans-serif';
-    ctx.fillText(data.medal, w * 0.40, h * 0.75);
+      ctx.save();
+      ctx.font = (p.font_style === 'bold' ? 'bold ' : '') + Math.round(p.font_size * (w / 2000)) + 'px "Poppins", "Georgia", sans-serif';
+      var textWidth = ctx.measureText(textVal).width;
+      var boxHeight = p.font_size * (w / 2000) * 1.3;
+      var textX = w * p.x;
+      var textY = h * p.y;
+      var boxX = textX;
+      
+      if (p.align === 'center') boxX = textX - textWidth / 2;
+      else if (p.align === 'right') boxX = textX - textWidth;
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(boxX - 10, textY - boxHeight / 2, textWidth + 20, boxHeight);
+      ctx.restore();
+    });
+
+    // 2. Draw actual text values
+    placeholders.forEach(function(p) {
+      var textVal = p.key;
+      if (p.type === 'participant_name') textVal = name;
+      else if (p.type === 'medal_title') textVal = certData.medal;
+      else if (p.type === 'distance') textVal = certData.distance.toFixed(1) + ' km';
+      else if (p.type === 'points') textVal = certData.points.toFixed(0) + ' pts';
+      else if (p.type === 'custom') textVal = p.custom_val || '';
+
+      ctx.save();
+      ctx.fillStyle = p.color || '#000000';
+      ctx.textAlign = p.align || 'left';
+      ctx.textBaseline = 'middle';
+      ctx.font = (p.font_style === 'bold' ? 'bold ' : '') + Math.round(p.font_size * (w / 2000)) + 'px "Poppins", "Georgia", sans-serif';
+      ctx.fillText(textVal, w * p.x, h * p.y);
+      ctx.restore();
+    });
 
     if (type === 'image') {
       var link = document.createElement('a');
-      link.download = 'Walkathon_2026_Certificate_' + name.replace(/\s+/g, '_') + '.jpg';
+      link.download = certData.eventName.replace(/\s+/g, '_') + '_Certificate_' + name.replace(/\s+/g, '_') + '.jpg';
       link.href = canvas.toDataURL('image/jpeg', 0.95);
       link.click();
       if (btn) {
-        btn.textContent = origText;
+        btn.innerHTML = origText;
         btn.disabled = false;
       }
     } else {
@@ -2588,9 +2672,9 @@ window.downloadCertAction = function(type, eventName) {
         format: [w, h]
       });
       pdfDoc.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, w, h);
-      pdfDoc.save('Walkathon_2026_Certificate_' + name.replace(/\s+/g, '_') + '.pdf');
+      pdfDoc.save(certData.eventName.replace(/\s+/g, '_') + '_Certificate_' + name.replace(/\s+/g, '_') + '.pdf');
       if (btn) {
-        btn.textContent = origText;
+        btn.innerHTML = origText;
         btn.disabled = false;
       }
     }
@@ -2598,8 +2682,12 @@ window.downloadCertAction = function(type, eventName) {
     console.error('Failed to generate certificate:', err);
     alert('Failed to generate certificate: ' + err.message);
     if (btn) {
-      btn.textContent = origText;
+      btn.innerHTML = origText;
       btn.disabled = false;
     }
   });
 };
+
+// Fallbacks for older references
+window.toggleCertMenu = function(e) { togglePastCertMenu(e, 1); };
+window.downloadCertAction = function(type, eventName) { downloadPastCertAction(type, 1); };
