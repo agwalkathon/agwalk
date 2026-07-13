@@ -2495,14 +2495,20 @@ function drawCertPlaceholdersOnCanvas(canvas, scale) {
     var textY = h * y;
     
     // Draw bounding box outline first
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-    var textWidth = ctx.measureText(previewText).width;
-    var boxHeight = scaledSize * 1.2;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+    var valWidth = ctx.measureText(previewText).width;
+    var templateWidth = ctx.measureText(key).width;
+    var textWidth = Math.max(valWidth, templateWidth);
+    
+    var boxHeight = scaledSize * 1.5;
+    var textX = w * x;
+    var textY = h * y;
     var boxX = textX;
     if (align === 'center') boxX = textX - textWidth/2;
     else if (align === 'right') boxX = textX - textWidth;
     
-    ctx.fillRect(boxX - 4, textY - boxHeight/2, textWidth + 8, boxHeight);
+    var paddingX = 8;
+    ctx.fillRect(boxX - paddingX, textY - boxHeight/2, textWidth + (paddingX * 2), boxHeight);
     
     ctx.fillStyle = color;
     ctx.fillText(previewText, textX, textY);
@@ -2510,7 +2516,7 @@ function drawCertPlaceholdersOnCanvas(canvas, scale) {
     ctx.lineWidth = isChecked ? 2 : 1;
     ctx.strokeStyle = isChecked ? '#E8622A' : '#94a3b8';
     ctx.setLineDash(isChecked ? [] : [2, 2]);
-    ctx.strokeRect(boxX - 4, textY - boxHeight/2, textWidth + 8, boxHeight);
+    ctx.strokeRect(boxX - paddingX, textY - boxHeight/2, textWidth + (paddingX * 2), boxHeight);
     
     ctx.restore();
   });

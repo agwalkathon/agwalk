@@ -2621,10 +2621,15 @@ window.downloadPastCertAction = function(type, pastEventId) {
       else if (p.type === 'points') textVal = certData.points.toFixed(0) + ' pts';
       else if (p.type === 'custom') textVal = p.custom_val || '';
 
+      var templateText = p.key || '';
+
       ctx.save();
       ctx.font = (p.font_style === 'bold' ? 'bold ' : '') + Math.round(p.font_size * (w / 2000)) + 'px "Poppins", "Georgia", sans-serif';
-      var textWidth = ctx.measureText(textVal).width;
-      var boxHeight = p.font_size * (w / 2000) * 1.3;
+      var valWidth = ctx.measureText(textVal).width;
+      var templateWidth = ctx.measureText(templateText).width;
+      var textWidth = Math.max(valWidth, templateWidth);
+      
+      var boxHeight = p.font_size * (w / 2000) * 1.5;
       var textX = w * p.x;
       var textY = h * p.y;
       var boxX = textX;
@@ -2633,7 +2638,8 @@ window.downloadPastCertAction = function(type, pastEventId) {
       else if (p.align === 'right') boxX = textX - textWidth;
       
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(boxX - 10, textY - boxHeight / 2, textWidth + 20, boxHeight);
+      var paddingX = Math.round(25 * (w / 2000));
+      ctx.fillRect(boxX - paddingX, textY - boxHeight / 2, textWidth + (paddingX * 2), boxHeight);
       ctx.restore();
     });
 
