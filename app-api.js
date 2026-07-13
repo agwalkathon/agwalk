@@ -2569,7 +2569,7 @@ window.downloadCertAction = function(type, eventName) {
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.font = 'bold ' + Math.round(36 * (w / 2000)) + 'px "Poppins", "Georgia", sans-serif';
-    ctx.fillText(data.medal, w * 0.35, h * 0.75);
+    ctx.fillText(data.medal, w * 0.38, h * 0.75);
 
     if (type === 'image') {
       var link = document.createElement('a');
