@@ -151,10 +151,10 @@ safeRemoveItem('agwalk_ranking_acts');
 
 function getEventScoreUnit() {
   var rules = EVENT_ROW && EVENT_ROW.rules_config;
-  if (rules && rules.scoring_mode === 'raw_metric') {
+  if (rules && (rules.scoring_mode === 'raw' || rules.scoring_mode === 'raw_metric')) {
     var m = rules.metric || 'distance';
-    if (m === 'distance') return 'km';
-    if (m === 'elevation') return 'm';
+    if (m === 'distance' || m === 'distance_km') return 'km';
+    if (m === 'elevation' || m === 'elevation_m') return 'm';
     if (m === 'steps') return 'steps';
     return m;
   }
@@ -163,10 +163,10 @@ function getEventScoreUnit() {
 
 function getEventScoreLabel() {
   var rules = EVENT_ROW && EVENT_ROW.rules_config;
-  if (rules && rules.scoring_mode === 'raw_metric') {
+  if (rules && (rules.scoring_mode === 'raw' || rules.scoring_mode === 'raw_metric')) {
     var m = rules.metric || 'distance';
-    if (m === 'distance') return 'Total Distance';
-    if (m === 'elevation') return 'Total Elevation';
+    if (m === 'distance' || m === 'distance_km') return 'Total Distance';
+    if (m === 'elevation' || m === 'elevation_m') return 'Total Elevation';
     if (m === 'steps') return 'Total Steps';
     return 'Total ' + m;
   }
