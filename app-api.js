@@ -1617,10 +1617,22 @@ async function load(isBackgroundRefresh) {
       try{
         if(localStorage.getItem('ag_dyn_dash')!=='1'){
           var showArc = false;
-          try {
-            var brCache = JSON.parse(localStorage.getItem('ag_branding_cache') || '{}');
-            showArc = !!brCache.show_arc_on_dashboard;
-          } catch(e) {}
+          if (EVENT_ROW && EVENT_ROW.rules_config && EVENT_ROW.rules_config.dashboard && EVENT_ROW.rules_config.dashboard.sections) {
+            var sec = EVENT_ROW.rules_config.dashboard.sections;
+            if (sec.show_arc_on_dashboard !== undefined) {
+              showArc = !!sec.show_arc_on_dashboard;
+            } else {
+              try {
+                var brCache = JSON.parse(localStorage.getItem('ag_branding_cache') || '{}');
+                showArc = !!brCache.show_arc_on_dashboard;
+              } catch(e) {}
+            }
+          } else {
+            try {
+              var brCache = JSON.parse(localStorage.getItem('ag_branding_cache') || '{}');
+              showArc = !!brCache.show_arc_on_dashboard;
+            } catch(e) {}
+          }
           var _arcW2=document.getElementById('hero-arc-wrap');
           var _ringsH2=document.getElementById('medal-rings');
           if (showArc) {
@@ -2082,10 +2094,22 @@ window.renderHeroArc = function(myPts, medals, eventRow) {
   var host = document.getElementById('medal-rings');
   
   var showArc = false;
-  try {
-    var brCache = JSON.parse(localStorage.getItem('ag_branding_cache') || '{}');
-    showArc = !!brCache.show_arc_on_dashboard;
-  } catch(e) {}
+  if (eventRow && eventRow.rules_config && eventRow.rules_config.dashboard && eventRow.rules_config.dashboard.sections) {
+    var sec = eventRow.rules_config.dashboard.sections;
+    if (sec.show_arc_on_dashboard !== undefined) {
+      showArc = !!sec.show_arc_on_dashboard;
+    } else {
+      try {
+        var brCache = JSON.parse(localStorage.getItem('ag_branding_cache') || '{}');
+        showArc = !!brCache.show_arc_on_dashboard;
+      } catch(e) {}
+    }
+  } else {
+    try {
+      var brCache = JSON.parse(localStorage.getItem('ag_branding_cache') || '{}');
+      showArc = !!brCache.show_arc_on_dashboard;
+    } catch(e) {}
+  }
 
   if (!showArc) {
     if (wrap) wrap.style.display = 'none';

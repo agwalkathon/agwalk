@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <!-- Session Sync Block -->
@@ -512,6 +512,7 @@ body{font-family:var(--font);background:var(--page-bg);color:var(--text-primary)
         <label style="font-weight:600; color:#333; margin-bottom:8px; display:block;">Show/Hide Dashboard Cards & Components (ordered top-to-bottom)</label>
         <div style="display:flex; gap:16px; flex-wrap:wrap; background:#f4f6fa; padding:12px; border-radius:6px; border:1px solid #e2e8f0;">
           <label style="font-size:12.5px;font-weight:500"><input type="checkbox" id="sec-medals" checked> Medal Rings (Bronze/Silver/Gold)</label>
+          <label style="font-size:12.5px;font-weight:500"><input type="checkbox" id="sec-show-arc"> Enable Arc Chart instead of Three Rings</label>
           <label style="font-size:12.5px;font-weight:500"><input type="checkbox" id="sec-streak" checked> Daily Streak Card</label>
           <label style="font-size:12.5px;font-weight:500"><input type="checkbox" id="sec-challenges" checked> Challenges Card</label>
           <label style="font-size:12.5px;font-weight:500"><input type="checkbox" id="sec-mypoints" checked> My Points Summary</label>
@@ -895,6 +896,7 @@ function loadDashboardCfg(rc){
   var sec=db.sections||{};
   document.getElementById('sec-streak').checked=sec.streak!==false;
   document.getElementById('sec-medals').checked=sec.medals!==false;
+  document.getElementById('sec-show-arc').checked=sec.show_arc_on_dashboard===true;
   document.getElementById('sec-challenges').checked=sec.challenges!==false;
   document.getElementById('sec-mypoints').checked=sec.my_points!==false;
   document.getElementById('sec-mystats').checked=sec.my_stats!==false;
@@ -950,7 +952,8 @@ function collectDashboardCfg(){
     stat_activities:document.getElementById('stat-comp-activities').checked,
     stat_distance:document.getElementById('stat-comp-distance').checked,
     stat_movingtime:document.getElementById('stat-comp-movingtime').checked,
-    pace_goals:document.getElementById('sec-pacegoals').checked
+    pace_goals:document.getElementById('sec-pacegoals').checked,
+    show_arc_on_dashboard:document.getElementById('sec-show-arc').checked
   };
 
   var pb={};

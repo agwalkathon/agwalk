@@ -270,10 +270,22 @@
       // classic rings path: clear any stale dynamic flag so the hero arc can render
       try { localStorage.removeItem('ag_dyn_dash'); } catch(e){}
       var showArc = false;
-      try {
-        var brCache = JSON.parse(localStorage.getItem('ag_branding_cache') || '{}');
-        showArc = !!brCache.show_arc_on_dashboard;
-      } catch(e) {}
+      if (ev && ev.rules_config && ev.rules_config.dashboard && ev.rules_config.dashboard.sections) {
+        var sec = ev.rules_config.dashboard.sections;
+        if (sec.show_arc_on_dashboard !== undefined) {
+          showArc = !!sec.show_arc_on_dashboard;
+        } else {
+          try {
+            var brCache = JSON.parse(localStorage.getItem('ag_branding_cache') || '{}');
+            showArc = !!brCache.show_arc_on_dashboard;
+          } catch(e) {}
+        }
+      } else {
+        try {
+          var brCache = JSON.parse(localStorage.getItem('ag_branding_cache') || '{}');
+          showArc = !!brCache.show_arc_on_dashboard;
+        } catch(e) {}
+      }
       var arcW = document.getElementById('hero-arc-wrap');
       var ringsHost = document.getElementById('medal-rings');
       if (showArc) {

@@ -1485,21 +1485,21 @@
     }
     /* Height variance for steps/podium effect */
     .podium-card.rank-1 {
-      height: 160px;
+      min-height: 180px;
       z-index: 3;
       border-color: rgba(255, 208, 0, 0.25);
       background: linear-gradient(180deg, rgba(255, 208, 0, 0.08) 0%, var(--surface) 100%);
       box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
     }
     .podium-card.rank-2 {
-      height: 142px;
+      min-height: 162px;
       z-index: 2;
       border-color: rgba(200, 216, 232, 0.2);
       background: linear-gradient(180deg, rgba(200, 216, 232, 0.05) 0%, var(--surface) 100%);
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
     }
     .podium-card.rank-3 {
-      height: 137px;
+      min-height: 156px;
       z-index: 1;
       border-color: rgba(244, 168, 74, 0.2);
       background: linear-gradient(180deg, rgba(244, 168, 74, 0.05) 0%, var(--surface) 100%);
