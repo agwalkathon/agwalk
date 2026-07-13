@@ -2559,17 +2559,17 @@ window.downloadCertAction = function(type, eventName) {
 
     // 2. Draw Participant Name
     ctx.fillStyle = '#E8622A';
-    ctx.textAlign = 'center';
+    ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.font = 'bold ' + Math.round(52 * (w / 2000)) + 'px "Poppins", "Georgia", sans-serif';
-    ctx.fillText(name, w / 2, h * 0.31);
+    ctx.fillText(name, w * 0.22, h * 0.31);
 
     // 3. Draw Medal
     ctx.fillStyle = '#1A1D20';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.font = 'bold ' + Math.round(36 * (w / 2000)) + 'px "Poppins", "Georgia", sans-serif';
-    ctx.fillText(data.medal, w * 0.34, h * 0.75);
+    ctx.fillText(data.medal, w * 0.365, h * 0.75);
 
     if (type === 'image') {
       var link = document.createElement('a');
