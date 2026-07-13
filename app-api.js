@@ -2108,6 +2108,32 @@ async function loadPastEventsPerformance(reg, athleteId) {
         medalTitle = 'Bronze Medal';
       }
 
+      if (pastEventId === 1) {
+        var certSec = document.getElementById('you-certificates-section');
+        var certCard = document.getElementById('you-certificates-card');
+        if (certSec && certCard) {
+          window.walkathonCertData = {
+            name: reg.full_name || s.name || 'Participant',
+            medal: medalTitle
+          };
+
+          certCard.innerHTML = '<div class="tab-you-detail-row" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:none;">' +
+            '<div style="display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;">' +
+              '<span style="font-size:14px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Walkathon 2026</span>' +
+              '<span style="font-size:11px;color:rgba(255,255,255,0.4);">Download your official certificate of achievement</span>' +
+            '</div>' +
+            '<div style="text-align:right;flex-shrink:0;position:relative;">' +
+              '<button class="btn btn-sm" onclick="toggleCertMenu(event)" style="font-size:11px;font-weight:700;padding:6px 12px;border:none;border-radius:6px;cursor:pointer;background:var(--brand);color:#fff;text-transform:uppercase;letter-spacing:0.5px;">Download</button>' +
+              '<div id="cert-menu" style="display:none;position:absolute;right:0;top:32px;background:#1e222b;border:1px solid rgba(255,255,255,0.1);border-radius:8px;box-shadow:0 10px 25px rgba(0,0,0,0.3);z-index:100;min-width:130px;overflow:hidden;">' +
+                '<a href="javascript:void(0)" onclick="downloadCertAction(\'image\', \'Walkathon 2026\')" style="display:block;padding:10px 14px;color:#fff;font-size:12px;text-align:left;text-decoration:none;font-weight:600;border-bottom:1px solid rgba(255,255,255,0.05);" onmouseenter="this.style.background=\'rgba(255,255,255,0.05)\'" onmouseleave="this.style.background=\'none\'">Photo (JPEG)</a>' +
+                '<a href="javascript:void(0)" onclick="downloadCertAction(\'pdf\', \'Walkathon 2026\')" style="display:block;padding:10px 14px;color:#fff;font-size:12px;text-align:left;text-decoration:none;font-weight:600;" onmouseenter="this.style.background=\'rgba(255,255,255,0.05)\'" onmouseleave="this.style.background=\'none\'">PDF Document</a>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+          certSec.style.display = 'block';
+        }
+      }
+
       var borderStyle = i === otherRegs.length - 1 ? 'border-bottom:none;' : '';
 
       html += '<div class="tab-you-detail-row" style="' + borderStyle + 'display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.06);">' +
@@ -2471,4 +2497,109 @@ window.initParticipantSession = function(user) {
   } catch(e) {
     console.warn('Session init failed:', e);
   }
+};
+
+window.toggleCertMenu = function(e) {
+  e.stopPropagation();
+  var menu = document.getElementById('cert-menu');
+  if (menu) {
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  }
+};
+
+document.addEventListener('click', function() {
+  var menu = document.getElementById('cert-menu');
+  if (menu) menu.style.display = 'none';
+});
+
+window.downloadCertAction = function(type, eventName) {
+  var data = window.walkathonCertData || { name: 'Participant', medal: 'Participant' };
+  var btn = document.querySelector('button[onclick="toggleCertMenu(event)"]');
+  var origText = btn ? btn.textContent : 'Download';
+  if (btn) {
+    btn.textContent = 'Generating...';
+    btn.disabled = true;
+  }
+
+  var name = data.name;
+  if (name && name === name.toUpperCase()) {
+    name = name.toLowerCase().split(' ').map(function(word) {
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    }).join(' ');
+  }
+
+  var url = 'certificate_template_walkathon_2026.pdf';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+  pdfjsLib.getDocument(url).promise.then(function(pdf) {
+    return pdf.getPage(1);
+  }).then(function(page) {
+    var viewport = page.getViewport({ scale: 2.0 });
+    var canvas = document.createElement('canvas');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    var ctx = canvas.getContext('2d');
+    
+    var renderContext = {
+      canvasContext: ctx,
+      viewport: viewport
+    };
+    return page.render(renderContext).promise.then(function() {
+      return canvas;
+    });
+  }).then(function(canvas) {
+    var ctx = canvas.getContext('2d');
+    var w = canvas.width;
+    var h = canvas.height;
+
+    // 1. Cover placeholders
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(w * 0.15, h * 0.25, w * 0.7, h * 0.12);
+    ctx.fillRect(w * 0.32, h * 0.70, w * 0.25, h * 0.1);
+
+    // 2. Draw Participant Name
+    ctx.fillStyle = '#E8622A';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = 'bold ' + Math.round(52 * (w / 2000)) + 'px "Poppins", "Georgia", sans-serif';
+    ctx.fillText(name, w / 2, h * 0.31);
+
+    // 3. Draw Medal
+    ctx.fillStyle = '#1A1D20';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.font = 'bold ' + Math.round(36 * (w / 2000)) + 'px "Poppins", "Georgia", sans-serif';
+    ctx.fillText(data.medal, w * 0.34, h * 0.75);
+
+    if (type === 'image') {
+      var link = document.createElement('a');
+      link.download = 'Walkathon_2026_Certificate_' + name.replace(/\s+/g, '_') + '.jpg';
+      link.href = canvas.toDataURL('image/jpeg', 0.95);
+      link.click();
+      if (btn) {
+        btn.textContent = origText;
+        btn.disabled = false;
+      }
+    } else {
+      var orientation = w > h ? 'l' : 'p';
+      var pdfDoc = new jspdf.jsPDF({
+        orientation: orientation,
+        unit: 'px',
+        format: [w, h]
+      });
+      pdfDoc.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, w, h);
+      pdfDoc.save('Walkathon_2026_Certificate_' + name.replace(/\s+/g, '_') + '.pdf');
+      if (btn) {
+        btn.textContent = origText;
+        btn.disabled = false;
+      }
+    }
+  }).catch(function(err) {
+    console.error('Failed to generate certificate:', err);
+    alert('Failed to generate certificate: ' + err.message);
+    if (btn) {
+      btn.textContent = origText;
+      btn.disabled = false;
+    }
+  });
 };
