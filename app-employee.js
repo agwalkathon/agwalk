@@ -858,11 +858,17 @@ function applyDefaultBrandingDOM(lEl, appNameEl) {
 function applyBrandingDOM(b, lEl, aEl, appNameEl) {
   if (b.login_title) {
     var tEl = document.getElementById('br-login-title');
-    if (tEl) tEl.textContent = b.login_title;
+    if (tEl) {
+      tEl.textContent = b.login_title;
+      tEl.style.display = b.show_login_title !== false ? '' : 'none';
+    }
   }
   if (b.tagline) {
     var sEl = document.getElementById('br-login-sub');
-    if (sEl) sEl.textContent = b.tagline;
+    if (sEl) {
+      sEl.textContent = b.tagline;
+      sEl.style.display = b.show_tagline !== false ? '' : 'none';
+    }
   }
   
   var logoSrc = b.logo_url || 'logo-white.png';
@@ -888,7 +894,8 @@ function applyBrandingDOM(b, lEl, aEl, appNameEl) {
     }
     if (appNameEl) {
       appNameEl.textContent = b.app_name;
-      appNameEl.style.opacity = '1';
+      appNameEl.style.opacity = b.show_app_name !== false ? '1' : '0';
+      appNameEl.style.display = b.show_app_name !== false ? '' : 'none';
     }
   }
 
@@ -898,7 +905,9 @@ function applyBrandingDOM(b, lEl, aEl, appNameEl) {
   var titleDiv = document.getElementById('br-login-title');
   if (logoDiv && appNameDiv && titleDiv) {
     var pos = b.logo_position || 'top';
-    if (pos === 'center') {
+    if (b.show_logo === false) {
+      logoDiv.style.display = 'none';
+    } else if (pos === 'center') {
       appNameDiv.parentNode.insertBefore(logoDiv, titleDiv);
       logoDiv.style.display = 'block';
     } else if (pos === 'hidden') {

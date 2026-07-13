@@ -1,12 +1,11 @@
 // Global Configuration and State Variables
 var SUPABASE_URL = 'https://jhdgkncpkrttvemvwukc.supabase.co';
-var BACKEND      = window.BACKEND_URL || 'https://agwalk-backend.onrender.com';
+var BACKEND      = 'https://agwalk-backend.onrender.com';
 var _currentTab  = 'dashboard';
 var _feedData    = [];
 var LB_REG       = [];
 var LB_ACTS      = [];
 var LB_SCORES    = {};
-var LB_OLD_SCORES = {};
 var _lbReady     = false;
 var LB_ME        = null;
 
@@ -47,8 +46,7 @@ var CONFIG_LB    = {
       minimum_activity_distance_km: 1.0,
       allowed_sports: ["Walk", "Run", "Hike", "Ride"]
     }
-  },
-  announcements_enabled: true
+  }
 };
 var CHALLENGES_LB   = [];
 var SPECIAL_DAYS_LB = [];
@@ -132,10 +130,24 @@ function employeeTokenValid() {
 function userGuard() {
   try {
     var s = JSON.parse(safeGetItem('wk_user') || '{}');
-    if (!s.loggedIn) return null;
-    if (!s.athleteId || s.athleteId === 'null' || s.athleteId === 'undefined') return null;
+    if (!s.loggedIn) {
+      // Post-rename routing: index.html is now the universal Employee App home.
+      // Only an explicit "Open Event App" tap (?login=1) sends someone straight to Strava connect;
+      // every other session-less visitor (known employee or total stranger) lands home first,
+      // where OTP login (checked against employees_master) decides who they really are.
+      var wantLogin = new URLSearchParams(window.location.search).get('login') === '1';
+      if (wantLogin) { window.location.href = 'connect-strava.html'; return null; }
+      window.location.href = 'index.html'; return null;
+    }
+    if (!s.athleteId || s.athleteId === 'null' || s.athleteId === 'undefined') {
+      if (!s.empCode && !s.email) {
+        window.location.href = 'index.html';
+        return null;
+      }
+    }
     return s;
   } catch(e) {
+    window.location.href = 'index.html';
     return null;
   }
 }
@@ -153,7 +165,7 @@ function logout() {
     }
   } catch(e) {}
   try { sessionStorage.removeItem('wk_admin'); } catch(e){}
-  location.reload();
+  window.location.href = 'index.html';
 }
 
 // ── Maintenance Mode Gate ────────────────────────────────────────────────
@@ -221,46 +233,25 @@ async function pollMaintenance(athleteId, empCode) {
   }
 }
 function esc(v) { return String(v==null?'':v).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
-
-function get2Initials(name) {
-  var parts = (name || '').trim().split(/\s+/);
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  }
-  var single = parts[0] || '';
-  if (single.length >= 2) {
-    return single.substring(0, 2).toUpperCase();
-  }
-  var ch = (single[0] || '?');
-  return (ch + ch).toUpperCase();
-}
-
-function getWhoopAvatarStyle(name) {
+function getAvatarStyle(name) {
   var colors = [
-    { r: 232, g: 98, b: 42, border: 'rgba(232, 98, 42, 0.45)', glow: 'rgba(232, 98, 42, 0.15)' },   // Orange
-    { r: 59, g: 130, b: 246, border: 'rgba(59, 130, 246, 0.45)', glow: 'rgba(59, 130, 246, 0.15)' },  // Blue
-    { r: 16, g: 185, b: 129, border: 'rgba(16, 185, 129, 0.45)', glow: 'rgba(16, 185, 129, 0.15)' },  // Green
-    { r: 139, g: 92, b: 246, border: 'rgba(139, 92, 246, 0.45)', glow: 'rgba(139, 92, 246, 0.15)' },  // Violet
-    { r: 239, g: 68, b: 68, border: 'rgba(239, 68, 68, 0.45)', glow: 'rgba(239, 68, 68, 0.15)' },    // Red
-    { r: 255, g: 208, b: 0, border: 'rgba(255, 208, 0, 0.45)', glow: 'rgba(255, 208, 0, 0.15)' }     // Gold
+    { bg: 'rgba(96,165,250,0.1)', border: 'rgba(96,165,250,0.2)', text: 'var(--blue)' },
+    { bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.2)', text: 'var(--green)' },
+    { bg: 'rgba(168,85,247,0.1)', border: 'rgba(168,85,247,0.2)', text: '#c084fc' },
+    { bg: 'rgba(232,98,42,0.1)', border: 'rgba(232,98,42,0.2)', text: 'var(--brand)' },
+    { bg: 'rgba(251,191,36,0.1)', border: 'rgba(251,191,36,0.2)', text: '#fbbf24' },
+    { bg: 'rgba(20,184,166,0.1)', border: 'rgba(20,184,166,0.2)', text: '#2dd4bf' },
+    { bg: 'rgba(244,63,94,0.1)', border: 'rgba(244,63,94,0.2)', text: '#fb7185' }
   ];
   var hash = 0;
   var str = name || '';
   for (var i = 0; i < str.length; i++) {
     hash = str.charCodeAt(i) + ((hash << 5) - hash);
   }
-  var idx = Math.abs(hash) % colors.length;
-  var c = colors[idx];
-  
-  // Light gradient glassmorphic style
-  return 'background: linear-gradient(135deg, rgba(' + c.r + ',' + c.g + ',' + c.b + ', 0.35) 0%, rgba(255, 255, 255, 0.12) 100%); ' +
-         'backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); ' +
-         'border: 1.5px solid ' + c.border + '; ' +
-         'box-shadow: 0 4px 18px ' + c.glow + ', inset 0 1px 1px rgba(255,255,255,0.25); ' +
-         'color: #ffffff; font-weight: 800; font-family: var(--font); ' +
-         'text-shadow: 0 1px 2px rgba(0,0,0,0.3); text-transform: uppercase;';
+  var index = Math.abs(hash) % colors.length;
+  var c = colors[index];
+  return 'background:' + c.bg + '; border-color:' + c.border + '; color:' + c.text + '; box-shadow: 0 0 8px ' + c.bg + ';';
 }
-
 function norm(s){return String(s||'').trim().toLowerCase();}
 
 function getISTDate(d) {
@@ -283,7 +274,7 @@ function getActDate(a) {
   if (a.activity_date_time_ist) {
     return a.activity_date_time_ist.split(/[T ]/)[0];
   }
-  return '';
+  return getISTDate(a.activity_date);
 }
 function fmtTime(d, startTime) {
   if (!d) return '';
@@ -309,8 +300,8 @@ function tileClass(t) {
 }
 var icoWalk='<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block; vertical-align:middle;"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.7-1.1-1-1.8-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.8l1.8-.9z"/></svg>';
 var icoRun='<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block; vertical-align:middle;"><path d="M19 13v-2c-1.54 0-3.09-.49-4.38-1.46l-1.37-1.03c-.71-.53-1.65-.63-2.45-.25L7 10.12V15h2v-3.56l2.1-.82-.6 3.3L8.2 16.5c-.39.29-.6.76-.56 1.25.07.72.7 1.25 1.42 1.18.35-.03.66-.21.86-.48l1.72-2.3L15 18v4h2v-5.12l-2.9-2.9.6-3.1c1.16.91 2.51 1.43 3.92 1.43zM13.5 5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/></svg>';
-var icoRide='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="17" r="3"/><circle cx="19" cy="17" r="3"/><path d="M12 17h2l2-5H9l1 3h2"/></svg>';
-var icoHike='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20l4-10 3 6 2-3 4 7"/><circle cx="9" cy="7" r="2"/></svg>';
+var icoRide='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="17" r="3"/><circle cx="19" cy="17" r="3"/><path d="M12 17h2l2-5H9l1 3h2"/></svg>';
+var icoHike='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20l4-10 3 6 2-3 4 7"/><circle cx="9" cy="7" r="2"/></svg>';
 var icoBolt='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
 function renderIcon(t){var m={'Walk':icoWalk,'Run':icoRun,'VirtualRun':icoRun,'Ride':icoRide,'VirtualRide':icoRide,'MountainBikeRide':icoRide,'Hike':icoHike};return m[t]||icoBolt;}
 
@@ -380,9 +371,6 @@ function checkChallengeSingle(act, c) {
 }
 
 function calcFullPts(myActs, gender, shift) {
-  if (typeof lbIsLegacyScoring === 'function' && !lbIsLegacyScoring()) {
-    return calcFullPtsAdaptive(myActs, gender, shift);
-  }
   var athleteId = myActs.length ? myActs[0].strava_athlete_id : null;
   var validActs = myActs.filter(function(a) { return !a.is_flagged; });
   validActs.forEach(function(a) {
@@ -842,7 +830,7 @@ function calcFullPts(myActs, gender, shift) {
 var _LB_EV_RULES = null; /* rules_config of currently viewed event; null = legacy Walkathon distance scoring */
 function lbScoringMode(){ return (_LB_EV_RULES && _LB_EV_RULES.scoring_mode) || 'single_metric'; }
 function lbScoringMetric(){ return (_LB_EV_RULES && _LB_EV_RULES.metric) || 'distance_km'; }
-function lbIsLegacyScoring(){ return !window.EVENT_ROW || !window.EVENT_ROW.id || window.EVENT_ROW.id === 1; }
+function lbIsLegacyScoring(){ return !_LB_EV_RULES || (lbScoringMode()==='single_metric' && lbScoringMetric()==='distance_km'); }
 var LB_METRIC_META = {
   distance_km:     { label:'Distance (km)', short:'KM',    dec:2 },
   elevation_m:     { label:'Elevation (m)', short:'M',     dec:0 },
@@ -863,211 +851,40 @@ function calcFullPtsAdaptive(myActs, gender, shift){
   var mode=lbScoringMode(), metric=lbScoringMetric();
   var comp=(_LB_EV_RULES&&_LB_EV_RULES.composite)||{};
   var rate=parseFloat(_LB_EV_RULES&&_LB_EV_RULES.rate); if(isNaN(rate))rate=1;
-  
-  var formula = (_LB_EV_RULES && _LB_EV_RULES.formula) || {};
-  var formulaAgg = formula.aggregation || 'daily_total';
-  var baseEnabled = formula.base_enabled !== false;
-  var milestoneEnabled = formula.milestone_enabled !== false;
-  var challengeEnabled = formula.challenge_enabled !== false;
-
   var validActs=myActs.filter(function(a){return !a.is_flagged;});
-
-  var totalKm=0, totalMovingTime=0;
-  validActs.forEach(function(a){
-    totalKm += (parseFloat(a.distance_meters)||0)/1000;
-    totalMovingTime += parseInt(a.moving_time_seconds||0);
-  });
-
-  // Raw metric
-  if (mode === 'raw') {
-    var rawSum = 0;
-    var dayBreakdown = {};
-    var byDay = {};
-    validActs.forEach(function(a){
-      var day = getActDate(a);
-      if(!day)return;
-      var v = lbActMetricValue(a, metric);
-      rawSum += v;
-      if (!byDay[day]) byDay[day] = [];
-      byDay[day].push(a);
-    });
-
-    Object.keys(byDay).forEach(function(day){
-      var dayKm = 0, dayVal = 0;
-      byDay[day].forEach(function(a){
-        dayKm += (parseFloat(a.distance_meters)||0)/1000;
-        dayVal += lbActMetricValue(a, metric);
-      });
-      dayBreakdown[day] = {
-        km: dayKm, distPts: dayVal, bonusPts: 0, challenges: [], capped: false, inRangeKm: 0
-      };
-    });
-
-    return {
-      km: totalKm, distPts: rawSum, bonusPts: 0, challengePts: 0, total: rawSum,
-      byDay: byDay, dayBreakdown: dayBreakdown, actBreakdown: {},
-      earnedPts: {}, earnedChallenges: {}, adaptive: {mode:mode, metric:metric}
-    };
-  }
-
-  function getActVal(a) {
-    return lbActMetricValue(a, metric);
-  }
-
-  var dayBreakdown = {};
-  var actBreakdown = {};
-  var totalBase = 0, totalBonus = 0;
-  var byDay = {};
-  validActs.forEach(function(a){
-    var day = getActDate(a);
-    if(!day)return;
-    (byDay[day] = byDay[day] || []).push(a);
-  });
-
-  var bonusConfig = [];
-  if (CONFIG_LB && Array.isArray(CONFIG_LB.bonus)) {
-    bonusConfig = CONFIG_LB.bonus;
-  }
-
-  if (formulaAgg === 'daily_total') {
-    Object.keys(byDay).forEach(function(day){
-      var dayVal = 0, dayKm = 0;
-      byDay[day].forEach(function(a){
-        dayKm += (parseFloat(a.distance_meters)||0)/1000;
-        dayVal += getActVal(a);
-      });
-
-      var base = baseEnabled ? (dayVal * rate) : 0;
-      var bonus = 0;
-      if (milestoneEnabled) {
-        bonusConfig.forEach(function(b){
-          if (dayVal >= b.km) {
-            bonus = Math.max(bonus, b.points);
-          }
+  var byDay={};
+  validActs.forEach(function(a){var day=getActDate(a);if(!day)return;(byDay[day]=byDay[day]||[]).push(a);});
+  var dayBreakdown={},total=0,totalBase=0,totalBonus=0,totalKm=0;
+  Object.keys(byDay).forEach(function(day){
+    var dayVal=0,dayBase=0,dayKm=0;
+    byDay[day].forEach(function(a){
+      dayKm+=(parseFloat(a.distance_meters)||0)/1000;
+      if(mode==='composite'){
+        Object.keys(comp).forEach(function(m){
+          var v=lbActMetricValue(a,m),cap=parseFloat(comp[m].cap)||0;
+          if(cap>0)v=Math.min(v,cap);
+          dayBase+=v*(parseFloat(comp[m].rate)||0);
         });
-      }
-
-      totalBase += base;
-      totalBonus += bonus;
-
-      dayBreakdown[day] = {
-        km: dayKm, distPts: base, bonusPts: bonus, challenges: [], capped: false, inRangeKm: 0
-      };
-    });
-  } else {
-    // Per activity aggregation
-    validActs.forEach(function(a){
-      var actVal = getActVal(a);
-      var base = baseEnabled ? (actVal * rate) : 0;
-      var bonus = 0;
-      if (milestoneEnabled) {
-        bonusConfig.forEach(function(b){
-          if (actVal >= b.km) {
-            bonus = Math.max(bonus, b.points);
-          }
-        });
-      }
-      totalBase += base;
-      totalBonus += bonus;
-
-      var day = getActDate(a);
-      if (day) {
-        if (!dayBreakdown[day]) {
-          dayBreakdown[day] = { km: 0, distPts: 0, bonusPts: 0, challenges: [], capped: false, inRangeKm: 0 };
-        }
-        dayBreakdown[day].km += (parseFloat(a.distance_meters)||0)/1000;
-        dayBreakdown[day].distPts += base;
-        dayBreakdown[day].bonusPts += bonus;
+      } else {
+        dayVal+=lbActMetricValue(a,metric);
       }
     });
-  }
-
-  // Challenge points
-  var challengePts = 0;
-  var challengeNames = [];
-  if (challengeEnabled) {
-    validActs.forEach(function(a){
-      var val = parseFloat(a.manual_bonus || 0);
-      challengePts += val;
-      if (val > 0) {
-        var day = getActDate(a);
-        if (day && dayBreakdown[day]) {
-          var desc = a.description || 'Manual bonus';
-          dayBreakdown[day].challenges.push({ name: desc, pts: val });
-          if (challengeNames.indexOf(desc) === -1) challengeNames.push(desc);
-        }
-      }
-    });
-
-    var _shiftN = (shift || '').toLowerCase();
-    var _isNightShift = _shiftN.indexOf('night') > -1;
-    var myChallenges = (Array.isArray(CHALLENGES_LB) ? CHALLENGES_LB : []).filter(function(c) {
-      if (!c.is_active) return false;
-      var elig = (c.eligible || 'all').toLowerCase();
-      if (elig === 'all')        return true;
-      if (elig === 'male'      && (gender || '').toLowerCase() === 'male')   return true;
-      if (elig === 'female'    && (gender || '').toLowerCase() === 'female') return true;
-      if (elig === 'dayshift'  && !_isNightShift) return true;
-      if (elig === 'nightshift' && _isNightShift) return true;
-      return false;
-    });
-
-    myChallenges.forEach(function(c) {
-      Object.keys(byDay).forEach(function(day) {
-        if (day < c.start_date || day > c.end_date) return;
-        var qualifies = byDay[day].some(function(a) { return checkChallengeSingle(a, c); });
-        if (qualifies) {
-          var ptsAwarded = parseFloat(c.per_activity_points) || parseFloat(c.points) || 0;
-          challengePts += ptsAwarded;
-          if (dayBreakdown[day]) {
-            dayBreakdown[day].challenges.push({ name: c.name, pts: ptsAwarded });
-          }
-          if (challengeNames.indexOf(c.name) === -1) challengeNames.push(c.name);
-        }
-      });
-    });
-  }
-
-  var total = totalBase + totalBonus + challengePts;
-
+    var base = mode==='raw' ? 0 : (mode==='composite' ? dayBase : dayVal*rate);
+    var bonus=0;
+    if(mode!=='raw'&&CONFIG_LB&&Array.isArray(CONFIG_LB.bonus)){
+      var basis=(mode==='composite')?base:dayVal;
+      CONFIG_LB.bonus.forEach(function(b){ if(basis>=b.km) bonus=Math.max(bonus,b.points); });
+    }
+    var dayTotal=(mode==='raw')?dayVal:(base+bonus);
+    total+=dayTotal;totalBase+=base;totalBonus+=bonus;totalKm+=dayKm;
+    dayBreakdown[day]={km:(mode==='composite'?dayKm:dayVal),distPts:(mode==='raw'?dayVal:base),bonusPts:bonus,challenges:[]};
+  });
   return {
-    km: totalKm, distPts: parseFloat(totalBase.toFixed(2)), bonusPts: parseFloat(totalBonus.toFixed(2)),
-    challengePts: parseFloat(challengePts.toFixed(2)), total: parseFloat(total.toFixed(2)),
-    byDay: byDay, dayBreakdown: dayBreakdown, actBreakdown: actBreakdown,
-    earnedPts: {}, earnedChallenges: {}, adaptive: {mode:mode, metric:metric}
+    km: totalKm, distPts: parseFloat(totalBase.toFixed(2)), bonusPts: totalBonus,
+    challengePts: 0,
+    total: parseFloat(total.toFixed(2)),
+    dayBreakdown: dayBreakdown, actBreakdown: [],
+    earnedPts: [], earnedChallenges: [],
+    adaptive: { mode: mode, metric: metric }
   };
 }
-// Trigger rebuild: config features fix v2
-
-// ============================================================
-// Shared brand/accent color resolution (single source of truth)
-// Priority: org-wide Global Accent Color (celebrate-config.html > Branding tab) > default
-// (Per-event accent_color is intentionally NOT used here anymore — see app-events.js note)
-// ============================================================
-var DEFAULT_BRAND_COLOR = '#E8622A';
-
-function getEffectiveAccentColor() {
-  try {
-    var br = JSON.parse(localStorage.getItem('ag_branding_cache') || 'null');
-    if (br && br.accent_color) return br.accent_color;
-  } catch (e) {}
-  return DEFAULT_BRAND_COLOR;
-}
-
-function applyEffectiveAccentColor() {
-  var c = getEffectiveAccentColor();
-  try { document.documentElement.style.setProperty('--brand', c); } catch (e) {}
-  try {
-    var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', c);
-  } catch (e) {}
-  window.CURRENT_ACCENT_COLOR = c;
-  return c;
-}
-
-function getFallbackAvatarStyle() {
-  return 'background:#282e36; border:2px solid ' + getEffectiveAccentColor() + '; color:#fff;';
-}
-
-// Apply immediately on script execution (uses cache; no need to wait for any network fetch)
-try { applyEffectiveAccentColor(); } catch (e) {}

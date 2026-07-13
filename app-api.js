@@ -149,6 +149,34 @@ function cacheClear(athleteId) {
 // Cache migrations
 safeRemoveItem('agwalk_ranking_acts');
 
+function renderUserAvatar(name, photo, hdrId, youId) {
+  var initials = typeof get2Initials === 'function' ? get2Initials(name) : (name || 'Participant').substring(0, 2).toUpperCase();
+  var styleFunc = typeof getWhoopAvatarStyle === 'function' ? getWhoopAvatarStyle : function() { return 'background:#282e36; border:2px solid #E8622A; color:#fff;'; };
+  var hasPhoto = photo && photo !== 'null' && photo !== 'undefined' && !photo.includes('large.png') && !photo.includes('avatar/athlete');
+  
+  var hdrEl = document.getElementById(hdrId);
+  if (hdrEl) {
+    if (hasPhoto) {
+      hdrEl.textContent = '';
+      hdrEl.setAttribute('style', `background: url('${photo}') no-repeat center center; background-size: cover; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.4); border:1.5px solid rgba(255,255,255,0.08);`);
+    } else {
+      hdrEl.textContent = initials;
+      hdrEl.setAttribute('style', styleFunc(name) + '; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; letter-spacing:0.5px;');
+    }
+  }
+
+  var youEl = document.getElementById(youId);
+  if (youEl) {
+    if (hasPhoto) {
+      youEl.textContent = '';
+      youEl.setAttribute('style', `background: url('${photo}') no-repeat center center; background-size: cover; width:84px; height:84px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(0,0,0,0.4); border:2.5px solid rgba(255,255,255,0.08);`);
+    } else {
+      youEl.textContent = initials;
+      youEl.setAttribute('style', styleFunc(name) + '; width:84px; height:84px; border-radius:50%; font-size:28px; font-weight:800; display:flex; align-items:center; justify-content:center; letter-spacing:1px;');
+    }
+  }
+}
+
 function getRegistrationFetchUrl(s) {
   var cols = 'id,emp_code,full_name,email,mobile,gender,shift,project_lead,strava_profile_url,tshirt_size,leaderboard_team,event_name,created_at,role,is_private,is_flagged,event_id,strava_athlete_id,status,profile_photo';
   var queryObj = s || {};
@@ -261,6 +289,11 @@ async function load(isBackgroundRefresh) {
     if (!s) return;
   }
   currentSession = s;
+  if (s && s.loggedIn && !isBackgroundRefresh) {
+    renderUserAvatar(s.name || 'Participant', s.profilePhoto, 'hdr-avatar', 'you-avatar');
+    var yNameEl = document.getElementById('you-name');
+    if (yNameEl && s.name) yNameEl.textContent = s.name.toUpperCase();
+  }
   var athleteId = s.athleteId;
 
   // ── Maintenance mode gate — block immediately if enabled ────────────────
@@ -422,21 +455,8 @@ async function load(isBackgroundRefresh) {
     window._lbCurrentEventId = EVENT_ROW.id;
     window._lbRegisteredEventId = EVENT_ROW.id;
     var name=reg.full_name||s.name||'Participant';
-
-    var initials = typeof get2Initials === 'function' ? get2Initials(name) : name.substring(0,2).toUpperCase();
-    var styleFunc = typeof getWhoopAvatarStyle === 'function' ? getWhoopAvatarStyle : function() { return (typeof getFallbackAvatarStyle === 'function') ? getFallbackAvatarStyle() : 'background:#282e36; border:2px solid #E8622A; color:#fff;'; };
-    
-    var avatarEl = document.getElementById('hdr-avatar');
-    if (avatarEl) {
-      avatarEl.textContent = initials;
-      avatarEl.setAttribute('style', styleFunc(name) + '; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; letter-spacing:0.5px;');
-    }
-    
-    var youAvatarEl = document.getElementById('you-avatar');
-    if (youAvatarEl) {
-      youAvatarEl.textContent = initials;
-      youAvatarEl.setAttribute('style', styleFunc(name) + '; width:84px; height:84px; border-radius:50%; font-size:28px; font-weight:800; display:flex; align-items:center; justify-content:center; letter-spacing:1px;');
-    }
+    var photo = reg.profile_photo || s.profilePhoto || '';
+    renderUserAvatar(name, photo, 'hdr-avatar', 'you-avatar');
     var youNameEl=document.getElementById('you-name');if(youNameEl)youNameEl.textContent=name.toUpperCase();
     if(document.getElementById('you-emp-code'))document.getElementById('you-emp-code').textContent=reg.emp_code||'—';
     if(document.getElementById('you-email'))document.getElementById('you-email').textContent=reg.email||'—';

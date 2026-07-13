@@ -1,4 +1,4 @@
-﻿?<!DOCTYPE html>
+?<!DOCTYPE html>
 <html lang="en">
 <head>
   <!-- Session Sync Block -->
@@ -437,6 +437,35 @@ tr:hover td{background:#FAFAFA}
             <option value="center">Center (between App Name &amp; Title)</option>
             <option value="hidden">Hidden</option>
           </select>
+        <!-- Toggle section for elements visibility -->
+        <div style="grid-column: 1 / -1; margin-top: 10px; border-top: 1px solid #eee; padding-top: 16px;">
+          <h4 style="margin: 0 0 12px 0; font-size: 11px; text-transform: uppercase; color: #888; letter-spacing: 0.5px; font-weight: 600;">Branding Elements Visibility</h4>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;background:#fafafa;padding:10px 14px;border-radius:8px;border:1px solid #eee;">
+              <div>
+                <strong style="font-size:12.5px;display:block;color:var(--text-primary)">Show App Name</strong>
+              </div>
+              <label class="switch"><input type="checkbox" id="br-show-name" checked><span class="slider"></span></label>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;background:#fafafa;padding:10px 14px;border-radius:8px;border:1px solid #eee;">
+              <div>
+                <strong style="font-size:12.5px;display:block;color:var(--text-primary)">Show Login Title</strong>
+              </div>
+              <label class="switch"><input type="checkbox" id="br-show-title" checked><span class="slider"></span></label>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;background:#fafafa;padding:10px 14px;border-radius:8px;border:1px solid #eee;">
+              <div>
+                <strong style="font-size:12.5px;display:block;color:var(--text-primary)">Show Tagline</strong>
+              </div>
+              <label class="switch"><input type="checkbox" id="br-show-tagline" checked><span class="slider"></span></label>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;background:#fafafa;padding:10px 14px;border-radius:8px;border:1px solid #eee;">
+              <div>
+                <strong style="font-size:12.5px;display:block;color:var(--text-primary)">Show Logo</strong>
+              </div>
+              <label class="switch"><input type="checkbox" id="br-show-logo" checked><span class="slider"></span></label>
+            </div>
+          </div>
         </div>
       </div>
       <div style="margin-top:14px;background:#0F1117;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:center;min-height:60px">
@@ -776,6 +805,10 @@ async function loadBrandingConfig(){
 
     document.getElementById('br-logo-size').value = br.logo_width || 120;
     document.getElementById('br-logo-pos').value = br.logo_position || 'top';
+    document.getElementById('br-show-name').checked = br.show_app_name !== false;
+    document.getElementById('br-show-title').checked = br.show_login_title !== false;
+    document.getElementById('br-show-tagline').checked = br.show_tagline !== false;
+    document.getElementById('br-show-logo').checked = br.show_logo !== false;
     updateLogoPreview(br.logo_url || '');
   } catch(e) {
     console.warn('Failed to load branding config:', e);
@@ -834,7 +867,11 @@ document.getElementById('btn-br-preview').addEventListener('click', function(){
     tagline_color: document.getElementById('br-tag-color-hex').value.trim(),
     footnote_color: document.getElementById('br-footnote-color-hex').value.trim(),
     logo_width: parseInt(document.getElementById('br-logo-size').value) || 120,
-    logo_position: document.getElementById('br-logo-pos').value
+    logo_position: document.getElementById('br-logo-pos').value,
+    show_app_name: document.getElementById('br-show-name').checked,
+    show_login_title: document.getElementById('br-show-title').checked,
+    show_tagline: document.getElementById('br-show-tagline').checked,
+    show_logo: document.getElementById('br-show-logo').checked
   };
   localStorage.setItem('ag_branding_preview_temp', JSON.stringify(previewObj));
   window.open('index.html?preview=1', '_blank');
@@ -856,7 +893,11 @@ async function saveBranding(){
     tagline_color: document.getElementById('br-tag-color-hex').value.trim(),
     footnote_color: document.getElementById('br-footnote-color-hex').value.trim(),
     logo_width: parseInt(document.getElementById('br-logo-size').value) || 120,
-    logo_position: document.getElementById('br-logo-pos').value
+    logo_position: document.getElementById('br-logo-pos').value,
+    show_app_name: document.getElementById('br-show-name').checked,
+    show_login_title: document.getElementById('br-show-title').checked,
+    show_tagline: document.getElementById('br-show-tagline').checked,
+    show_logo: document.getElementById('br-show-logo').checked
   };
   try {
     var r = await brandingApi('/admin/celebrate/config', { method:'POST', body: JSON.stringify({ config_key:'branding', config_value:value }) });
