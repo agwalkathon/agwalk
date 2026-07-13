@@ -140,6 +140,19 @@ function userGuard() {
   }
 }
 function logout() {
+  var sessUuid = sessionStorage.getItem('wk_session_uuid');
+  if (sessUuid) {
+    try {
+      var backendUrl = typeof BACKEND !== 'undefined' ? BACKEND : 'https://agwalk-backend.onrender.com';
+      fetch(backendUrl + '/participant/session/end', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_uuid: sessUuid }),
+        keepalive: true
+      }).catch(function(e){});
+      sessionStorage.removeItem('wk_session_uuid');
+    } catch(e) {}
+  }
   safeRemoveItem('wk_user');
   safeRemoveItem('ag_emp_token');
   safeRemoveItem('ag_emp');

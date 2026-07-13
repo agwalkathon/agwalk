@@ -317,6 +317,7 @@ async function load(isBackgroundRefresh) {
     renderUserAvatar(s.name || 'Participant', s.profilePhoto, 'hdr-avatar', 'you-avatar');
     var yNameEl = document.getElementById('you-name');
     if (yNameEl && s.name) yNameEl.textContent = s.name.toUpperCase();
+    if (typeof initParticipantSession === 'function') initParticipantSession(s);
   }
   var athleteId = s.athleteId;
 
@@ -2386,4 +2387,88 @@ window.renderMedalShelf = function(myPts, medals) {
     });
     shelf.style.display = 'flex';
   } catch(e) { try{console.error('[medal-shelf]',e);}catch(e6){} }
+};
+
+window.initParticipantSession = function(user) {
+  if (!user || !user.loggedIn) return;
+  try {
+    var devUuid = localStorage.getItem('wk_device_uuid');
+    if (!devUuid) {
+      devUuid = 'dev_' + Math.random().toString(36).substring(2, 15) + '_' + Date.now().toString(36);
+      localStorage.setItem('wk_device_uuid', devUuid);
+    }
+
+    var sessUuid = sessionStorage.getItem('wk_session_uuid');
+    var isNewSession = false;
+    if (!sessUuid) {
+      sessUuid = 'sess_' + Math.random().toString(36).substring(2, 15) + '_' + Date.now().toString(36);
+      sessionStorage.setItem('wk_session_uuid', sessUuid);
+      isNewSession = true;
+    }
+
+    var isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    var devType = isMobile ? 'Mobile' : 'Web';
+    
+    var ua = navigator.userAgent;
+    var browserName = "Generic Browser";
+    if (ua.indexOf("Firefox") > -1) browserName = "Firefox";
+    else if (ua.indexOf("SamsungBrowser") > -1) browserName = "Samsung Browser";
+    else if (ua.indexOf("Opera") > -1 || ua.indexOf("OPR") > -1) browserName = "Opera";
+    else if (ua.indexOf("Trident") > -1) browserName = "Internet Explorer";
+    else if (ua.indexOf("Edge") > -1 || ua.indexOf("Edg") > -1) browserName = "Edge";
+    else if (ua.indexOf("Chrome") > -1) browserName = "Chrome";
+    else if (ua.indexOf("Safari") > -1) browserName = "Safari";
+
+    var payload = {
+      session_uuid: sessUuid,
+      device_uuid: devUuid,
+      emp_code: user.empCode || 'STRAVA_' + user.athleteId,
+      email: user.email || '',
+      athlete_name: user.name || 'Participant',
+      device_type: devType,
+      device_name: browserName,
+      pwa_installed: isPWA
+    };
+
+    var backendUrl = typeof BACKEND !== 'undefined' ? BACKEND : 'https://agwalk-backend.onrender.com';
+
+    if (isNewSession) {
+      fetch(backendUrl + '/participant/session/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(function(e) {});
+    } else {
+      fetch(backendUrl + '/participant/session/heartbeat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_uuid: sessUuid })
+      }).catch(function(e) {});
+    }
+
+    if (!window._sessHeartbeatInterval) {
+      window._sessHeartbeatInterval = setInterval(function() {
+        fetch(backendUrl + '/participant/session/heartbeat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_uuid: sessUuid })
+        }).catch(function(e) {});
+      }, 120000);
+    }
+
+    // End session on tab/browser close
+    window.addEventListener('pagehide', function() {
+      if (sessUuid) {
+        fetch(backendUrl + '/participant/session/end', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_uuid: sessUuid }),
+          keepalive: true
+        }).catch(function(e){});
+      }
+    });
+  } catch(e) {
+    console.warn('Session init failed:', e);
+  }
 };
