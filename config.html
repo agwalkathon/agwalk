@@ -873,6 +873,10 @@ async function loadBrandingConfig(){
   }
 }
 function logoFilterCss(mode){
+  if (mode === 'white') return 'brightness(0) invert(1)';
+  if (mode === 'black') return 'brightness(0)';
+  return 'none';
+}
 function hexToRgba(hex, alpha) {
   if (!hex) return 'rgba(232,98,42,' + alpha + ')';
   var c = hex.replace('#', '');
