@@ -2643,6 +2643,8 @@ window.downloadPastCertAction = function(type, pastEventId) {
 
     // 1. Cover the placeholder region
     placeholders.forEach(function(p) {
+      if (p.type === 'medal_image') return;
+      
       var textVal = p.key;
       if (p.type === 'participant_name') textVal = name;
       else if (p.type === 'medal_title') textVal = certData.medal;
@@ -2675,6 +2677,8 @@ window.downloadPastCertAction = function(type, pastEventId) {
 
     // 2. Draw actual text values
     placeholders.forEach(function(p) {
+      if (p.type === 'medal_image') return;
+
       var textVal = p.key;
       if (p.type === 'participant_name') textVal = name;
       else if (p.type === 'medal_title') textVal = certData.medal;
@@ -2692,29 +2696,75 @@ window.downloadPastCertAction = function(type, pastEventId) {
       ctx.restore();
     });
 
-    if (type === 'image') {
-      var link = document.createElement('a');
-      link.download = certData.eventName.replace(/\s+/g, '_') + '_Certificate_' + name.replace(/\s+/g, '_') + '.jpg';
-      link.href = canvas.toDataURL('image/jpeg', 0.95);
-      link.click();
-      if (btn) {
-        btn.innerHTML = origText;
-        btn.disabled = false;
+    // 3. Draw image values (asynchronous loader list)
+    var imagePromises = [];
+    placeholders.forEach(function(p) {
+      if (p.type === 'medal_image') {
+        var size = Math.round(p.font_size * (w / 2000));
+        var imgUrl = '';
+        var tier = '';
+        if (certData.medal === 'Gold Medal') tier = 'gold';
+        else if (certData.medal === 'Silver Medal') tier = 'silver';
+        else if (certData.medal === 'Bronze Medal') tier = 'bronze';
+        
+        var eventCfg = (window.pastCertDataMap[pastEventId] && window.pastCertDataMap[pastEventId].config) ? window.pastCertDataMap[pastEventId].config : null;
+        var medalsCfg = null;
+        
+        // Find medals configuration in configMap if available
+        if (configMap && configMap[pastEventId]) {
+          medalsCfg = configMap[pastEventId]['medals'];
+        }
+
+        if (tier && medalsCfg && medalsCfg[tier] && medalsCfg[tier].image_url) {
+          imgUrl = medalsCfg[tier].image_url;
+        } else if (tier) {
+          imgUrl = 'medal_' + tier + '_medal.png'; // local fallback
+        }
+
+        if (imgUrl) {
+          var pms = new Promise(function(resolve) {
+            var img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = function() {
+              ctx.drawImage(img, w * p.x - size / 2, h * p.y - size / 2, size, size);
+              resolve();
+            };
+            img.onerror = function() {
+              console.warn('Failed to load medal image: ' + imgUrl);
+              resolve();
+            };
+            img.src = imgUrl;
+          });
+          imagePromises.push(pms);
+        }
       }
-    } else {
-      var orientation = w > h ? 'l' : 'p';
-      var pdfDoc = new jspdf.jsPDF({
-        orientation: orientation,
-        unit: 'px',
-        format: [w, h]
-      });
-      pdfDoc.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, w, h);
-      pdfDoc.save(certData.eventName.replace(/\s+/g, '_') + '_Certificate_' + name.replace(/\s+/g, '_') + '.pdf');
-      if (btn) {
-        btn.innerHTML = origText;
-        btn.disabled = false;
+    });
+
+    return Promise.all(imagePromises).then(function() {
+      if (type === 'image') {
+        var link = document.createElement('a');
+        link.download = certData.eventName.replace(/\s+/g, '_') + '_Certificate_' + name.replace(/\s+/g, '_') + '.jpg';
+        link.href = canvas.toDataURL('image/jpeg', 0.95);
+        link.click();
+        if (btn) {
+          btn.innerHTML = origText;
+          btn.disabled = false;
+        }
+      } else {
+        var orientation = w > h ? 'l' : 'p';
+        var pdfDoc = new jspdf.jsPDF({
+          orientation: orientation,
+          unit: 'px',
+          format: [w, h]
+        });
+        pdfDoc.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, w, h);
+        pdfDoc.save(certData.eventName.replace(/\s+/g, '_') + '_Certificate_' + name.replace(/\s+/g, '_') + '.pdf');
+        if (btn) {
+          btn.innerHTML = origText;
+          btn.disabled = false;
+        }
       }
-    }
+    });
   }).catch(function(err) {
     console.error('Failed to generate certificate:', err);
     alert('Failed to generate certificate: ' + err.message);
