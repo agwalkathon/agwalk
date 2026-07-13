@@ -1578,6 +1578,14 @@ async function load(isBackgroundRefresh) {
     safeSetText('streak-best-val', best);
     safeSetText('streak-msg', streakIsLive?(streak>=7?'Amazing streak!':streak>=3?'Keep it going!':'Good start!'):(lastActiveDay?'Last active '+lastActiveDay:'Start today!'));
 
+    var baseDate = new Date(now);
+    var isEventEnded = false;
+    var evEnd = EVENT_ROW ? EVENT_ROW.end_date : null;
+    if (evEnd && todayLocal > evEnd) {
+      isEventEnded = true;
+      baseDate = new Date(evEnd + 'T12:00:00');
+    }
+
     var days7=[],labels7=[];
     // per-day km for the last 7 days (Phase 2b)
     var dayKm={};
@@ -1586,11 +1594,12 @@ async function load(isBackgroundRefresh) {
       if(d)dayKm[d]=(dayKm[d]||0)+(a.distance_meters||0)/1000;
     });
     for(var di=6;di>=0;di--){
-      var dd=new Date(now);dd.setDate(dd.getDate()-di);dd.setHours(12,0,0,0);
+      var dd=new Date(baseDate);dd.setDate(dd.getDate()-di);dd.setHours(12,0,0,0);
       var dstr=localDateStr(dd);
       var dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-      days7.push({str:dstr,active:!!activeDays[dstr],isToday:di===0,km:dayKm[dstr]||0,label:dayNames[dd.getDay()].charAt(0),dayNum:dd.getDate()});
-      labels7.push(di===0?'Today':dayNames[dd.getDay()]);
+      var isToday = !isEventEnded && di===0;
+      days7.push({str:dstr,active:!!activeDays[dstr],isToday:isToday,km:dayKm[dstr]||0,label:dayNames[dd.getDay()].charAt(0),dayNum:dd.getDate()});
+      labels7.push(isToday ? 'Today' : dayNames[dd.getDay()]);
     }
     // daily km target: pace for next unearned medal, else keep current average
     var _daysLeftH=Math.max(1,daysLeft||1);
