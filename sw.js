@@ -1,5 +1,5 @@
-// Arcgate Walkathon 2026 - Service Worker v6 (network-only, no cache)
-var CACHE_NAME = 'agwalk-v6';
+// Arcgate Walkathon 2026 - Service Worker v7 (network-only, no cache)
+var CACHE_NAME = 'agwalk-v7';
 
 self.addEventListener('install', function(event) {
   // Delete all old caches and activate immediately
@@ -45,18 +45,12 @@ self.addEventListener('push', function(event) {
   var data = {};
   try { data = event.data ? event.data.json() : {}; } catch(e) { data = { title: 'Walkathon Alert', body: event.data ? event.data.text() : '' }; }
   var title   = data.title || 'Walkathon Alert';
-  
-  var origin = self.location.origin;
-  var basePath = self.location.pathname.substring(0, self.location.pathname.lastIndexOf('/'));
-  var iconUrl = origin + basePath + '/logo-icon.png';
-  var fallbackUrl = origin + basePath + '/app.html';
-
   var options = {
     body:    data.body || '',
-    icon:    iconUrl,
-    badge:   iconUrl,
+    icon:    '/agwalk-staging/logo-icon.png',
+    badge:   '/agwalk-staging/logo-icon.png',
     vibrate: [200, 100, 200],
-    data:    { url: data.url || fallbackUrl },
+    data:    { url: data.url || 'https://agwalkathon.github.io/agwalk-staging/app.html' },
     actions: [{ action: 'open', title: 'View' }]
   };
   event.waitUntil(self.registration.showNotification(title, options));
@@ -64,9 +58,6 @@ self.addEventListener('push', function(event) {
 
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
-  var origin = self.location.origin;
-  var basePath = self.location.pathname.substring(0, self.location.pathname.lastIndexOf('/'));
-  var fallbackUrl = origin + basePath + '/app.html';
-  var url = (event.notification.data && event.notification.data.url) || fallbackUrl;
+  var url = (event.notification.data && event.notification.data.url) || 'https://agwalkathon.github.io/agwalk-staging/app.html';
   event.waitUntil(clients.openWindow(url));
 });
