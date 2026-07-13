@@ -57,7 +57,8 @@
             document.write('<link rel="stylesheet" id="' + linkId + '" href="https://fonts.googleapis.com/css2?family=' + encodeURIComponent(b.font_family) + ':wght@300;400;500;600;700;800;900&display=swap">');
             document.write('<style>body, input, button, select { font-family: "' + b.font_family + '", sans-serif !important; }</style>');
           }
-          if (b.accent_color) {
+          var loginAccent = b.login_accent_color || b.accent_color;
+          if (loginAccent) {
             var hexToRgba = function(hex, alpha) {
               var c = hex.replace('#', '');
               if (c.length === 3) c = c[0] + c[0] + c[1] + c[1] + c[2] + c[2];
@@ -67,10 +68,10 @@
               return 'rgba(' + rVal + ',' + gVal + ',' + bVal + ',' + alpha + ')';
             };
             document.write('<style id="sync-branding-style">' +
-              '.login-btn { background: ' + b.accent_color + ' !important; box-shadow: 0 4px 20px ' + hexToRgba(b.accent_color, 0.28) + ' !important; }' +
-              '.login-link, .login-terms a { color: ' + b.accent_color + ' !important; }' +
-              '#br-app-name { color: ' + b.accent_color + ' !important; }' +
-              'input.login-field:focus { border-color: ' + b.accent_color + ' !important; }' +
+              '.login-btn { background: ' + loginAccent + ' !important; border: 1px solid ' + loginAccent + ' !important; box-shadow: 0 4px 20px ' + hexToRgba(loginAccent, 0.28) + ' !important; }' +
+              '.login-link, .login-terms a { color: ' + loginAccent + ' !important; }' +
+              '#br-app-name { color: ' + (b.accent_color || loginAccent) + ' !important; }' +
+              'input.login-field:focus { border-color: ' + loginAccent + ' !important; }' +
             '</style>');
           }
           var visStyle = '';

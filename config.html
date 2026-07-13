@@ -588,7 +588,7 @@ tr:hover td{background:#FAFAFA}
             <div style="width:100%; background:rgba(255, 255, 255, 0.04); border:1px solid rgba(255, 255, 255, 0.09); border-radius:14px; padding:18px 16px 16px; box-sizing:border-box;">
               <label style="display:block; font-size:10px; font-weight:600; color:rgba(255, 255, 255, 0.35); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Registered Email</label>
               <div style="width:100%; padding:10px 12px; background:rgba(255, 255, 255, 0.06); border:1px solid rgba(255, 255, 255, 0.1); border-radius:8px; color:rgba(255,255,255,0.4); font-size:13px; box-sizing:border-box; margin-bottom:12px;">you@company.com</div>
-              <button id="prev-login-btn" style="width:100%; padding:11px; background:#E8622A; border:none; border-radius:9px; color:#fff; font-size:13px; font-weight:600; cursor:pointer; box-shadow:0 4px 14px rgba(232, 98, 42, 0.25);">Send Login Code</button>
+              <button id="prev-login-btn" style="width:100%; padding:11px; background:#E8622A; border:1px solid #E8622A; border-radius:9px; color:#fff; font-size:13px; font-weight:600; cursor:pointer; box-shadow:0 4px 14px rgba(232, 98, 42, 0.25);">Send Login Code</button>
               <div style="font-size:10px; color:rgba(255, 255, 255, 0.3); text-align:center; margin-top:12px;">By continuing, you agree to our Terms and Privacy.</div>
             </div>
 
@@ -1043,6 +1043,7 @@ function updateLivePreview() {
   const prevBtn = document.getElementById('prev-login-btn');
   if (prevBtn) {
     prevBtn.style.backgroundColor = accentLogin;
+    prevBtn.style.borderColor = accentLogin;
     prevBtn.style.boxShadow = `0 4px 14px ${hexToRgba(accentLogin, 0.25)}`;
   }
 

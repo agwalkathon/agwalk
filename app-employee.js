@@ -959,6 +959,7 @@ function applyBrandingDOM(b, lEl, aEl, appNameEl) {
     }
     .login-btn {
       background: ${loginAccentColor} !important;
+      border: 1px solid ${loginAccentColor} !important;
       box-shadow: 0 4px 20px ${hexToRgba(loginAccentColor, 0.28)} !important;
     }
     .login-btn:hover {
