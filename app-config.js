@@ -1054,6 +1054,15 @@ function getEffectiveAccentColor() {
   return DEFAULT_BRAND_COLOR;
 }
 
+function getBrandingOverrideColor(key, fallbackKey) {
+  try {
+    var br = JSON.parse(localStorage.getItem('ag_branding_cache') || 'null');
+    if (br && br[key]) return br[key];
+    if (br && fallbackKey && br[fallbackKey]) return br[fallbackKey];
+  } catch (e) {}
+  return getEffectiveAccentColor();
+}
+
 function applyEffectiveAccentColor() {
   var c = getEffectiveAccentColor();
   try { document.documentElement.style.setProperty('--brand', c); } catch (e) {}
@@ -1066,7 +1075,7 @@ function applyEffectiveAccentColor() {
 }
 
 function getFallbackAvatarStyle() {
-  return 'background:#282e36; border:2px solid ' + getEffectiveAccentColor() + '; color:#fff;';
+  return 'background:#282e36; border:2px solid ' + getBrandingOverrideColor('avatar_accent_color', 'accent_color') + '; color:#fff;';
 }
 
 // Apply immediately on script execution (uses cache; no need to wait for any network fetch)

@@ -952,25 +952,26 @@ function applyBrandingDOM(b, lEl, aEl, appNameEl) {
   };
   
   var accentColor = b.accent_color || (typeof DEFAULT_BRAND_COLOR !== 'undefined' ? DEFAULT_BRAND_COLOR : '#E8622A');
+  var loginAccentColor = b.login_accent_color || accentColor;
   styleEl.textContent = `
     body, input, button, select {
       font-family: "${b.font_family || 'Inter'}", sans-serif !important;
     }
     .login-btn {
-      background: ${accentColor} !important;
-      box-shadow: 0 4px 20px ${hexToRgba(accentColor, 0.28)} !important;
+      background: ${loginAccentColor} !important;
+      box-shadow: 0 4px 20px ${hexToRgba(loginAccentColor, 0.28)} !important;
     }
     .login-btn:hover {
       opacity: 0.95;
     }
     .login-link, .login-terms a {
-      color: ${accentColor} !important;
+      color: ${loginAccentColor} !important;
     }
     #br-app-name {
       color: ${accentColor} !important;
     }
     input.login-field:focus {
-      border-color: ${accentColor} !important;
+      border-color: ${loginAccentColor} !important;
     }
     #br-login-title {
       font-size: ${b.title_size || 26}px !important;

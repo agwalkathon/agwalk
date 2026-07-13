@@ -2047,7 +2047,7 @@ function instantiateFeedMap(el) {
       }).addTo(map);
 
       var poly = L.polyline(coordinates, {
-        color: (typeof getEffectiveAccentColor === 'function' ? getEffectiveAccentColor() : '#E8622A'), // Follows event accent color
+        color: (typeof getBrandingOverrideColor === 'function' ? getBrandingOverrideColor('map_accent_color', 'accent_color') : '#E8622A'), // Follows event accent color
         weight: 4,
         opacity: 0.9,
         lineJoin: 'round'
@@ -2675,7 +2675,7 @@ function triggerReactionConfetti(x, y, emoji) {
         particleCount: 20,
         spread: 40,
         origin: { x: x / window.innerWidth, y: y / window.innerHeight },
-        colors: [(typeof getEffectiveAccentColor === 'function' ? getEffectiveAccentColor() : '#E8622A'), '#FC6100', '#FFD000'],
+        colors: [(typeof getBrandingOverrideColor === 'function' ? getBrandingOverrideColor('progress_accent_color', 'accent_color') : '#E8622A'), '#FC6100', '#FFD000'],
         ticks: 120
       };
       confetti(options);

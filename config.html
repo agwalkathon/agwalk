@@ -463,6 +463,50 @@ tr:hover td{background:#FAFAFA}
                   <input type="text" id="br-footnote-color-hex" placeholder="#6B7280" style="flex:1" maxlength="7">
                 </div>
               </div>
+
+              <!-- Overrides Section -->
+              <div style="grid-column: 1 / -1; margin-top: 10px; border-top: 1px solid #f3f4f6; padding-top: 14px;">
+                <h4 style="margin: 0 0 12px 0; font-size: 11px; text-transform: uppercase; color: #888; letter-spacing: 0.5px; font-weight: 600;">Custom Accent Overrides (Defaults to Global Accent)</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+                  <div class="field"><label>Login Screen Accent</label>
+                    <div style="display:flex;gap:8px;align-items:center">
+                      <input type="color" id="br-accent-login" style="width:48px;height:36px;padding:2px;border:1px solid #e8e8e8;border-radius:6px;background:none;cursor:pointer">
+                      <input type="text" id="br-accent-login-hex" placeholder="Default" style="flex:1" maxlength="7">
+                    </div>
+                  </div>
+                  <div class="field"><label>Map Track Accent</label>
+                    <div style="display:flex;gap:8px;align-items:center">
+                      <input type="color" id="br-accent-map" style="width:48px;height:36px;padding:2px;border:1px solid #e8e8e8;border-radius:6px;background:none;cursor:pointer">
+                      <input type="text" id="br-accent-map-hex" placeholder="Default" style="flex:1" maxlength="7">
+                    </div>
+                  </div>
+                  <div class="field"><label>Dashboard Progress Ring</label>
+                    <div style="display:flex;gap:8px;align-items:center">
+                      <input type="color" id="br-accent-progress" style="width:48px;height:36px;padding:2px;border:1px solid #e8e8e8;border-radius:6px;background:none;cursor:pointer">
+                      <input type="text" id="br-accent-progress-hex" placeholder="Default" style="flex:1" maxlength="7">
+                    </div>
+                  </div>
+                  <div class="field"><label>Avatar Border Accent</label>
+                    <div style="display:flex;gap:8px;align-items:center">
+                      <input type="color" id="br-accent-avatar" style="width:48px;height:36px;padding:2px;border:1px solid #e8e8e8;border-radius:6px;background:none;cursor:pointer">
+                      <input type="text" id="br-accent-avatar-hex" placeholder="Default" style="flex:1" maxlength="7">
+                    </div>
+                  </div>
+                  <div class="field"><label>Certificate Frame Accent</label>
+                    <div style="display:flex;gap:8px;align-items:center">
+                      <input type="color" id="br-accent-cert" style="width:48px;height:36px;padding:2px;border:1px solid #e8e8e8;border-radius:6px;background:none;cursor:pointer">
+                      <input type="text" id="br-accent-cert-hex" placeholder="Default" style="flex:1" maxlength="7">
+                    </div>
+                  </div>
+                  <div class="field"><label>Event Highlight Accent</label>
+                    <div style="display:flex;gap:8px;align-items:center">
+                      <input type="color" id="br-accent-event" style="width:48px;height:36px;padding:2px;border:1px solid #e8e8e8;border-radius:6px;background:none;cursor:pointer">
+                      <input type="text" id="br-accent-event-hex" placeholder="Default" style="flex:1" maxlength="7">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
 
@@ -872,6 +916,30 @@ async function loadBrandingConfig(){
     document.getElementById('br-footnote-color').value = footCol;
     document.getElementById('br-footnote-color-hex').value = footCol;
 
+    var accentLogin = br.login_accent_color || '';
+    document.getElementById('br-accent-login').value = accentLogin || accent;
+    document.getElementById('br-accent-login-hex').value = accentLogin;
+
+    var accentMap = br.map_accent_color || '';
+    document.getElementById('br-accent-map').value = accentMap || accent;
+    document.getElementById('br-accent-map-hex').value = accentMap;
+
+    var accentProg = br.progress_accent_color || '';
+    document.getElementById('br-accent-progress').value = accentProg || accent;
+    document.getElementById('br-accent-progress-hex').value = accentProg;
+
+    var accentAv = br.avatar_accent_color || '';
+    document.getElementById('br-accent-avatar').value = accentAv || accent;
+    document.getElementById('br-accent-avatar-hex').value = accentAv;
+
+    var accentCert = br.cert_accent_color || '';
+    document.getElementById('br-accent-cert').value = accentCert || accent;
+    document.getElementById('br-accent-cert-hex').value = accentCert;
+
+    var accentEv = br.event_accent_color || '';
+    document.getElementById('br-accent-event').value = accentEv || accent;
+    document.getElementById('br-accent-event-hex').value = accentEv;
+
     document.getElementById('br-logo-size').value = br.logo_width || 120;
     document.getElementById('br-logo-pos').value = br.logo_position || 'top';
     document.getElementById('br-show-name').checked = br.show_app_name !== false;
@@ -923,6 +991,7 @@ function updateLivePreview() {
   const logoWidth = parseInt(document.getElementById('br-logo-size').value) || 120;
   const logoPos = document.getElementById('br-logo-pos').value;
   const accent = document.getElementById('br-accent-hex').value.trim() || '#E8622A';
+  const accentLogin = document.getElementById('br-accent-login-hex').value.trim() || accent;
   const titleCol = document.getElementById('br-title-color-hex').value.trim() || '#FFFFFF';
   const tagCol = document.getElementById('br-tag-color-hex').value.trim() || '#9CA3AF';
   const footCol = document.getElementById('br-footnote-color-hex').value.trim() || '#6B7280';
@@ -965,8 +1034,8 @@ function updateLivePreview() {
 
   const prevBtn = document.getElementById('prev-login-btn');
   if (prevBtn) {
-    prevBtn.style.backgroundColor = accent;
-    prevBtn.style.boxShadow = `0 4px 14px ${hexToRgba(accent, 0.25)}`;
+    prevBtn.style.backgroundColor = accentLogin;
+    prevBtn.style.boxShadow = `0 4px 14px ${hexToRgba(accentLogin, 0.25)}`;
   }
 
   const prevLogoImg = document.getElementById('prev-logo-img');
@@ -1008,6 +1077,7 @@ function initLivePreviewListeners() {
     'br-name', 'br-title', 'br-tag', 'br-font', 'br-title-size', 'br-tag-size',
     'br-logo', 'br-logo-size', 'br-logo-filter', 'br-logo-pos',
     'br-accent-hex', 'br-title-color-hex', 'br-tag-color-hex', 'br-footnote-color-hex',
+    'br-accent-login-hex', 'br-accent-map-hex', 'br-accent-progress-hex', 'br-accent-avatar-hex', 'br-accent-cert-hex', 'br-accent-event-hex',
     'br-show-name', 'br-show-title', 'br-show-tagline', 'br-show-logo'
   ];
   inputs.forEach(id => {
@@ -1052,6 +1122,12 @@ bindColorPair('br-accent', 'br-accent-hex');
 bindColorPair('br-title-color', 'br-title-color-hex');
 bindColorPair('br-tag-color', 'br-tag-color-hex');
 bindColorPair('br-footnote-color', 'br-footnote-color-hex');
+bindColorPair('br-accent-login', 'br-accent-login-hex');
+bindColorPair('br-accent-map', 'br-accent-map-hex');
+bindColorPair('br-accent-progress', 'br-accent-progress-hex');
+bindColorPair('br-accent-avatar', 'br-accent-avatar-hex');
+bindColorPair('br-accent-cert', 'br-accent-cert-hex');
+bindColorPair('br-accent-event', 'br-accent-event-hex');
 async function saveBranding(){
   var errEl = document.getElementById('branding-msg-err');
   errEl.textContent = '';
@@ -1068,6 +1144,12 @@ async function saveBranding(){
     title_color: document.getElementById('br-title-color-hex').value.trim(),
     tagline_color: document.getElementById('br-tag-color-hex').value.trim(),
     footnote_color: document.getElementById('br-footnote-color-hex').value.trim(),
+    login_accent_color: document.getElementById('br-accent-login-hex').value.trim(),
+    map_accent_color: document.getElementById('br-accent-map-hex').value.trim(),
+    progress_accent_color: document.getElementById('br-accent-progress-hex').value.trim(),
+    avatar_accent_color: document.getElementById('br-accent-avatar-hex').value.trim(),
+    cert_accent_color: document.getElementById('br-accent-cert-hex').value.trim(),
+    event_accent_color: document.getElementById('br-accent-event-hex').value.trim(),
     logo_width: parseInt(document.getElementById('br-logo-size').value) || 120,
     logo_position: document.getElementById('br-logo-pos').value,
     show_app_name: document.getElementById('br-show-name').checked,
