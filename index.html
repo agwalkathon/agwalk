@@ -3,24 +3,7 @@
 <html lang="en">
 <head>
   <script src="env-config.js?v=20260710_v1"></script>
-  <script>
-    (function(){
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for (var i = 0; i < registrations.length; i++) {
-            registrations[i].update();
-          }
-        });
-      }
-      if ('caches' in window) {
-        caches.keys().then(function(keys) {
-          keys.forEach(function(key) {
-            caches.delete(key);
-          });
-        });
-      }
-    })();
-  </script>
+
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -119,12 +102,47 @@
         var u = JSON.parse(localStorage.getItem('wk_user') || '{}');
         isPart = u && u.loggedIn;
       } catch(e){}
+
+      var redirect = function() {
+        if (!isPreview && (isEmp || isPart)) {
+          var qs = window.location.search ? window.location.search : "";
+          var separator = qs ? (qs.indexOf('?') !== -1 ? '&' : '?') : '?';
+          window.location.replace("app.html" + qs + separator + "_cb=" + Date.now());
+        } else {
+          document.write('<style>#splash-screen { display: none !important; }</style>');
+        }
+      };
+
+      // 2. Perform service worker unregistration & cache clearance BEFORE redirecting (if logged in)
       if (!isPreview && (isEmp || isPart)) {
-        var qs = window.location.search ? window.location.search : "";
-        var separator = qs ? (qs.indexOf('?') !== -1 ? '&' : '?') : '?';
-        window.location.replace("app.html" + qs + separator + "_cb=" + Date.now());
+        var cleanSw = ('serviceWorker' in navigator) ?
+          navigator.serviceWorker.getRegistrations().then(function(regs) {
+            return Promise.all(regs.map(function(r) { return r.unregister(); }));
+          }) : Promise.resolve();
+          
+        var cleanCaches = ('caches' in window) ?
+          caches.keys().then(function(keys) {
+            return Promise.all(keys.map(function(k) { return caches.delete(k); }));
+          }) : Promise.resolve();
+
+        Promise.all([cleanSw, cleanCaches]).then(function() {
+          redirect();
+        }).catch(function() {
+          redirect();
+        });
       } else {
-        document.write('<style>#splash-screen { display: none !important; }</style>');
+        // If not logged in, unregister SW in background and show page immediately
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(regs) {
+            for (var i = 0; i < regs.length; i++) { regs[i].unregister(); }
+          });
+        }
+        if ('caches' in window) {
+          caches.keys().then(function(keys) {
+            keys.forEach(function(k) { caches.delete(k); });
+          });
+        }
+        redirect();
       }
     })();
   </script>
