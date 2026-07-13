@@ -390,17 +390,50 @@ body{font-family:var(--font);background:var(--page-bg);color:var(--text-primary)
     </div>
   </div>
 
-  <!-- Group 4a: Medal Milestones (Hidden — resolved dynamically from rings config) -->
-  <div class="edit-group" style="display:none;">
-    <h3 style="font-size: 14px; font-weight: 700; color: #F59E0B; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 0.5px;"><i class="ti ti-medal"></i> Medal Milestones</h3>
-    <div style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">Configure the overall event points thresholds required for participants to earn Gold, Silver, and Bronze medals. When an athlete hits these thresholds, they are automatically awarded the corresponding medal tier.</div>
-    <div class="grid" style="margin-bottom:14px">
-      <input type="number" id="gold-male" value="300">
-      <input type="number" id="gold-female" value="250">
-      <input type="number" id="silver-male" value="200">
-      <input type="number" id="silver-female" value="150">
-      <input type="number" id="bronze-male" value="125">
-      <input type="number" id="bronze-female" value="100">
+  <!-- Group 4a: Medal Milestones & Images Configuration -->
+  <div class="edit-group" style="border-left: 4px solid #F59E0B; background: #FAFBFD; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #EDF0F5; border-left-width: 4px;">
+    <h3 style="font-size: 14px; font-weight: 700; color: #F59E0B; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 0.5px;"><i class="ti ti-medal"></i> Medal Configuration</h3>
+    <div style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.4;">Configure the points thresholds required to earn Gold, Silver, and Bronze medals, and upload custom medal badges/images for this event.</div>
+    
+    <div style="display:flex; flex-direction:column; gap:16px;">
+      <!-- Gold Medal Row -->
+      <div style="background:#fff; border:1px solid #edf0f5; border-radius:8px; padding:12px; display:grid; grid-template-columns: 1fr 1fr 2fr; gap:12px; align-items:center;">
+        <div class="fld" style="margin:0;"><label style="font-size:11px;font-weight:700;color:#d97706;">🥇 Gold (Male Goal)</label><input type="number" id="gold-male" value="300" style="padding:6px 10px;font-size:13px;width:100%;"></div>
+        <div class="fld" style="margin:0;"><label style="font-size:11px;font-weight:700;color:#d97706;">🥇 Gold (Female Goal)</label><input type="number" id="gold-female" value="250" style="padding:6px 10px;font-size:13px;width:100%;"></div>
+        <div class="fld" style="margin:0;"><label style="font-size:11px;">🥇 Gold Badge Image</label>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <input type="text" id="gold-img-url" placeholder="Default Image URL (optional)" style="flex:1; padding:6px; font-size:12px;">
+            <button type="button" class="btn btn-ghost btn-xs" onclick="document.getElementById('gold-img-file').click()"><i class="ti ti-upload"></i> Upload</button>
+            <input type="file" id="gold-img-file" accept="image/*" style="display:none;" onchange="uploadMedalImage(event, 'gold')">
+          </div>
+        </div>
+      </div>
+
+      <!-- Silver Medal Row -->
+      <div style="background:#fff; border:1px solid #edf0f5; border-radius:8px; padding:12px; display:grid; grid-template-columns: 1fr 1fr 2fr; gap:12px; align-items:center;">
+        <div class="fld" style="margin:0;"><label style="font-size:11px;font-weight:700;color:#4b5563;">🥈 Silver (Male Goal)</label><input type="number" id="silver-male" value="200" style="padding:6px 10px;font-size:13px;width:100%;"></div>
+        <div class="fld" style="margin:0;"><label style="font-size:11px;font-weight:700;color:#4b5563;">🥈 Silver (Female Goal)</label><input type="number" id="silver-female" value="150" style="padding:6px 10px;font-size:13px;width:100%;"></div>
+        <div class="fld" style="margin:0;"><label style="font-size:11px;">🥈 Silver Badge Image</label>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <input type="text" id="silver-img-url" placeholder="Default Image URL (optional)" style="flex:1; padding:6px; font-size:12px;">
+            <button type="button" class="btn btn-ghost btn-xs" onclick="document.getElementById('silver-img-file').click()"><i class="ti ti-upload"></i> Upload</button>
+            <input type="file" id="silver-img-file" accept="image/*" style="display:none;" onchange="uploadMedalImage(event, 'silver')">
+          </div>
+        </div>
+      </div>
+
+      <!-- Bronze Medal Row -->
+      <div style="background:#fff; border:1px solid #edf0f5; border-radius:8px; padding:12px; display:grid; grid-template-columns: 1fr 1fr 2fr; gap:12px; align-items:center;">
+        <div class="fld" style="margin:0;"><label style="font-size:11px;font-weight:700;color:#b45309;">🥉 Bronze (Male Goal)</label><input type="number" id="bronze-male" value="125" style="padding:6px 10px;font-size:13px;width:100%;"></div>
+        <div class="fld" style="margin:0;"><label style="font-size:11px;font-weight:700;color:#b45309;">🥉 Bronze (Female Goal)</label><input type="number" id="bronze-female" value="100" style="padding:6px 10px;font-size:13px;width:100%;"></div>
+        <div class="fld" style="margin:0;"><label style="font-size:11px;">🥉 Bronze Badge Image</label>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <input type="text" id="bronze-img-url" placeholder="Default Image URL (optional)" style="flex:1; padding:6px; font-size:12px;">
+            <button type="button" class="btn btn-ghost btn-xs" onclick="document.getElementById('bronze-img-file').click()"><i class="ti ti-upload"></i> Upload</button>
+            <input type="file" id="bronze-img-file" accept="image/*" style="display:none;" onchange="uploadMedalImage(event, 'bronze')">
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1689,17 +1722,23 @@ async function openEditor(ev){
         var m = medalRow.config_value;
         document.getElementById('gold-male').value = (m.gold && m.gold.male) || 300;
         document.getElementById('gold-female').value = (m.gold && m.gold.female) || 250;
+        document.getElementById('gold-img-url').value = (m.gold && m.gold.image_url) || '';
         document.getElementById('silver-male').value = (m.silver && m.silver.male) || 200;
         document.getElementById('silver-female').value = (m.silver && m.silver.female) || 150;
+        document.getElementById('silver-img-url').value = (m.silver && m.silver.image_url) || '';
         document.getElementById('bronze-male').value = (m.bronze && m.bronze.male) || 125;
         document.getElementById('bronze-female').value = (m.bronze && m.bronze.female) || 100;
+        document.getElementById('bronze-img-url').value = (m.bronze && m.bronze.image_url) || '';
       } else {
         document.getElementById('gold-male').value = 300;
         document.getElementById('gold-female').value = 250;
+        document.getElementById('gold-img-url').value = '';
         document.getElementById('silver-male').value = 200;
         document.getElementById('silver-female').value = 150;
+        document.getElementById('silver-img-url').value = '';
         document.getElementById('bronze-male').value = 125;
         document.getElementById('bronze-female').value = 100;
+        document.getElementById('bronze-img-url').value = '';
       }
 
       var basePointsRow = Array.isArray(cfgData) ? cfgData.find(function(x) { return x.config_key === 'base_points'; }) : null;
@@ -1792,6 +1831,9 @@ async function openEditor(ev){
     document.getElementById('bronze-male').value = 125;
     document.getElementById('bronze-female').value = 100;
     document.getElementById('base-per-km').value = 1;
+    document.getElementById('gold-img-url').value = '';
+    document.getElementById('silver-img-url').value = '';
+    document.getElementById('bronze-img-url').value = '';
     _milestonesData = [];
     _specialDaysData = [];
     _challengesData = [];
@@ -1922,9 +1964,21 @@ async function saveEvent() {
     
     if (savedEventId) {
       var medalsVal = {
-        gold: { male: +document.getElementById('gold-male').value || 300, female: +document.getElementById('gold-female').value || 250 },
-        silver: { male: +document.getElementById('silver-male').value || 200, female: +document.getElementById('silver-female').value || 150 },
-        bronze: { male: +document.getElementById('bronze-male').value || 125, female: +document.getElementById('bronze-female').value || 100 }
+        gold: { 
+          male: +document.getElementById('gold-male').value || 300, 
+          female: +document.getElementById('gold-female').value || 250,
+          image_url: document.getElementById('gold-img-url').value.trim() || null
+        },
+        silver: { 
+          male: +document.getElementById('silver-male').value || 200, 
+          female: +document.getElementById('silver-female').value || 150,
+          image_url: document.getElementById('silver-img-url').value.trim() || null
+        },
+        bronze: { 
+          male: +document.getElementById('bronze-male').value || 125, 
+          female: +document.getElementById('bronze-female').value || 100,
+          image_url: document.getElementById('bronze-img-url').value.trim() || null
+        }
       };
 
       var basePointsVal = { per_km: parseFloat(document.getElementById('f-rate').value) || 1 };
@@ -1962,6 +2016,7 @@ async function saveEvent() {
         var color = row.querySelector('.cert-p-color').value;
         var weight = row.querySelector('.cert-p-weight').value;
         var align = row.querySelector('.cert-p-align').value;
+        var family = row.querySelector('.cert-p-font').value || 'Poppins';
         if (key) {
           certPlaceholders.push({
             key: key,
@@ -1972,7 +2027,8 @@ async function saveEvent() {
             font_size: size,
             color: color,
             font_style: weight,
-            align: align
+            align: align,
+            font_family: family
           });
         }
       });
@@ -2336,10 +2392,14 @@ window.handleCertTemplateUpload = function(event) {
 };
 
 window.addCertPlaceholderRow = function(data) {
-  var p = data || { key: '', type: 'participant_name', x: 0.1, y: 0.1, font_size: 24, color: '#000000', font_style: 'normal', align: 'left', custom_val: '' };
+  var p = data || { key: '', type: 'participant_name', x: 0.1, y: 0.1, font_size: 24, color: '#000000', font_style: 'normal', align: 'left', custom_val: '', font_family: 'Poppins' };
   var list = document.getElementById('cert-placeholders-list');
   var rowId = 'cpr-' + Date.now() + '-' + Math.round(Math.random() * 1000);
   
+  if (p.font_family) {
+    loadGoogleFont(p.font_family);
+  }
+
   var row = document.createElement('div');
   row.className = 'cert-placeholder-row';
   row.id = rowId;
@@ -2387,6 +2447,19 @@ window.addCertPlaceholderRow = function(data) {
           '<option value="right"' + (p.align === 'right' ? ' selected' : '') + '>Right</option>' +
         '</select>' +
       '</div>' +
+    '</div>' +
+    '<div class="fld" style="margin:0"><label style="font-size:11px;">Font Family (Google Fonts)</label>' +
+      '<select class="cert-p-font" onchange="loadGoogleFont(this.value); updateCertPreviewCanvas();" style="width:100%;">' +
+        '<option value="Poppins"' + (p.font_family === 'Poppins' || !p.font_family ? ' selected' : '') + '>Poppins</option>' +
+        '<option value="Inter"' + (p.font_family === 'Inter' ? ' selected' : '') + '>Inter</option>' +
+        '<option value="Roboto"' + (p.font_family === 'Roboto' ? ' selected' : '') + '>Roboto</option>' +
+        '<option value="Playfair Display"' + (p.font_family === 'Playfair Display' ? ' selected' : '') + '>Playfair Display</option>' +
+        '<option value="Montserrat"' + (p.font_family === 'Montserrat' ? ' selected' : '') + '>Montserrat</option>' +
+        '<option value="Cinzel"' + (p.font_family === 'Cinzel' ? ' selected' : '') + '>Cinzel</option>' +
+        '<option value="Dancing Script"' + (p.font_family === 'Dancing Script' ? ' selected' : '') + '>Dancing Script</option>' +
+        '<option value="Great Vibes"' + (p.font_family === 'Great Vibes' ? ' selected' : '') + '>Great Vibes</option>' +
+        '<option value="Outfit"' + (p.font_family === 'Outfit' ? ' selected' : '') + '>Outfit</option>' +
+      '</select>' +
     '</div>';
     
   list.appendChild(row);
@@ -2487,9 +2560,10 @@ function drawCertPlaceholdersOnCanvas(canvas, scale) {
     ctx.textAlign = align;
     ctx.textBaseline = 'middle';
     
+    var family = row.querySelector('.cert-p-font').value || 'Poppins';
     var scaledSize = Math.round(size * scale * 0.5);
     if (scaledSize < 6) scaledSize = 6;
-    ctx.font = (weight === 'bold' ? 'bold ' : '') + scaledSize + 'px "Poppins", "Georgia", sans-serif';
+    ctx.font = (weight === 'bold' ? 'bold ' : '') + scaledSize + 'px "' + family + '", "Georgia", sans-serif';
     
     var textX = w * x;
     var textY = h * y;
@@ -2545,6 +2619,45 @@ window.handleCertPreviewCanvasClick = function(event) {
     activeRow.querySelector('.cert-p-y').value = pctY;
     updateCertPreviewCanvas();
   }
+};
+
+window.uploadMedalImage = async function(event, tier) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var rd = new FileReader();
+  rd.onload = async function() {
+    try {
+      var r = await fetch(BACKEND + '/admin/upload-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + sessionStorage.getItem('wk_admin_token')
+        },
+        body: JSON.stringify({ data: rd.result })
+      });
+      var d2 = await r.json();
+      if (d2.success) {
+        document.getElementById(tier + '-img-url').value = d2.url;
+      } else {
+        alert(d2.error || 'Upload failed');
+      }
+    } catch(err) {
+      alert('Upload failed: ' + err.message);
+    }
+  };
+  rd.readAsDataURL(file);
+};
+
+window.loadGoogleFont = function(fontName) {
+  if (!fontName) return;
+  var fontId = 'gf-' + fontName.toLowerCase().replace(/\s+/g, '-');
+  if (document.getElementById(fontId)) return;
+  
+  var link = document.createElement('link');
+  link.id = fontId;
+  link.rel = 'stylesheet';
+  link.href = 'https://fonts.googleapis.com/css2?family=' + fontName.replace(/\s+/g, '+') + ':wght@400;700&display=swap';
+  document.head.appendChild(link);
 };
 
 buildChips(['Walk','Run']);

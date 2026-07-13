@@ -2142,6 +2142,25 @@ async function loadPastEventsPerformance(reg, athleteId) {
         medalTitle = 'Bronze Medal';
       }
 
+      var medalImageUrl = '';
+      if (medalsCfg) {
+        var tier = '';
+        if (medalTitle === 'Gold Medal') tier = 'gold';
+        else if (medalTitle === 'Silver Medal') tier = 'silver';
+        else if (medalTitle === 'Bronze Medal') tier = 'bronze';
+        
+        if (tier && medalsCfg[tier] && medalsCfg[tier].image_url) {
+          medalImageUrl = medalsCfg[tier].image_url;
+        }
+      }
+
+      var medalBadgeHtml = '';
+      if (medalImageUrl) {
+        medalBadgeHtml = '<img src="' + medalImageUrl + '" style="width:28px;height:28px;object-fit:contain;border-radius:50%;" title="' + medalTitle + '">';
+      } else {
+        medalBadgeHtml = '<span style="font-size:22px;line-height:1;" title="' + medalTitle + '">' + medalBadge + '</span>';
+      }
+
       // Check if event has ended and certificate config template is set
       var hasEnded = eventObj ? (eventObj.status === 'ended') : false;
       // Pre-2027 Walkathon 2026 fallback check if no db config exists
@@ -2182,7 +2201,7 @@ async function loadPastEventsPerformance(reg, athleteId) {
             '<span style="font-size:14px;font-weight:800;color:var(--brand);">' + totalKm.toFixed(1) + ' km</span>' +
             '<span style="font-size:10px;color:rgba(255,255,255,0.4);">' + totalPts.toFixed(0) + ' pts</span>' +
           '</div>' +
-          '<span style="font-size:22px;line-height:1;" title="' + medalTitle + '">' + medalBadge + '</span>' +
+          medalBadgeHtml +
           (showDownloadBtn ? (
             '<div style="position:relative;overflow:visible;">' +
               '<button id="btn-download-' + pastEventId + '" class="btn btn-sm" onclick="togglePastCertMenu(event, ' + pastEventId + ')" style="font-size:10px;font-weight:700;padding:5px 10px;border:none;border-radius:6px;cursor:pointer;background:var(--brand);color:#fff;text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:4px;"><i class="ti ti-certificate"></i> Cert</button>' +
@@ -2589,6 +2608,14 @@ window.downloadPastCertAction = function(type, pastEventId) {
   var url = certData.config.template_url;
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
+  // Load Google Fonts first
+  var placeholders = certData.config.placeholders || [];
+  placeholders.forEach(function(p) {
+    if (p.font_family) {
+      window.loadGoogleFont(p.font_family);
+    }
+  });
+
   pdfjsLib.getDocument(url).promise.then(function(pdf) {
     return pdf.getPage(1);
   }).then(function(page) {
@@ -2603,7 +2630,9 @@ window.downloadPastCertAction = function(type, pastEventId) {
       viewport: viewport
     };
     return page.render(renderContext).promise.then(function() {
-      return canvas;
+      return document.fonts.ready.then(function() {
+        return canvas;
+      });
     });
   }).then(function(canvas) {
     var ctx = canvas.getContext('2d');
@@ -2624,7 +2653,8 @@ window.downloadPastCertAction = function(type, pastEventId) {
       var templateText = p.key || '';
 
       ctx.save();
-      ctx.font = (p.font_style === 'bold' ? 'bold ' : '') + Math.round(p.font_size * (w / 2000)) + 'px "Poppins", "Georgia", sans-serif';
+      var family = p.font_family || 'Poppins';
+      ctx.font = (p.font_style === 'bold' ? 'bold ' : '') + Math.round(p.font_size * (w / 2000)) + 'px "' + family + '", "Georgia", sans-serif';
       var valWidth = ctx.measureText(textVal).width;
       var templateWidth = ctx.measureText(templateText).width;
       var textWidth = Math.max(valWidth, templateWidth);
@@ -2653,10 +2683,11 @@ window.downloadPastCertAction = function(type, pastEventId) {
       else if (p.type === 'custom') textVal = p.custom_val || '';
 
       ctx.save();
+      var family = p.font_family || 'Poppins';
       ctx.fillStyle = p.color || '#000000';
       ctx.textAlign = p.align || 'left';
       ctx.textBaseline = 'middle';
-      ctx.font = (p.font_style === 'bold' ? 'bold ' : '') + Math.round(p.font_size * (w / 2000)) + 'px "Poppins", "Georgia", sans-serif';
+      ctx.font = (p.font_style === 'bold' ? 'bold ' : '') + Math.round(p.font_size * (w / 2000)) + 'px "' + family + '", "Georgia", sans-serif';
       ctx.fillText(textVal, w * p.x, h * p.y);
       ctx.restore();
     });
@@ -2692,6 +2723,18 @@ window.downloadPastCertAction = function(type, pastEventId) {
       btn.disabled = false;
     }
   });
+};
+
+window.loadGoogleFont = function(fontName) {
+  if (!fontName) return;
+  var fontId = 'gf-' + fontName.toLowerCase().replace(/\s+/g, '-');
+  if (document.getElementById(fontId)) return;
+  
+  var link = document.createElement('link');
+  link.id = fontId;
+  link.rel = 'stylesheet';
+  link.href = 'https://fonts.googleapis.com/css2?family=' + fontName.replace(/\s+/g, '+') + ':wght@400;700&display=swap';
+  document.head.appendChild(link);
 };
 
 // Fallbacks for older references
