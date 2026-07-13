@@ -1612,14 +1612,24 @@ async function load(isBackgroundRefresh) {
           points:myPts,streak:streak,streakLive:streakIsLive,rank:_rankH
         });
       }
-      // Defensive: re-assert arc visibility in case a classic-dashboard event
+      // Defensive: re-assert arc/rings visibility in case a classic-dashboard event
       // re-showed the rings host after our earlier render (belt & braces).
       try{
         if(localStorage.getItem('ag_dyn_dash')!=='1'){
+          var showArc = false;
+          try {
+            var brCache = JSON.parse(localStorage.getItem('ag_branding_cache') || '{}');
+            showArc = !!brCache.show_arc_on_dashboard;
+          } catch(e) {}
           var _arcW2=document.getElementById('hero-arc-wrap');
           var _ringsH2=document.getElementById('medal-rings');
-          if(_arcW2 && _arcW2.style.display==='none') _arcW2.style.display='block';
-          if(_ringsH2) _ringsH2.style.display='none';
+          if (showArc) {
+            if(_arcW2 && _arcW2.style.display==='none') _arcW2.style.display='block';
+            if(_ringsH2) _ringsH2.style.display='none';
+          } else {
+            if(_arcW2) _arcW2.style.display='none';
+            if(_ringsH2 && _ringsH2.style.display==='none') _ringsH2.style.display='flex';
+          }
         }
       }catch(e2){}
     }catch(e){try{console.error('[hybrid-dash]',e);}catch(e4){}}
@@ -2069,6 +2079,20 @@ window.renderHeroArc = function(myPts, medals, eventRow) {
     if (localStorage.getItem('ag_dyn_dash') === '1') return;
   } catch(e) {}
   var wrap = document.getElementById('hero-arc-wrap');
+  var host = document.getElementById('medal-rings');
+  
+  var showArc = false;
+  try {
+    var brCache = JSON.parse(localStorage.getItem('ag_branding_cache') || '{}');
+    showArc = !!brCache.show_arc_on_dashboard;
+  } catch(e) {}
+
+  if (!showArc) {
+    if (wrap) wrap.style.display = 'none';
+    if (host) host.style.display = 'flex';
+    return;
+  }
+
   var svg = document.getElementById('hero-arc-svg');
   var legend = document.getElementById('hero-arc-legend');
   if (!wrap || !svg || !legend || !medals || !medals.length) return;

@@ -507,6 +507,14 @@ tr:hover td{background:#FAFAFA}
                 </div>
               </div>
 
+              <!-- Dashboard Layout Section -->
+              <div style="grid-column: 1 / -1; margin-top: 10px; border-top: 1px solid #f3f4f6; padding-top: 14px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; background:#fafafa; padding:10px 14px; border-radius:8px; border:1px solid #eee;">
+                  <span style="font-size:12.5px; font-weight:600; color:var(--text-primary)">Enable Arc Progress Chart on Dashboard (Otherwise shows Three Medal Rings)</span>
+                  <label class="switch"><input type="checkbox" id="br-show-arc"><span class="slider"></span></label>
+                </div>
+              </div>
+
             </div>
           </div>
 
@@ -946,6 +954,7 @@ async function loadBrandingConfig(){
     document.getElementById('br-show-title').checked = br.show_login_title !== false;
     document.getElementById('br-show-tagline').checked = br.show_tagline !== false;
     document.getElementById('br-show-logo').checked = br.show_logo !== false;
+    document.getElementById('br-show-arc').checked = br.show_arc_on_dashboard === true;
     updateLivePreview();
     if (!window._prevListenersBound) {
       initLivePreviewListeners();
@@ -1078,7 +1087,7 @@ function initLivePreviewListeners() {
     'br-logo', 'br-logo-size', 'br-logo-filter', 'br-logo-pos',
     'br-accent-hex', 'br-title-color-hex', 'br-tag-color-hex', 'br-footnote-color-hex',
     'br-accent-login-hex', 'br-accent-map-hex', 'br-accent-progress-hex', 'br-accent-avatar-hex', 'br-accent-cert-hex', 'br-accent-event-hex',
-    'br-show-name', 'br-show-title', 'br-show-tagline', 'br-show-logo'
+    'br-show-name', 'br-show-title', 'br-show-tagline', 'br-show-logo', 'br-show-arc'
   ];
   inputs.forEach(id => {
     const el = document.getElementById(id);
@@ -1155,7 +1164,8 @@ async function saveBranding(){
     show_app_name: document.getElementById('br-show-name').checked,
     show_login_title: document.getElementById('br-show-title').checked,
     show_tagline: document.getElementById('br-show-tagline').checked,
-    show_logo: document.getElementById('br-show-logo').checked
+    show_logo: document.getElementById('br-show-logo').checked,
+    show_arc_on_dashboard: document.getElementById('br-show-arc').checked
   };
   try {
     var r = await brandingApi('/admin/celebrate/config', { method:'POST', body: JSON.stringify({ config_key:'branding', config_value:value }) });
