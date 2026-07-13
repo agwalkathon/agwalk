@@ -15,11 +15,11 @@
       var urlParams = new URLSearchParams(window.location.search);
       var v = urlParams.get('v');
       if (v && v.length === 13 && parseInt(v) < 1783480000000) {
-        window.location.replace('app.html');
+        window.location.replace('app.html?_cb=' + Date.now());
         return;
       }
 
-      var APP_VERSION = '20260713_v1';
+      var APP_VERSION = '20260713_v2';
       var lastSeen = localStorage.getItem('app_last_seen_version');
       if (lastSeen !== APP_VERSION) {
         // Clear LocalStorage cached keys prefix-matched with agwalk_
@@ -46,10 +46,10 @@
             
           Promise.all([psw, pcaches]).then(function() {
             localStorage.setItem('app_last_seen_version', APP_VERSION);
-            window.location.reload();
+            window.location.replace(window.location.pathname + '?_cb=' + Date.now());
           }).catch(function() {
             localStorage.setItem('app_last_seen_version', APP_VERSION);
-            window.location.reload();
+            window.location.replace(window.location.pathname + '?_cb=' + Date.now());
           });
         } else {
           localStorage.setItem('app_last_seen_version', APP_VERSION);
@@ -84,7 +84,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="app.css?v=20260713_v1">
+  <link rel="stylesheet" href="app.css?v=20260713_v2">
   <style>
     /* Prevent Flash of Unstyled Content (FOUC) and visual jumps */
     #app-screen { display: none !important; }
@@ -909,13 +909,13 @@
 
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" defer></script>
-  <script src="app-config.js?v=20260713_v1" defer></script>
-  <script src="app-employee.js?v=20260713_v1" defer></script>
-  <script src="app-api.js?v=20260713_v1" defer></script>
-  <script src="app-drawers.js?v=20260713_v1" defer></script>
-  <script src="app-events.js?v=20260713_v1" defer></script>
-  <script src="app-dashboard.js?v=20260713_v1" defer></script>
-  <script src="app-tabs.js?v=20260713_v1" defer></script>
+  <script src="app-config.js?v=20260713_v2" defer></script>
+  <script src="app-employee.js?v=20260713_v2" defer></script>
+  <script src="app-api.js?v=20260713_v2" defer></script>
+  <script src="app-drawers.js?v=20260713_v2" defer></script>
+  <script src="app-events.js?v=20260713_v2" defer></script>
+  <script src="app-dashboard.js?v=20260713_v2" defer></script>
+  <script src="app-tabs.js?v=20260713_v2" defer></script>
 
 
 

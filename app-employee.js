@@ -151,7 +151,8 @@ async function verifyCode(){
     var path = window.location.pathname;
     if (path.includes("index.html") || path.endsWith("/") || path.endsWith("/agwalk-staging")) {
       var qs = window.location.search ? window.location.search : "";
-      window.location.replace("app.html" + qs);
+      var separator = qs ? (qs.indexOf('?') !== -1 ? '&' : '?') : '?';
+      window.location.replace("app.html" + qs + separator + "_cb=" + Date.now());
     } else if (window.bootAppUnified) {
       await window.bootAppUnified();
     } else {

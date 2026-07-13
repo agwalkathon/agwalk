@@ -121,7 +121,8 @@
       } catch(e){}
       if (!isPreview && (isEmp || isPart)) {
         var qs = window.location.search ? window.location.search : "";
-        window.location.replace("app.html" + qs);
+        var separator = qs ? (qs.indexOf('?') !== -1 ? '&' : '?') : '?';
+        window.location.replace("app.html" + qs + separator + "_cb=" + Date.now());
       } else {
         document.write('<style>#splash-screen { display: none !important; }</style>');
       }
@@ -229,8 +230,8 @@
 }
 </style>
 
-<script src="app-config.js?v=20260713_v1" defer></script>
-<script src="app-employee.js?v=20260713_v1" defer></script>
+<script src="app-config.js?v=20260713_v2" defer></script>
+<script src="app-employee.js?v=20260713_v2" defer></script>
 <script>
   function _bootBranding() {
     if (typeof loadBranding === 'function') {
