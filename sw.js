@@ -1,5 +1,5 @@
-// Arcgate Walkathon 2026 - Service Worker v8 (network-only, no cache)
-var CACHE_NAME = 'agwalk-v8';
+// Arcgate Walkathon 2026 - Service Worker v9 (network-only, no cache)
+var CACHE_NAME = 'agwalk-v9';
 
 self.addEventListener('install', function(event) {
   // Delete all old caches and activate immediately
