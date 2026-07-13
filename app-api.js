@@ -314,6 +314,18 @@ async function load(isBackgroundRefresh) {
       console.warn('Failed to resolve live event at boot:', e);
     }
 
+    try {
+      if (localStorage.getItem('ag_clear_event_cache') === '1') {
+        localStorage.removeItem('ag_clear_event_cache');
+        for (var i = localStorage.length - 1; i >= 0; i--) {
+          var key = localStorage.key(i);
+          if (key && (key.indexOf('event_row_') === 0 || key.indexOf('config_') === 0 || key.indexOf('challenges_') === 0 || key.indexOf('medals_') === 0 || key.indexOf('reg_') === 0)) {
+            localStorage.removeItem(key);
+          }
+        }
+      }
+    } catch(e){}
+
     var _cachedEv = cacheGet('event_row_'+athleteId, CACHE_TTL.reg);
     if (liveEvent) {
       EVENT_ROW = liveEvent;

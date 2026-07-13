@@ -416,6 +416,13 @@ body{font-family:var(--font);background:var(--page-bg);color:var(--text-primary)
 
     <div id="rings-box" style="margin-bottom:12px"></div>
     <button type="button" class="btn btn-ghost btn-sm" id="btn-add-ring" style="margin-bottom:16px"><i class="ti ti-plus"></i> Add Ring</button>
+    
+    <!-- Dashboard Arc Toggle inside Scoring & Medals -->
+    <div style="background:#f4f6fa; padding:12px; border-radius:6px; border:1px solid #e2e8f0; margin-top:10px;">
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;cursor:pointer">
+        <input type="checkbox" id="sec-show-arc"> Enable Arc Chart on Dashboard instead of Three Rings
+      </label>
+    </div>
   </div>
 
   <!-- Group 4b: Points Configuration -->
@@ -512,7 +519,6 @@ body{font-family:var(--font);background:var(--page-bg);color:var(--text-primary)
         <label style="font-weight:600; color:#333; margin-bottom:8px; display:block;">Show/Hide Dashboard Cards & Components (ordered top-to-bottom)</label>
         <div style="display:flex; gap:16px; flex-wrap:wrap; background:#f4f6fa; padding:12px; border-radius:6px; border:1px solid #e2e8f0;">
           <label style="font-size:12.5px;font-weight:500"><input type="checkbox" id="sec-medals" checked> Medal Rings (Bronze/Silver/Gold)</label>
-          <label style="font-size:12.5px;font-weight:500"><input type="checkbox" id="sec-show-arc"> Enable Arc Chart instead of Three Rings</label>
           <label style="font-size:12.5px;font-weight:500"><input type="checkbox" id="sec-streak" checked> Daily Streak Card</label>
           <label style="font-size:12.5px;font-weight:500"><input type="checkbox" id="sec-challenges" checked> Challenges Card</label>
           <label style="font-size:12.5px;font-weight:500"><input type="checkbox" id="sec-mypoints" checked> My Points Summary</label>
@@ -1877,6 +1883,10 @@ async function saveEvent() {
         console.warn('Auto backfill failed:', e.message);
       });
     }
+
+    try {
+      localStorage.setItem('ag_clear_event_cache', '1');
+    } catch(e){}
 
     document.getElementById('ed-saved').classList.add('show');
     setTimeout(function(){document.getElementById('ed-saved').classList.remove('show')},2200);
