@@ -319,7 +319,14 @@ async function load(isBackgroundRefresh) {
         localStorage.removeItem('ag_clear_event_cache');
         for (var i = localStorage.length - 1; i >= 0; i--) {
           var key = localStorage.key(i);
-          if (key && (key.indexOf('event_row_') === 0 || key.indexOf('config_') === 0 || key.indexOf('challenges_') === 0 || key.indexOf('medals_') === 0 || key.indexOf('reg_') === 0)) {
+          if (key && (
+            key.indexOf('agwalk_event_row_') === 0 || 
+            key.indexOf('agwalk_config') === 0 || 
+            key.indexOf('agwalk_challenges') === 0 || 
+            key.indexOf('agwalk_special_days') === 0 || 
+            key.indexOf('agwalk_medals') === 0 || 
+            key.indexOf('agwalk_reg_') === 0
+          )) {
             localStorage.removeItem(key);
           }
         }
