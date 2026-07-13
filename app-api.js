@@ -149,6 +149,30 @@ function cacheClear(athleteId) {
 // Cache migrations
 safeRemoveItem('agwalk_ranking_acts');
 
+function getEventScoreUnit() {
+  var rules = EVENT_ROW && EVENT_ROW.rules_config;
+  if (rules && rules.scoring_mode === 'raw_metric') {
+    var m = rules.metric || 'distance';
+    if (m === 'distance') return 'km';
+    if (m === 'elevation') return 'm';
+    if (m === 'steps') return 'steps';
+    return m;
+  }
+  return 'pts';
+}
+
+function getEventScoreLabel() {
+  var rules = EVENT_ROW && EVENT_ROW.rules_config;
+  if (rules && rules.scoring_mode === 'raw_metric') {
+    var m = rules.metric || 'distance';
+    if (m === 'distance') return 'Total Distance';
+    if (m === 'elevation') return 'Total Elevation';
+    if (m === 'steps') return 'Total Steps';
+    return 'Total ' + m;
+  }
+  return 'Total Points';
+}
+
 function renderUserAvatar(name, photo, hdrId, youId) {
   var initials = typeof get2Initials === 'function' ? get2Initials(name) : (name || 'Participant').substring(0, 2).toUpperCase();
   var styleFunc = typeof getWhoopAvatarStyle === 'function' ? getWhoopAvatarStyle : function() { return 'background:#282e36; border:2px solid #E8622A; color:#fff;'; };
@@ -1127,7 +1151,7 @@ async function load(isBackgroundRefresh) {
       
       if(needEl){
         if(done){needEl.textContent='✓ Achieved';needEl.style.color='var(--green)';}
-        else{needEl.textContent='Need '+needed.toFixed(0)+' pts';needEl.style.color='#ffffff';}
+        else{needEl.textContent='Need '+needed.toFixed(0)+' ' + getEventScoreUnit();needEl.style.color='#ffffff';}
       }
     });
     triggerRingAnimation();
@@ -1152,21 +1176,22 @@ async function load(isBackgroundRefresh) {
       var todayStr = new Date().toISOString().split('T')[0];
       var iKey = 'insight_' + todayStr;
       var emoji, title, body;
+      var unit = getEventScoreUnit();
       if (myPts >= goldThresh) {
         emoji = '🥇'; title = goldLabel + ' Achieved!';
-        body = 'Outstanding! You\'ve crossed the ' + goldLabel + ' threshold with ' + myPts.toFixed(0) + ' pts. Keep it up!';
+        body = 'Outstanding! You\'ve crossed the ' + goldLabel + ' threshold with ' + myPts.toFixed(0) + ' ' + unit + '. Keep it up!';
       } else if (myPts >= silverThresh) {
         var need = (goldThresh - myPts).toFixed(0);
         emoji = '🥈'; title = silverLabel + ' — ' + goldLabel + ' is close!';
-        body = 'You need just ' + need + ' more pts to unlock ' + goldLabel + '. Push a little harder!';
+        body = 'You need just ' + need + ' more ' + unit + ' to unlock ' + goldLabel + '. Push a little harder!';
       } else if (myPts >= bronzeThresh) {
         var need = (silverThresh - myPts).toFixed(0);
         emoji = '🥉'; title = bronzeLabel + ' Achieved!';
-        body = 'Great start! ' + need + ' pts more gets you ' + silverLabel + '. Keep walking!';
+        body = 'Great start! ' + need + ' ' + unit + ' more gets you ' + silverLabel + '. Keep walking!';
       } else {
         var need = (bronzeThresh - myPts).toFixed(0);
         emoji = '🏃'; title = 'On your way to ' + bronzeLabel + '!';
-        body = 'Walk ' + need + ' more pts to earn your ' + bronzeLabel + '. You can do it!';
+        body = 'Walk ' + need + ' more ' + unit + ' to earn your ' + bronzeLabel + '. You can do it!';
       }
       _activeInsight = { key: iKey, emoji: emoji, title: title, body: body };
       updateInAppNotificationBanner();
@@ -2191,9 +2216,11 @@ window.renderHeroArc = function(myPts, medals, eventRow) {
     svg.appendChild(tick);
   });
 
-  // center value
+  // center value & label
   var valEl = document.getElementById('hero-arc-value');
   if (valEl) valEl.textContent = Math.round(myPts).toLocaleString('en-IN');
+  var lblEl = document.querySelector('.hero-arc-lbl');
+  if (lblEl) lblEl.textContent = getEventScoreLabel();
 
   // legend
   while (legend.firstChild) legend.removeChild(legend.firstChild);
@@ -2239,7 +2266,7 @@ window.renderHeroArc = function(myPts, medals, eventRow) {
         }
       } catch(e) {}
       if (icEl) icEl.textContent = icons[nextIdx] || '\uD83C\uDFC5';
-      if (tEl) tEl.textContent = next.lbl + ' is ' + Math.round(needed).toLocaleString('en-IN') + ' pts away';
+      if (tEl) tEl.textContent = next.lbl + ' is ' + Math.round(needed).toLocaleString('en-IN') + ' ' + getEventScoreUnit() + ' away';
       if (sEl) sEl.textContent = sub;
       if (pEl) { pEl.textContent = pct + '%'; pEl.style.color = next.color; }
       banner.style.display = 'flex';
@@ -2327,7 +2354,8 @@ window.renderDashHybridExtras = function(opts) {
       chips.appendChild(c);
     }
     chip(opts.todayKm.toFixed(1), 'km today', 'brand');
-    chip(Math.round(opts.points).toLocaleString('en-IN'), 'points', '');
+    var scoreUnit = typeof getEventScoreUnit === 'function' ? getEventScoreUnit() : 'points';
+    chip(Math.round(opts.points).toLocaleString('en-IN'), scoreUnit, '');
     chip(opts.streak + (opts.streakLive && opts.streak > 0 ? '\uD83D\uDD25' : ''), 'day streak', 'green');
     chip(opts.rank ? '#' + opts.rank : '\u2014', 'rank', '');
     chips.style.display = 'flex';
@@ -2352,7 +2380,8 @@ window.renderMedalShelf = function(myPts, medals) {
       lbl.className = 'yms-lbl';
       lbl.textContent = m.lbl;
       item.appendChild(ic); item.appendChild(lbl);
-      item.title = earned ? (m.lbl + ' earned') : (m.lbl + ' at ' + Math.round(m.thresh).toLocaleString('en-IN') + ' pts');
+      var unit = typeof getEventScoreUnit === 'function' ? getEventScoreUnit() : 'pts';
+      item.title = earned ? (m.lbl + ' earned') : (m.lbl + ' at ' + Math.round(m.thresh).toLocaleString('en-IN') + ' ' + unit);
       shelf.appendChild(item);
     });
     shelf.style.display = 'flex';
