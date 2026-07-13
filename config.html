@@ -377,20 +377,65 @@ tr:hover td{background:#FAFAFA}
         
         <!-- Left Panel: Controls (60%) -->
         <div class="branding-controls" style="flex: 1 1 500px; min-width:320px; display:flex; flex-direction:column; gap:20px;">
-          
-          <!-- General Configuration Card -->
+          <!-- General & Typography Configuration Card -->
           <div style="background:#fff; border:1px solid #e8e8e8; border-radius:12px; padding:20px;">
-            <h3 style="margin:0 0 16px 0; font-size:13.5px; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:8px;"><i class="ti ti-typography" style="color:var(--brand); font-size:16px;"></i> General Content</h3>
-            <div style="display:grid; grid-template-columns:1fr; gap:16px;">
-              <div class="field"><label>App Name</label><input id="br-name" maxlength="40" placeholder="Arcgate"></div>
-              <div class="field"><label>Login Title</label><input id="br-title" maxlength="60" placeholder="Welcome to Arcgate"></div>
-              <div class="field"><label>Tagline</label><input id="br-tag" maxlength="90" placeholder="Celebrate. Move. Belong."></div>
+            <h3 style="margin:0 0 16px 0; font-size:13.5px; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:8px;"><i class="ti ti-typography" style="color:var(--brand); font-size:16px;"></i> Typography &amp; Content</h3>
+            
+            <div style="display:flex; flex-direction:column; gap:20px;">
+              
+              <!-- App Name Field Row -->
+              <div style="border-bottom:1px solid #f3f4f6; padding-bottom:16px;">
+                <div style="display:flex; gap:16px; align-items:flex-end;">
+                  <div class="field" style="flex:1;"><label>App Name</label><input id="br-name" maxlength="40" placeholder="Arcgate"></div>
+                  <div style="display:flex; align-items:center; gap:10px; background:#fafafa; padding:8px 12px; border-radius:8px; border:1px solid #eee; height:38px;">
+                    <span style="font-size:12px; font-weight:600; color:var(--text-secondary)">Show</span>
+                    <label class="switch"><input type="checkbox" id="br-show-name" checked><span class="slider"></span></label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Login Title Field Row -->
+              <div style="border-bottom:1px solid #f3f4f6; padding-bottom:16px;">
+                <div class="field" style="margin-bottom:10px;"><label>Login Title</label><input id="br-title" maxlength="60" placeholder="Welcome to Arcgate"></div>
+                <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center;">
+                  <div style="display:flex; align-items:center; gap:10px; background:#fafafa; padding:8px 12px; border-radius:8px; border:1px solid #eee; height:38px;">
+                    <span style="font-size:12px; font-weight:600; color:var(--text-secondary)">Show</span>
+                    <label class="switch"><input type="checkbox" id="br-show-title" checked><span class="slider"></span></label>
+                  </div>
+                  <div class="field" style="width:110px;"><label>Text Size (px)</label><input id="br-title-size" type="number" min="14" max="64" value="26"></div>
+                  <div class="field" style="flex:1; min-width:180px;"><label>Title Color</label>
+                    <div style="display:flex;gap:8px;align-items:center">
+                      <input type="color" id="br-title-color" style="width:48px;height:36px;padding:2px;border:1px solid #e8e8e8;border-radius:6px;background:none;cursor:pointer">
+                      <input type="text" id="br-title-color-hex" placeholder="#FFFFFF" style="flex:1" maxlength="7">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tagline Field Row -->
+              <div>
+                <div class="field" style="margin-bottom:10px;"><label>Tagline</label><input id="br-tag" maxlength="90" placeholder="Celebrate. Move. Belong."></div>
+                <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center;">
+                  <div style="display:flex; align-items:center; gap:10px; background:#fafafa; padding:8px 12px; border-radius:8px; border:1px solid #eee; height:38px;">
+                    <span style="font-size:12px; font-weight:600; color:var(--text-secondary)">Show</span>
+                    <label class="switch"><input type="checkbox" id="br-show-tagline" checked><span class="slider"></span></label>
+                  </div>
+                  <div class="field" style="width:110px;"><label>Text Size (px)</label><input id="br-tag-size" type="number" min="10" max="32" value="14"></div>
+                  <div class="field" style="flex:1; min-width:180px;"><label>Tagline Color</label>
+                    <div style="display:flex;gap:8px;align-items:center">
+                      <input type="color" id="br-tag-color" style="width:48px;height:36px;padding:2px;border:1px solid #e8e8e8;border-radius:6px;background:none;cursor:pointer">
+                      <input type="text" id="br-tag-color-hex" placeholder="#9CA3AF" style="flex:1" maxlength="7">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
 
           <!-- Color Settings Card -->
           <div style="background:#fff; border:1px solid #e8e8e8; border-radius:12px; padding:20px;">
-            <h3 style="margin:0 0 16px 0; font-size:13.5px; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:8px;"><i class="ti ti-palette" style="color:var(--brand); font-size:16px;"></i> Theme Colors &amp; Font</h3>
+            <h3 style="margin:0 0 16px 0; font-size:13.5px; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:8px;"><i class="ti ti-palette" style="color:var(--brand); font-size:16px;"></i> Global Theme</h3>
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
               <div class="field" style="grid-column: 1 / -1;"><label>Font Family (Google Font)</label>
                 <input id="br-font" list="google-fonts" placeholder="Type or select any Google Font..." value="Inter">
@@ -412,77 +457,47 @@ tr:hover td{background:#FAFAFA}
                   <input type="text" id="br-accent-hex" placeholder="#E8622A" style="flex:1" maxlength="7">
                 </div>
               </div>
-              <div class="field"><label>Title Color</label>
-                <div style="display:flex;gap:8px;align-items:center">
-                  <input type="color" id="br-title-color" style="width:48px;height:36px;padding:2px;border:1px solid #e8e8e8;border-radius:6px;background:none;cursor:pointer">
-                  <input type="text" id="br-title-color-hex" placeholder="#FFFFFF" style="flex:1" maxlength="7">
-                </div>
-              </div>
-              <div class="field"><label>Tagline Color</label>
-                <div style="display:flex;gap:8px;align-items:center">
-                  <input type="color" id="br-tag-color" style="width:48px;height:36px;padding:2px;border:1px solid #e8e8e8;border-radius:6px;background:none;cursor:pointer">
-                  <input type="text" id="br-tag-color-hex" placeholder="#9CA3AF" style="flex:1" maxlength="7">
-                </div>
-              </div>
               <div class="field"><label>Footnote Color</label>
                 <div style="display:flex;gap:8px;align-items:center">
                   <input type="color" id="br-footnote-color" style="width:48px;height:36px;padding:2px;border:1px solid #e8e8e8;border-radius:6px;background:none;cursor:pointer">
                   <input type="text" id="br-footnote-color-hex" placeholder="#6B7280" style="flex:1" maxlength="7">
                 </div>
               </div>
-              <div class="field"><label>Title Text Size (px)</label><input id="br-title-size" type="number" min="14" max="64" value="26"></div>
-              <div class="field"><label>Tagline Text Size (px)</label><input id="br-tag-size" type="number" min="10" max="32" value="14"></div>
             </div>
           </div>
 
           <!-- Logo Management Card -->
           <div style="background:#fff; border:1px solid #e8e8e8; border-radius:12px; padding:20px;">
             <h3 style="margin:0 0 16px 0; font-size:13.5px; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:8px;"><i class="ti ti-photo" style="color:var(--brand); font-size:16px;"></i> Logo Settings</h3>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
-              <div class="field" style="grid-column: 1 / -1;"><label>Logo URL &amp; Upload</label>
+            <div style="display:flex; flex-direction:column; gap:16px;">
+              <div class="field"><label>Logo URL &amp; Upload</label>
                 <div style="display:flex;gap:8px;align-items:center">
                   <input id="br-logo" placeholder="https://… or upload →" style="flex:1">
                   <button type="button" class="btn-save-ch" id="btn-brlogo-up">Upload</button>
                   <input type="file" id="brlogo-file" accept="image/*" style="display:none">
                 </div>
               </div>
-              <div class="field"><label>Logo Width (px)</label><input id="br-logo-size" type="number" min="30" max="400" value="120"></div>
-              <div class="field"><label>Logo Color filter</label>
-                <select id="br-logo-filter">
-                  <option value="none">Original (no filter)</option>
-                  <option value="white">Force White</option>
-                  <option value="black">Force Black</option>
-                </select>
-              </div>
-              <div class="field"><label>Logo Position</label>
-                <select id="br-logo-pos">
-                  <option value="top">Top (above App Name)</option>
-                  <option value="center">Center (between App Name &amp; Title)</option>
-                  <option value="hidden">Hidden</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- Visibility Settings Card -->
-          <div style="background:#fff; border:1px solid #e8e8e8; border-radius:12px; padding:20px;">
-            <h3 style="margin:0 0 16px 0; font-size:13.5px; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:8px;"><i class="ti ti-eye" style="color:var(--brand); font-size:16px;"></i> Elements Visibility</h3>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px;">
-              <div style="display:flex;align-items:center;justify-content:space-between;background:#fafafa;padding:10px 14px;border-radius:8px;border:1px solid #eee;">
-                <span style="font-size:12.5px;font-weight:600;color:var(--text-primary)">Show App Name</span>
-                <label class="switch"><input type="checkbox" id="br-show-name" checked><span class="slider"></span></label>
-              </div>
-              <div style="display:flex;align-items:center;justify-content:space-between;background:#fafafa;padding:10px 14px;border-radius:8px;border:1px solid #eee;">
-                <span style="font-size:12.5px;font-weight:600;color:var(--text-primary)">Show Login Title</span>
-                <label class="switch"><input type="checkbox" id="br-show-title" checked><span class="slider"></span></label>
-              </div>
-              <div style="display:flex;align-items:center;justify-content:space-between;background:#fafafa;padding:10px 14px;border-radius:8px;border:1px solid #eee;">
-                <span style="font-size:12.5px;font-weight:600;color:var(--text-primary)">Show Tagline</span>
-                <label class="switch"><input type="checkbox" id="br-show-tagline" checked><span class="slider"></span></label>
-              </div>
-              <div style="display:flex;align-items:center;justify-content:space-between;background:#fafafa;padding:10px 14px;border-radius:8px;border:1px solid #eee;">
-                <span style="font-size:12.5px;font-weight:600;color:var(--text-primary)">Show Logo</span>
-                <label class="switch"><input type="checkbox" id="br-show-logo" checked><span class="slider"></span></label>
+              
+              <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center;">
+                <div style="display:flex; align-items:center; gap:10px; background:#fafafa; padding:8px 12px; border-radius:8px; border:1px solid #eee; height:38px;">
+                  <span style="font-size:12px; font-weight:600; color:var(--text-secondary)">Show</span>
+                  <label class="switch"><input type="checkbox" id="br-show-logo" checked><span class="slider"></span></label>
+                </div>
+                <div class="field" style="width:110px;"><label>Width (px)</label><input id="br-logo-size" type="number" min="30" max="400" value="120"></div>
+                <div class="field" style="flex:1; min-width:140px;"><label>Logo Color filter</label>
+                  <select id="br-logo-filter">
+                    <option value="none">Original (no filter)</option>
+                    <option value="white">Force White</option>
+                    <option value="black">Force Black</option>
+                  </select>
+                </div>
+                <div class="field" style="flex:1; min-width:140px;"><label>Position</label>
+                  <select id="br-logo-pos">
+                    <option value="top">Top (above App Name)</option>
+                    <option value="center">Center (between App Name &amp; Title)</option>
+                    <option value="hidden">Hidden</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
