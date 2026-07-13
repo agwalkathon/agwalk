@@ -19,7 +19,7 @@
         return;
       }
 
-      var APP_VERSION = '20260713_v3';
+      var APP_VERSION = '20260713_v4';
       var lastSeen = localStorage.getItem('app_last_seen_version');
       if (lastSeen !== APP_VERSION) {
         // Clear LocalStorage cached keys prefix-matched with agwalk_
@@ -311,7 +311,7 @@
       <div class="hero-arc-svgbox">
         <svg id="hero-arc-svg" viewBox="0 0 280 175" aria-hidden="true"></svg>
         <div class="hero-arc-center">
-          <div class="hero-arc-big"><span id="hero-arc-value">—</span><small> pts</small></div>
+          <div class="hero-arc-big"><span id="hero-arc-value">—</span></div>
           <div class="hero-arc-lbl">Total Points</div>
         </div>
       </div>
