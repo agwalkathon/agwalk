@@ -3,7 +3,24 @@
 <html lang="en">
 <head>
   <script src="env-config.js?v=20260710_v1"></script>
-
+  <script>
+    (function(){
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for (var i = 0; i < registrations.length; i++) {
+            registrations[i].update();
+          }
+        });
+      }
+      if ('caches' in window) {
+        caches.keys().then(function(keys) {
+          keys.forEach(function(key) {
+            caches.delete(key);
+          });
+        });
+      }
+    })();
+  </script>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -40,8 +57,7 @@
             document.write('<link rel="stylesheet" id="' + linkId + '" href="https://fonts.googleapis.com/css2?family=' + encodeURIComponent(b.font_family) + ':wght@300;400;500;600;700;800;900&display=swap">');
             document.write('<style>body, input, button, select { font-family: "' + b.font_family + '", sans-serif !important; }</style>');
           }
-          var loginAccent = b.login_accent_color || b.accent_color;
-          if (loginAccent) {
+          if (b.accent_color) {
             var hexToRgba = function(hex, alpha) {
               var c = hex.replace('#', '');
               if (c.length === 3) c = c[0] + c[0] + c[1] + c[1] + c[2] + c[2];
@@ -51,19 +67,11 @@
               return 'rgba(' + rVal + ',' + gVal + ',' + bVal + ',' + alpha + ')';
             };
             document.write('<style id="sync-branding-style">' +
-              '.login-btn { background: ' + loginAccent + ' !important; border: 1px solid ' + loginAccent + ' !important; box-shadow: 0 4px 20px ' + hexToRgba(loginAccent, 0.28) + ' !important; }' +
-              '.login-link, .login-terms a { color: ' + loginAccent + ' !important; }' +
-              '#br-app-name { color: ' + (b.accent_color || loginAccent) + ' !important; }' +
-              'input.login-field:focus { border-color: ' + loginAccent + ' !important; }' +
+              '.login-btn { background: ' + b.accent_color + ' !important; box-shadow: 0 4px 20px ' + hexToRgba(b.accent_color, 0.28) + ' !important; }' +
+              '.login-link, .login-terms a { color: ' + b.accent_color + ' !important; }' +
+              '#br-app-name { color: ' + b.accent_color + ' !important; }' +
+              'input.login-field:focus { border-color: ' + b.accent_color + ' !important; }' +
             '</style>');
-          }
-          var visStyle = '';
-          if (b.show_app_name === false) visStyle += '#br-app-name { display: none !important; }';
-          if (b.show_login_title === false) visStyle += '#br-login-title { display: none !important; }';
-          if (b.show_tagline === false) visStyle += '#br-login-sub { display: none !important; }';
-          if (b.show_logo === false) visStyle += '.login-logo { display: none !important; }';
-          if (visStyle) {
-            document.write('<style id="sync-branding-visibility-style">' + visStyle + '</style>');
           }
           if (b.app_name) {
             document.title = 'Sign In — ' + b.app_name;
@@ -102,47 +110,11 @@
         var u = JSON.parse(localStorage.getItem('wk_user') || '{}');
         isPart = u && u.loggedIn;
       } catch(e){}
-
-      var redirect = function() {
-        if (!isPreview && (isEmp || isPart)) {
-          var qs = window.location.search ? window.location.search : "";
-          var separator = qs ? (qs.indexOf('?') !== -1 ? '&' : '?') : '?';
-          window.location.replace("app.html" + qs + separator + "_cb=" + Date.now());
-        } else {
-          document.write('<style>#splash-screen { display: none !important; }</style>');
-        }
-      };
-
-      // 2. Perform service worker unregistration & cache clearance BEFORE redirecting (if logged in)
       if (!isPreview && (isEmp || isPart)) {
-        var cleanSw = ('serviceWorker' in navigator) ?
-          navigator.serviceWorker.getRegistrations().then(function(regs) {
-            return Promise.all(regs.map(function(r) { return r.unregister(); }));
-          }) : Promise.resolve();
-          
-        var cleanCaches = ('caches' in window) ?
-          caches.keys().then(function(keys) {
-            return Promise.all(keys.map(function(k) { return caches.delete(k); }));
-          }) : Promise.resolve();
-
-        Promise.all([cleanSw, cleanCaches]).then(function() {
-          redirect();
-        }).catch(function() {
-          redirect();
-        });
+        var qs = window.location.search ? window.location.search : "";
+        window.location.replace("app.html" + qs);
       } else {
-        // If not logged in, unregister SW in background and show page immediately
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(function(regs) {
-            for (var i = 0; i < regs.length; i++) { regs[i].unregister(); }
-          });
-        }
-        if ('caches' in window) {
-          caches.keys().then(function(keys) {
-            keys.forEach(function(k) { caches.delete(k); });
-          });
-        }
-        redirect();
+        document.write('<style>#splash-screen { display: none !important; }</style>');
       }
     })();
   </script>
@@ -248,8 +220,8 @@
 }
 </style>
 
-<script src="app-config.js?v=20260713_v9" defer></script>
-<script src="app-employee.js?v=20260713_v9" defer></script>
+<script src="app-config.js?v=20260711_v1" defer></script>
+<script src="app-employee.js?v=20260711_v3" defer></script>
 <script>
   function _bootBranding() {
     if (typeof loadBranding === 'function') {

@@ -659,7 +659,7 @@ async function submitEventRegistration(ev) {
   btn.disabled = true; btn.textContent = 'Submitting…';
   try {
     var payload = Object.assign({}, d, { event_name: ev.slug, event_id: ev.id, status: 'pending' });
-    var backendUrl = (typeof BACKEND !== 'undefined' ? BACKEND : 'https://walkathon-backend-hv9j.onrender.com');
+    var backendUrl = (typeof BACKEND !== 'undefined' ? BACKEND : 'https://agwalk-backend.onrender.com');
     var r = await fetch(backendUrl + '/register-request', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
