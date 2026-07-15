@@ -1220,14 +1220,6 @@ function avatarGrad(name) {
 }
 
 authGuard();
-
-var EV_ID = 1;
-var EV_ALL = [];
-
-function evq() {
-  return "&event_id=eq." + EV_ID;
-}
-
 // Full Page Loader Utilities
 function initFullPageLoader() {
   if (document.getElementById('full-page-loader')) return;
@@ -1264,6 +1256,13 @@ function showFullPageLoader(text) {
 function hideFullPageLoader() {
   var loader = document.getElementById('full-page-loader');
   if (loader) loader.classList.remove('show');
+}
+
+var EV_ID = 1;
+var EV_ALL = [];
+
+function evq() {
+  return "&event_id=eq." + EV_ID;
 }
 
 async function loadEventSelector() {
