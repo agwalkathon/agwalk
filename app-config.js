@@ -1,5 +1,5 @@
 // Global Configuration and State Variables
-var SUPABASE_URL = 'https://jhdgkncpkrttvemvwukc.supabase.co';
+var SUPABASE_URL = 'https://rlgjsmffrygyuzqaozmy.supabase.co';
 var BACKEND      = window.BACKEND_URL || 'https://agwalk-backend.onrender.com';
 var _currentTab  = 'dashboard';
 var _feedData    = [];
@@ -56,7 +56,7 @@ var CURRENT_ACTS = null;
 var CURRENT_DAY_BREAKDOWN = null;
 var CURRENT_ACT_BREAKDOWN = null;
 var CURRENT_GENDER = null;
-var ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoZGdrbmNwa3J0dHZlbXZ3dWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NzgyNjMsImV4cCI6MjA5NzI1NDI2M30.d7mvXOYDq5G4aqs1Mbc6HFNgTBlQk4B6ah0eahE_yZE';
+var ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsZ2pzbWZmcnlneXV6cWFvem15Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxODE2MjQsImV4cCI6MjA5OTc1NzYyNH0.lJS5F-_2Lw0tbhC4_h7RNbsP2RGJ91zrwl16-YgFnKc';
 var HDR = { apikey: ANON, Authorization: 'Bearer ' + ANON };
 var currentSession = null;
 
@@ -250,13 +250,24 @@ function get2Initials(name) {
 
 function getWhoopAvatarStyle(name) {
   var grads = [
-    { c1: '#38bdf8', c2: '#4ade80' },
-    { c1: '#c084fc', c2: '#f472b6' },
-    { c1: '#fb923c', c2: '#facc15' },
-    { c1: '#818cf8', c2: '#22d3ee' },
-    { c1: '#34d399', c2: '#a3e635' },
-    { c1: '#fb7185', c2: '#a78bfa' },
-    { c1: '#2dd4bf', c2: '#60a5fa' }
+    { c1: '#f97316', c2: '#facc15' },
+    { c1: '#ec4899', c2: '#8b5cf6' },
+    { c1: '#3b82f6', c2: '#10b981' },
+    { c1: '#8b5cf6', c2: '#ec4899' },
+    { c1: '#10b981', c2: '#facc15' },
+    { c1: '#3b82f6', c2: '#6366f1' },
+    { c1: '#06b6d4', c2: '#3b82f6' },
+    { c1: '#f43f5e', c2: '#fb923c' },
+    { c1: '#14b8a6', c2: '#10b981' },
+    { c1: '#a855f7', c2: '#f43f5e' },
+    { c1: '#fb923c', c2: '#db2777' },
+    { c1: '#0284c7', c2: '#0d9488' },
+    { c1: '#6366f1', c2: '#a855f7' },
+    { c1: '#10b981', c2: '#06b6d4' },
+    { c1: '#f59e0b', c2: '#ef4444' },
+    { c1: '#84cc16', c2: '#10b981' },
+    { c1: '#db2777', c2: '#4f46e5' },
+    { c1: '#a855f7', c2: '#06b6d4' }
   ];
   var hash = 0;
   var str = name || '';
